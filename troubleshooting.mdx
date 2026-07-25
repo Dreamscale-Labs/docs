@@ -1,0 +1,115 @@
+---
+title: "Troubleshooting"
+description: "Recover from common Dropbear authentication, capacity, transport, session, camera, calibration, and contract failures."
+keywords: ["Dropbear errors", "worker startup", "QUIC fallback", "session cleanup"]
+---
+
+Start with the narrowest diagnostic that matches your job:
+
+```bash
+dropbear doctor
+dropbear doctor so101
+dropbear doctor sim
+dropbear status
+dropbear sessions list
+```
+
+The CLI prints a problem, likely cause, fix, and next command for recognized
+failures. Apply that recovery step before retrying.
+
+| Symptom | Likely cause | Fix | Next step |
+| --- | --- | --- | --- |
+| Login expires or approval never completes | Browser approval was not completed in time, or the login service was unreachable | Re-run `dropbear login`; on a headless machine use the hidden `dropbear login --api-key` prompt | `dropbear doctor` |
+| `api key` is missing or rejected | No saved credential, a revoked key, or a key copied incorrectly | Sign in again or create a replacement key in the dashboard; never paste it into logs | `dropbear doctor` |
+| Insufficient credits | The account balance cannot open or continue the requested session | Review balance and usage in the dashboard and add prepaid credits | Retry one bounded prediction |
+| Worker stays in `starting` | Cold capacity is still booting | Keep the command/page open while progress advances; avoid parallel retries | `dropbear status --model <model>` |
+| Capacity unavailable | No eligible worker is available in the requested region | Try `region="available"` or wait for capacity; verify model access in the dashboard | Retry once |
+| QUIC/UDP preflight fails but relay works | A firewall, NAT, VPN, or network policy blocks UDP | Keep `transport="auto"` or choose `"relay"`; expect different responsiveness | Run one non-actuating prediction |
+| `transport="quic"` fails | QUIC was required, so fallback was disabled | Use `"auto"` unless the job must refuse relay | Re-run diagnostics |
+| An open session remains after a crash | The process exited before deterministic cleanup | Run `dropbear sessions list`, then `dropbear sessions stop <session-id>` | Confirm the session disappears |
+| Camera missing or busy | Wrong index, unplugged camera, or another application owns the device | Close camera applications, reconnect the device, and repeat SO-101 setup | `dropbear doctor so101` |
+| Side and wrist camera use the same index | The two required views resolve to one device | Select two distinct physical cameras | `dropbear robots so101 setup` |
+| Camera framing check fails | The whole arm/workspace is not visible or the mount differs from the reference | Reposition and stabilize the side camera; lock exposure and white balance | `dropbear doctor so101` |
+| Calibration missing, legacy, or invalid | LeRobot 3.0 calibration was not completed for this arm | Clear the workspace and run the guided calibration | `dropbear robots so101 calibrate` |
+| SO-101 extra will not install | Unsupported Python version for the pinned LeRobot stack | Use Python 3.12 or 3.13 in a fresh environment | Reinstall `dropbear[so101]` |
+| Local sim will not install or start | LIBERO/robosuite platform dependencies are unsupported or missing | Use Linux/WSL2, install `dropbear[sim]`, and run sim diagnostics | `dropbear doctor sim` |
+| Observation validation rejects state | Wrong length, non-finite values, image dtype, or image shape | Compare every value with [Model contracts](/sdk/model-contracts) | Retry locally before opening a session |
+| Returned action shape is unexpected | Wrong model, mismatched package version, or a changed live contract | Print `policy.model`, action shape, and `dropbear.__version__`; stop before actuation | Email support with non-secret diagnostics |
+
+## Authentication recovery
+
+```bash
+dropbear login
+dropbear doctor
+```
+
+If browser login cannot open, copy the printed URL into a browser where you are
+already signed in. For a headless host:
+
+```bash
+dropbear login --api-key
+```
+
+The prompt hides the value. Do not place the key directly in a shell command,
+source file, screenshot, or support email.
+
+## Worker startup and capacity
+
+Cold starts and capacity failures are different:
+
+- `starting` means an allocated worker is still booting; keep polling through
+  the existing command or dashboard flow.
+- `capacity unavailable` means the requested placement cannot allocate a
+  worker now; wait or use an allowed region fallback.
+
+Check without creating another session:
+
+```bash
+dropbear status --model molmoact2-so101
+```
+
+## Transport fallback
+
+`transport="auto"` is the recommended default. It attempts QUIC and can use the
+hosted relay when UDP is blocked. A result with `transport=relay` is still a
+successful prediction.
+
+If a hardware loop becomes less responsive after fallback, stop safely and
+decide whether relay fits the controller's latency budget. Do not compensate by
+loosening robot-side limits.
+
+## Session cleanup
+
+Prefer context managers:
+
+```python
+with dropbear.connect(model="molmoact2-so101") as policy:
+    result = policy.predict(observation, instruction="pick up the red cube")
+```
+
+After a crash:
+
+```bash
+dropbear sessions list
+dropbear sessions stop <session-id>
+```
+
+Open sessions consume prepaid credits. Current balance and usage are shown in
+the [dashboard](https://dropbear.dreamscalelabs.com/dashboard/usage).
+
+## Contract failures
+
+Stop before actuation and record only non-secret diagnostics:
+
+```python
+print(dropbear.__version__)
+print(policy.model, policy.region, policy.transport_mode)
+print(len(result.actions), len(result.actions[0]))
+print(result.timing.obs_to_action_ms)
+```
+
+Include the model ID, SDK version, action shape, region, transport, and exact
+error when requesting help. Never include the API key, credential file, or raw
+private camera frames.
+
+Still blocked? Email [{{supportEmail}}](mailto:{{supportEmail}}).

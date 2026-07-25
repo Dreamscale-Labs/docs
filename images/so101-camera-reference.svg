@@ -1,0 +1,64 @@
+<svg viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title description">
+  <title id="title">Dropbear SO-101 side camera setup reference</title>
+  <desc id="description">Top and side views show the side camera 60 to 80 centimeters from the table and slightly above prop height. A framing guide shows the full arm and workspace.</desc>
+  <rect width="960" height="540" fill="#FAF7F2"/>
+  <text x="32" y="44" font-family="sans-serif" font-size="24" font-weight="700" fill="#1F2933">Camera setup — third-person side view</text>
+  <text x="32" y="68" font-family="sans-serif" font-size="14" fill="#52606D">Match this layout, then check your live preview against the framing guide on the right.</text>
+
+  <text x="32" y="108" font-family="sans-serif" font-size="15" font-weight="700" fill="#1F2933">Top view</text>
+  <rect x="32" y="120" width="420" height="270" rx="8" fill="#FFFFFF" stroke="#CBD2D9"/>
+  <rect x="72" y="150" width="340" height="150" rx="4" fill="#F1EDE6" stroke="#9AA5B1"/>
+  <text x="242" y="316" font-family="sans-serif" font-size="12" fill="#52606D" text-anchor="middle">table</text>
+  <rect x="340" y="195" width="44" height="60" rx="4" fill="#3E4C59"/>
+  <text x="362" y="186" font-family="sans-serif" font-size="12" font-weight="700" fill="#1F2933" text-anchor="middle">SO-101 base</text>
+  <rect x="120" y="185" width="170" height="80" rx="4" fill="none" stroke="#7B8794" stroke-dasharray="6 4"/>
+  <text x="205" y="230" font-family="sans-serif" font-size="12" fill="#52606D" text-anchor="middle">Workspace (props)</text>
+  <line x1="340" y1="225" x2="296" y2="225" stroke="#7B8794" stroke-width="2"/>
+  <text x="318" y="216" font-family="sans-serif" font-size="11" fill="#52606D" text-anchor="middle">~25 cm</text>
+  <g>
+    <rect x="190" y="430" width="48" height="26" rx="6" fill="#3E4C59"/>
+    <circle cx="214" cy="443" r="7" fill="#FAF7F2"/>
+    <circle cx="214" cy="443" r="3.5" fill="#1F2933"/>
+    <text x="214" y="478" font-family="sans-serif" font-size="13" font-weight="700" fill="#1F2933" text-anchor="middle">Webcam</text>
+  </g>
+  <line x1="214" y1="430" x2="214" y2="300" stroke="#7B8794" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="226" y="372" font-family="sans-serif" font-size="12" fill="#52606D">60–80 cm</text>
+  <text x="226" y="390" font-family="sans-serif" font-size="12" fill="#52606D">side-on (90° to arm)</text>
+
+  <text x="492" y="108" font-family="sans-serif" font-size="15" font-weight="700" fill="#1F2933">Side view</text>
+  <rect x="492" y="120" width="200" height="270" rx="8" fill="#FFFFFF" stroke="#CBD2D9"/>
+  <line x1="512" y1="330" x2="672" y2="330" stroke="#9AA5B1" stroke-width="3"/>
+  <rect x="618" y="296" width="22" height="34" fill="#3E4C59"/>
+  <line x1="629" y1="296" x2="600" y2="250" stroke="#3E4C59" stroke-width="7" stroke-linecap="round"/>
+  <line x1="600" y1="250" x2="566" y2="276" stroke="#3E4C59" stroke-width="6" stroke-linecap="round"/>
+  <rect x="540" y="318" width="12" height="12" fill="#7B8794"/>
+  <rect x="500" y="266" width="26" height="16" rx="4" fill="#3E4C59"/>
+  <line x1="526" y1="274" x2="556" y2="296" stroke="#7B8794" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <line x1="513" y1="282" x2="513" y2="330" stroke="#7B8794" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="521" y="312" font-family="sans-serif" font-size="11" fill="#52606D">20–30 cm</text>
+  <text x="592" y="368" font-family="sans-serif" font-size="11" fill="#52606D" text-anchor="middle">lens just above prop height, slight downward tilt</text>
+
+  <text x="732" y="108" font-family="sans-serif" font-size="15" font-weight="700" fill="#1F2933">Your frame should look like this</text>
+  <rect x="732" y="120" width="196" height="146" rx="8" fill="#FFFFFF" stroke="#CBD2D9"/>
+  <rect x="740" y="128" width="180" height="130" fill="#F1EDE6"/>
+  <line x1="800" y1="128" x2="800" y2="258" stroke="#CBD2D9" stroke-width="1"/>
+  <line x1="860" y1="128" x2="860" y2="258" stroke="#CBD2D9" stroke-width="1"/>
+  <rect x="872" y="206" width="16" height="32" fill="#3E4C59"/>
+  <line x1="880" y1="206" x2="852" y2="172" stroke="#3E4C59" stroke-width="5" stroke-linecap="round"/>
+  <line x1="852" y1="172" x2="824" y2="192" stroke="#3E4C59" stroke-width="4" stroke-linecap="round"/>
+  <rect x="806" y="226" width="10" height="10" fill="#7B8794"/>
+  <rect x="826" y="228" width="10" height="8" fill="#9AA5B1"/>
+  <line x1="740" y1="238" x2="920" y2="238" stroke="#9AA5B1" stroke-width="2"/>
+  <text x="830" y="282" font-family="sans-serif" font-size="11" fill="#52606D" text-anchor="middle">whole arm + whole workspace visible,</text>
+  <text x="830" y="297" font-family="sans-serif" font-size="11" fill="#52606D" text-anchor="middle">nothing important on the frame edge</text>
+
+  <text x="732" y="336" font-family="sans-serif" font-size="14" font-weight="700" fill="#1F2933">Checklist</text>
+  <text x="732" y="358" font-family="sans-serif" font-size="12" fill="#3E4C59">• even, diffuse light — no backlight</text>
+  <text x="732" y="377" font-family="sans-serif" font-size="12" fill="#3E4C59">• plain background, no clutter</text>
+  <text x="732" y="396" font-family="sans-serif" font-size="12" fill="#3E4C59">• camera on a stable mount</text>
+  <text x="732" y="415" font-family="sans-serif" font-size="12" fill="#3E4C59">• 1080p, 16:9, landscape</text>
+  <text x="732" y="441" font-family="sans-serif" font-size="13" font-weight="700" fill="#B7410E">• Lock white balance + exposure</text>
+  <text x="744" y="459" font-family="sans-serif" font-size="11" fill="#B7410E">auto-WB drift mid-task confuses the model</text>
+
+  <text x="32" y="512" font-family="sans-serif" font-size="11" fill="#7B8794">Ships with the Dropbear SDK. Full recipe: docs.dropbear.dreamscalelabs.com/guides/so101</text>
+</svg>

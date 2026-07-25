@@ -1,0 +1,195 @@
+---
+title: "SO-101"
+description: "Configure, calibrate, diagnose, dry-run, and safely confirm motion on an SO-101."
+keywords: ["SO-101 setup", "SO-101 calibration", "dropbear doctor so101", "pick place"]
+---
+
+This is Dropbear's turnkey hardware path. It configures one SO-101 follower arm,
+a side camera, and a distinct wrist camera before running a dry prediction loop.
+Motor commands remain disabled until the dry run finishes and the operator
+explicitly confirms motion.
+
+<Warning>
+  Keep the robot inside a clear workspace with a reachable physical power stop.
+  Stay close enough to stop it, but keep people, cables, and loose objects
+  outside its swept volume. A keyboard stop supplements the physical stop; it
+  does not replace it.
+</Warning>
+
+## Requirements
+
+- Python 3.12 or 3.13;
+- an SO-101 follower arm supported by LeRobot 0.5.1;
+- one side RGB camera and one distinct wrist RGB camera;
+- a terminal attached to a TTY for the keyboard e-stop;
+- a Dropbear account with available credits.
+
+## 1. Install and authenticate
+
+```bash
+uv tool install "dropbear[so101]=={{sdkVersion}}"
+dropbear login
+dropbear doctor
+```
+
+`dropbear login` initializes motion as disabled on a new machine.
+
+## 2. Prepare the workspace
+
+Before connecting:
+
+1. Secure the arm base and both cameras.
+2. Route the wrist-camera cable so no joint can pull or trap it.
+3. Remove tools and unused props from the swept volume.
+4. Test the robot's physical power stop.
+5. Place the terminal where `Space`, `q`, or `Ctrl-C` is immediately reachable.
+
+### Side camera
+
+Mount the side camera 60–80 cm from the table, approximately side-on to the
+arm, with the whole workspace and arm visible. Keep exposure, white balance,
+and the mount stable during a run.
+
+<Frame caption="SO-101 side-camera placement reference">
+  <img
+    src="/images/so101-camera-reference.svg"
+    alt="Top, side, and camera-frame diagrams for placing the SO-101 side camera"
+  />
+</Frame>
+
+### Wrist camera
+
+Use a second physical camera mounted on the arm. Keep the gripper and immediate
+workspace visible, secure the cable through the full joint range, and verify
+that it is not the same device index as the side camera.
+
+## 3. Detect the arm and cameras
+
+```bash
+dropbear robots so101 setup
+```
+
+The setup flow:
+
+1. verifies your API key;
+2. detects or confirms the serial port;
+3. previews and saves the side camera;
+4. previews and saves a distinct wrist camera;
+5. starts warming the SO-101 policy worker while you finish setup.
+
+Configuration is written to `~/.dropbear/config.toml`. If setup starts a cloud
+session and you stop here, close it with:
+
+```bash
+dropbear sessions list
+dropbear sessions stop <session-id>
+```
+
+## 4. Calibrate
+
+Clear the table, then run the guided LeRobot calibration:
+
+```bash
+dropbear robots so101 calibrate
+```
+
+Follow the prompts to place the arm near the middle of its range and sweep each
+joint. Dropbear writes the LeRobot 3.0 calibration format to
+`~/.dropbear/calibration/so101.json`.
+
+Do not continue if the calibration exits early or the saved joint ranges look
+wrong. Re-run calibration with the workspace clear.
+
+## 5. Pass hardware diagnostics
+
+```bash
+dropbear doctor so101
+```
+
+The command checks:
+
+- Python and LeRobot versions;
+- the configured serial port;
+- calibration presence and format;
+- distinct side and wrist camera capture;
+- side-camera framing against the reference;
+- the current network path when a warmed session is available.
+
+Expected result:
+
+```text
+All hardware checks passed. Next: dropbear run pick-place
+```
+
+Fix every failure and re-run the command. A skipped network preflight is
+acceptable when no warm session exists; connection performs the check again.
+
+## 6. Run without motion
+
+Stage a red block and target square, keep the workspace clear, and run:
+
+```bash
+dropbear run pick-place --duration 60
+```
+
+On a newly configured machine, the terminal must show:
+
+```text
+motion: dry-run
+DRY RUN (no motion until you enable it)
+```
+
+The arm is observed but not commanded. Inspect the `would move` lines for:
+
+- six finite values in the documented joint order;
+- plausible targets near the current pose;
+- stable camera framing;
+- no unexpected discontinuities.
+
+Press `Space`, `q`, or `Ctrl-C` to test the software e-stop during the dry run.
+Do not approve motion if the stop path, cameras, calibration, or targets are
+wrong.
+
+## 7. Confirm one live run
+
+After a successful dry run, the same command asks:
+
+```text
+Dry run complete. Enable real motion? [y/N]
+```
+
+Before entering `y`, confirm again that:
+
+- the physical stop works and is reachable;
+- one operator is watching the entire workspace;
+- no person or object is inside the swept volume;
+- calibration and diagnostics passed in this setup;
+- the dry-run targets were plausible.
+
+Enter `y` only when all checks pass. Dropbear then persists motion enablement
+and continues on the same warmed session. The turnkey loop clamps each
+per-tick joint change, checks the keyboard e-stop every tick, and freezes stale
+actions after a disconnect.
+
+<Warning>
+  Persisted motion means later `dropbear run pick-place` invocations can start
+  live after diagnostics. To return to a safe default, set
+  `enabled = false` under `[motion]` in `~/.dropbear/config.toml` before the
+  next run.
+</Warning>
+
+## Stop and recover
+
+- Press `Space`, `q`, or `Ctrl-C` for the software e-stop.
+- Use the physical power stop for unexpected motion or any loss of confidence.
+- After a disconnect or timeout, leave the arm stopped, inspect
+  `dropbear sessions list`, and run `dropbear doctor so101` before retrying.
+- If UDP is unavailable, the default command may use the hosted relay and will
+  report reduced responsiveness. Use `--no-fallback` when the run must refuse
+  that path.
+- If a session remains open, terminate it with
+  `dropbear sessions stop <session-id>`.
+
+For controller-owned integrations, return to the
+[Python SDK](/sdk/overview). For help with a failed safety check, email
+[{{supportEmail}}](mailto:{{supportEmail}}).

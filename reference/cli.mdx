@@ -1,0 +1,128 @@
+---
+title: "CLI reference"
+description: "Use the supported Dropbear command tree for authentication, diagnostics, sessions, simulation, and SO-101 setup."
+keywords: ["dropbear CLI", "dropbear doctor", "dropbear sessions", "dropbear status"]
+---
+
+The CLI supports account setup, diagnostics, live capacity checks, session
+cleanup, a curated simulator, and the turnkey SO-101 path.
+
+```text
+dropbear
+├── login
+├── doctor [core|so101|sim|all]
+├── sim
+├── status
+├── sessions
+│   ├── list
+│   └── stop
+├── robots
+│   └── so101
+│       ├── setup
+│       └── calibrate
+└── run
+    └── pick-place
+```
+
+Use `dropbear <command> --help` as the exact installed-version reference.
+
+## Account and health
+
+```bash
+# Browser approval
+dropbear login
+
+# Hidden API-key prompt for a headless machine
+dropbear login --api-key
+
+# Robot-neutral checks
+dropbear doctor
+
+# Embodiment-specific checks
+dropbear doctor so101
+dropbear doctor sim
+dropbear doctor all
+```
+
+Credentials are written to `~/.dropbear/config.toml`. Never print or commit
+that file.
+
+## Capacity
+
+```bash
+dropbear status
+dropbear status --model molmoact2-so101
+dropbear status --model molmoact2-droid --region us-west-2
+```
+
+`status` checks live model-region capacity without opening a cloud session.
+Current model access and account-specific availability also appear in the
+[dashboard](https://dropbear.dreamscalelabs.com/dashboard/models).
+
+## Sessions
+
+```bash
+dropbear sessions list
+dropbear sessions list --json
+dropbear sessions stop <session-id>
+dropbear sessions stop --all
+```
+
+Use `--all` only when you intend to terminate every open session on the
+account. Closing sessions stops continued usage from abandoned leases.
+
+## Browser-independent simulation
+
+The `sim` command runs Dropbear's curated local LIBERO path, not a generic
+adapter for your own simulator:
+
+```bash
+dropbear sim \
+  --task-suite libero_spatial \
+  --task-id 0 \
+  --max-steps 600 \
+  --transport auto \
+  --region nearest
+```
+
+Useful options:
+
+- `--task-suite` and `--task-id` select a LIBERO task.
+- `--task-seed` sets the initial-state seed.
+- `--max-steps` or `--max-duration` sets one episode budget.
+- `--non-interactive` disables the viewer and prints a JSON summary.
+- `--transport auto|quic|relay` selects the network path.
+- `--region nearest|available|<AWS region>` selects placement.
+- `--verbose` exposes raw session and endpoint diagnostics.
+- `--output-root <path>` writes a run artifact bundle.
+
+The `sim` extra is Linux/WSL2 only. Run `dropbear doctor sim` first.
+
+## SO-101
+
+```bash
+dropbear robots so101 setup
+dropbear robots so101 calibrate
+dropbear doctor so101
+dropbear run pick-place --duration 60
+dropbear run pick-place --no-fallback
+```
+
+- `setup` detects and saves the arm, side camera, and wrist camera.
+- `calibrate` writes `~/.dropbear/calibration/so101.json`.
+- `doctor so101` gates the hardware path.
+- `run pick-place` starts dry on a newly configured machine and asks for
+  explicit confirmation before persisting motion.
+- `--no-fallback` refuses the hosted relay if QUIC/UDP is unavailable.
+
+Read the complete [SO-101 safety sequence](/guides/so101) before running the
+motion command.
+
+## Shell completion
+
+```bash
+dropbear --install-completion
+```
+
+If a documented command is missing, compare `dropbear --help` with
+`{{sdkVersion}}` and follow the [upgrade instructions](/installation#upgrade).

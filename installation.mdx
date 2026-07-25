@@ -1,0 +1,120 @@
+---
+title: "Installation"
+description: "Install the Dropbear SDK and CLI, authenticate, and keep the launch package up to date."
+keywords: ["install Dropbear", "Python compatibility", "Dropbear login", "API key"]
+---
+
+Dropbear `{{sdkVersion}}` supports Python 3.11 through 3.14 for cloud policy
+inference. Install only the extras required by your local robot or simulator
+stack.
+
+## Choose an install
+
+<CodeGroup>
+
+```bash uv (recommended)
+uv add "dropbear=={{sdkVersion}}"
+uv tool install "dropbear=={{sdkVersion}}"
+```
+
+```bash pip
+python -m pip install "dropbear=={{sdkVersion}}"
+```
+
+</CodeGroup>
+
+The base package includes the Python SDK, CLI, transport, and observation
+helpers. Pin the exact version while the SDK is pre-release.
+
+| Install | Use it for | Compatibility |
+| --- | --- | --- |
+| `dropbear` | Existing robot controllers and cloud inference | Python 3.11–3.14 |
+| `dropbear[so101]` | Dropbear's SO-101 setup, calibration, and dry-run path | Python 3.12–3.13 |
+| `dropbear[sim]` | The local `dropbear sim` LIBERO path | Linux or WSL2 |
+
+Install an extra in the project that owns the corresponding hardware or
+simulator:
+
+<CodeGroup>
+
+```bash SO-101
+uv add "dropbear[so101]=={{sdkVersion}}"
+```
+
+```bash Local LIBERO
+uv add "dropbear[sim]=={{sdkVersion}}"
+```
+
+</CodeGroup>
+
+<Note>
+  Your own Franka or simulator integration should use its existing controller
+  dependencies plus the base `dropbear` package. Dropbear does not provide a
+  Franka controller.
+</Note>
+
+## Sign in
+
+Browser login is the default:
+
+```bash
+dropbear login
+```
+
+The CLI opens a one-time approval page. After approval, it verifies the
+credential and writes `~/.dropbear/config.toml` with user-only permissions.
+
+For a headless machine, paste an API key into the hidden prompt:
+
+```bash
+dropbear login --api-key
+```
+
+You can also pass an API key as the option value, but shell history and process
+inspection can expose it. Prefer the hidden prompt or an existing secret
+manager.
+
+<Warning>
+  Do not commit `~/.dropbear/config.toml`, paste keys into source files, or log
+  them in CI. Create and revoke keys in the
+  [dashboard](https://dropbear.dreamscalelabs.com/dashboard/keys).
+</Warning>
+
+## Verify the machine
+
+```bash
+dropbear doctor
+dropbear status
+```
+
+`doctor` checks the robot-neutral installation, authentication, and network
+path. `status` reports live model-region capacity without opening a session.
+
+If either command fails, use the command's printed recovery step and then open
+[Troubleshooting](/troubleshooting).
+
+## Upgrade
+
+Update both the project dependency and standalone CLI so their behavior stays
+aligned:
+
+<CodeGroup>
+
+```bash uv
+uv add --upgrade "dropbear=={{sdkVersion}}"
+uv tool upgrade dropbear
+dropbear --help
+```
+
+```bash pip
+python -m pip install --upgrade "dropbear=={{sdkVersion}}"
+dropbear --help
+```
+
+</CodeGroup>
+
+You are ready when `dropbear --help` lists `login`, `doctor`, `sim`, `status`,
+`run`, `robots`, and `sessions`.
+
+Continue to the [Python quickstart](/quickstart) to request one non-actuating
+prediction.

@@ -1,0 +1,32 @@
+```python robot_adapter.py
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Protocol
+
+from dropbear.policy import ObservationLike
+
+
+class RobotIO(Protocol):
+    """Boundary between Dropbear and your local robot stack."""
+
+    def read_observation(self) -> ObservationLike:
+        """Read cameras and state, then build a model-specific observation."""
+        ...
+
+    def validate_action(self, action: Sequence[float]) -> None:
+        """Reject an action that violates local robot safety constraints."""
+        ...
+
+    def apply_action(self, action: Sequence[float]) -> None:
+        """Convert a validated model action and send it to the controller."""
+        ...
+
+    def hold(self) -> None:
+        """Command a safe local hold after a stop, fault, or disconnect."""
+        ...
+
+
+# Export one adapter instance for the quickstart script.
+robot: RobotIO
+```

@@ -1,53 +1,86 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Dropbear",
+  "description": "Cloud robot policy inference through a small Python SDK and CLI.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#16181A",
+    "light": "#F7F8F7",
+    "dark": "#73777A"
   },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
+  "fonts": {
+    "family": "Geist",
+    "heading": {
+      "family": "Geist",
+      "weight": 600
     }
   },
+  "favicon": "/logo/dropbear-mark.svg",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
+  },
+  "variables": {
+    "sdkVersion": "0.1.0a2",
+    "dashboardUrl": "https://dropbear.dreamscalelabs.com",
+    "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
+    "supportEmail": "team@dreamscalelabs.com"
+  },
+  "navigation": {
+    "pages": [
+      {
+        "group": "Getting started",
+        "pages": [
+          "index",
+          "quickstart",
+          "installation"
+        ]
+      },
+      {
+        "group": "Build with Python",
+        "pages": [
+          "sdk/overview",
+          "sdk/model-contracts"
+        ]
+      },
+      {
+        "group": "Robot guides",
+        "pages": [
+          "guides/so101",
+          "guides/franka"
+        ]
+      },
+      {
+        "group": "Other paths",
+        "pages": [
+          "guides/browser-sim"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/cli"
+        ]
+      },
+      {
+        "group": "Help",
+        "pages": [
+          "troubleshooting"
+        ]
+      }
+    ]
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:team@dreamscalelabs.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "href": "https://dropbear.dreamscalelabs.com/dashboard"
     }
   },
   "contextual": {
@@ -56,17 +89,24 @@
       "view",
       "chatgpt",
       "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      "cursor"
     ]
   },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+  "markdown": {
+    "instructions": [
+      "Treat the Dropbear Python SDK and CLI as the supported public integration surfaces.",
+      "Prefer context-managed sessions and model-specific observation helpers.",
+      "Do not infer or recommend internal control-plane APIs."
+    ]
+  },
+  "redirects": [
+    {
+      "source": "/golden-path",
+      "destination": "/guides/so101"
+    },
+    {
+      "source": "/docs/golden-path",
+      "destination": "/guides/so101"
     }
-  }
+  ]
 }

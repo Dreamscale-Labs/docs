@@ -1,47 +1,112 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Python quickstart"
+description: "Send a real robot observation to Dropbear and inspect one action chunk without actuating."
+keywords: ["Python quickstart", "dropbear.connect", "robot integration", "policy prediction"]
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+import RobotIO from "/snippets/robot-io.mdx";
+import FirstPrediction from "/snippets/first-prediction.mdx";
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+This guide connects your existing robot stack to
+`molmoact2-so101`, requests one action chunk, prints its shape and timing, and
+closes the cloud session. It does **not** send an action to the robot.
 
 ## Prerequisites
 
-Before you begin, you must have:
+You need:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- Python 3.11–3.14;
+- a Dropbear account;
+- an existing robot controller that can read camera frames and state;
+- a robot/model pairing listed as live in
+  [Models](https://dropbear.dreamscalelabs.com/dashboard/models);
+- `uv`, or another Python package manager.
 
-## Get started
+<Warning>
+  A returned action is a model output, not a safe robot command. Do not actuate
+  until you have implemented model-to-controller conversion, bounds, velocity
+  and acceleration limits, collision checks, watchdogs, hold behavior, and a
+  physical e-stop.
+</Warning>
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+## 1. Install and sign in
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+Install the CLI and add the SDK to your project:
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+```bash
+uv tool install "dropbear=={{sdkVersion}}"
+uv add "dropbear=={{sdkVersion}}"
+dropbear login
+dropbear doctor
+```
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+`dropbear login` opens the dashboard in your browser. After approval, Dropbear
+saves a machine credential in `~/.dropbear/config.toml`.
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+<Check>
+  `dropbear doctor` should finish with the core authentication and network
+  checks ready. If it does not, follow the recovery step printed by the command
+  or open [Troubleshooting](/troubleshooting).
+</Check>
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+## 2. Map your robot I/O
+
+Create `robot_adapter.py` in your project and implement this boundary:
+
+<RobotIO />
+
+For `molmoact2-so101`, `read_observation()` must call
+`dropbear.so101.observe(...)` with side and wrist RGB frames plus six joint
+positions in the model's SO-101 coordinate frame. See
+[Model contracts](/sdk/model-contracts#molmoact2-so-101) before converting
+units.
+
+## 3. Request one prediction
+
+Save the following as `first_prediction.py`:
+
+<FirstPrediction />
+
+Run it:
+
+```bash
+uv run python first_prediction.py
+```
+
+A successful run prints:
+
+```text
+session=<session-id>
+actions=30 dimensions=6
+observation_to_action_ms=<measured latency>
+transport=quic
+No action was sent to the robot.
+```
+
+`transport` may be `relay` when UDP is unavailable. That is a supported
+automatic fallback, not a failed prediction.
+
+## 4. Continue safely
+
+You have now verified authentication, worker allocation, observation encoding,
+transport, inference, response decoding, and session cleanup.
+
+- Learn the full lifecycle in [Python SDK](/sdk/overview).
+- Configure a supported arm with [SO-101](/guides/so101).
+- Integrate inference-only DROID actions with [Franka](/guides/franka).
+
+## Use a coding agent
+
+Copy this prompt into your coding agent from the root of your robot project:
+
+```text
+Implement robot_adapter.py for my existing robot SDK using the RobotIO protocol
+from the Dropbear quickstart. Use dropbear.so101.observe for the observation.
+Preserve the documented SO-101 camera order, joint order, and model units.
+Keep prediction non-actuating: do not call apply_action. Add explicit validation,
+hold, watchdog, and e-stop integration points, and never log my Dropbear API key.
+Show me the adapter and focused tests before adding any motion path.
+```
+
+Need help mapping your controller? Email
+[{{supportEmail}}](mailto:{{supportEmail}}).

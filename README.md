@@ -1,55 +1,56 @@
-# Mintlify Starter Kit
+# Dropbear documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+User-facing documentation for [Dropbear](https://dropbear.dreamscalelabs.com),
+hosted by Mintlify at
+[docs.dropbear.dreamscalelabs.com](https://docs.dropbear.dreamscalelabs.com).
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+The documentation is organized around user jobs:
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+- request a policy prediction from Python;
+- integrate Dropbear with an existing robot controller;
+- set up and run an SO-101 safely;
+- request MolmoAct2-DROID actions for a Franka;
+- run the browser simulation;
+- diagnose SDK, CLI, network, session, and hardware failures.
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+The supported public integration surfaces are the Python SDK and CLI. This
+repository does not document internal control-plane, worker, infrastructure, or
+admin APIs.
 
-## AI-assisted writing
+## Local development
 
-Set up your AI coding tool to work with Mintlify:
+Install the Mintlify CLI:
 
 ```bash
-npx skills add https://mintlify.com/docs
+npm install --global mint@4.2.742
 ```
 
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+Start a local preview from this directory:
 
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
-npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
+```bash
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+The preview is available at `http://localhost:3000`.
 
-## Publishing changes
+## Validation
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+Run the same checks used by CI:
 
-## Need help?
+```bash
+mint validate
+mint broken-links --check-anchors --check-redirects --check-snippets
+mint a11y
+python3 scripts/check_content.py
+python3 scripts/check_sdk_contract.py
+```
 
-### Troubleshooting
+`check_sdk_contract.py` expects the Dropbear version configured in
+`docs.json` to be installed in the active Python environment.
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+## Publishing
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+Mintlify deploys the default branch of `Dreamscale-Labs/docs`. Review the
+preview deployment before merging. After the docs commit is merged, update the
+`mvp/user-docs` submodule pointer in the parent MVP repository as a separate
+change.

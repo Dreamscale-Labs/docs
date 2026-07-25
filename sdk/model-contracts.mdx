@@ -1,0 +1,153 @@
+---
+title: "Model contracts"
+description: "Match camera, state, action ordering, units, chunk size, and rate for the live Dropbear models."
+keywords: ["SO-101 observation", "LIBERO action space", "DROID Franka", "model contract"]
+---
+
+A Dropbear observation is expressed in the selected model's coordinates, not
+necessarily your controller's coordinates. Convert at the `RobotIO` boundary
+and validate the returned model action before converting it back.
+
+<Warning>
+  Matching a vector length is not enough. Joint order, units, camera order,
+  gripper convention, and absolute-versus-delta semantics must all match.
+</Warning>
+
+The production catalog currently exposes the three contracts below. Check
+[Models](https://dropbear.dreamscalelabs.com/dashboard/models) before opening a
+session because
+availability is region- and account-dependent.
+
+| Model | Observation helper | Output | Nominal rate |
+| --- | --- | --- | --- |
+| `molmoact2-so101` | `dropbear.so101.observe` | 30 × 6 absolute joint positions | 30 Hz |
+| `molmoact2-libero` | `dropbear.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz |
+| `molmoact2-droid` | `dropbear.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz |
+
+## MolmoAct2 SO-101
+
+### Observation
+
+```python
+observation = dropbear.so101.observe(
+    side_frame=side_rgb,
+    wrist_frame=wrist_rgb,
+    joint_positions=[
+        shoulder_pan_deg,
+        shoulder_lift_deg,
+        elbow_flex_deg,
+        wrist_flex_deg,
+        wrist_roll_deg,
+        gripper_position,
+    ],
+)
+```
+
+- `side_frame`: H×W×3 RGB image.
+- `wrist_frame`: H×W×3 RGB image from a distinct arm-mounted camera.
+- `joint_positions`: six finite values in LeRobot SO-101 order and degrees.
+- `gripper_position`: LeRobot's 0–100 position convention.
+- `actions_remaining`: optional nonnegative buffer depth; the policy loop sets
+  this when needed.
+
+### Action
+
+Each returned action has this order:
+
+```text
+[shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll, gripper]
+```
+
+The values are absolute targets in the same degrees and gripper convention as
+the observation. A normal chunk contains 30 actions for a 30 Hz controller.
+
+On an underrun, the managed loop uses the current observation position as its
+hold target. Your robot controller must still enforce per-tick changes, motor
+limits, watchdogs, and the physical stop path.
+
+## MolmoAct2 LIBERO
+
+### Observation
+
+```python
+observation = dropbear.libero.observe(
+    agent_frame=agent_rgb,
+    wrist_frame=wrist_rgb,
+    state=[
+        eef_x,
+        eef_y,
+        eef_z,
+        axis_angle_x,
+        axis_angle_y,
+        axis_angle_z,
+        gripper_qpos_0,
+        gripper_qpos_1,
+    ],
+)
+```
+
+The eight state values are end-effector position, end-effector rotation as an
+axis-angle vector converted from the environment's XYZW quaternion, then the
+two simulator gripper joint positions.
+
+### Action
+
+A normal chunk contains ten 7D robosuite/LIBERO delta actions at 10 Hz:
+
+```text
+[delta_x, delta_y, delta_z, delta_axis_x, delta_axis_y, delta_axis_z, gripper]
+```
+
+Use the action directly only with the matching LIBERO/robosuite environment
+configuration. A physical robot controller has a different contract.
+
+## MolmoAct2 DROID
+
+### Observation
+
+```python
+observation = dropbear.franka.observe(
+    exterior_frame=exterior_rgb,
+    wrist_frame=wrist_rgb,
+    joint_positions=joint_radians,
+    gripper=gripper_position,
+    second_exterior_frame=second_exterior_rgb,
+)
+```
+
+- `exterior_frame`: required H×W×3 `uint8` RGB view.
+- `wrist_frame`: required H×W×3 `uint8` RGB view.
+- `second_exterior_frame`: optional second exterior RGB view. When omitted,
+  Dropbear maps the first exterior view to both exterior inputs.
+- `joint_positions`: seven finite Franka joint positions in radians.
+- `gripper`: one finite value from 0 (open) to 1 (closed).
+
+### Action
+
+Each returned action has this order:
+
+```text
+[joint_0, joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, gripper]
+```
+
+The values are absolute joint targets in radians followed by the unit-interval
+gripper target. A normal chunk contains 15 actions for a 15 Hz controller.
+
+<Warning>
+  Dropbear provides DROID inference, not a Franka safety controller. Stop at
+  `predict()` until your local stack validates joint, velocity, acceleration,
+  workspace, collision, gripper, watchdog, and e-stop behavior.
+</Warning>
+
+## Validate at the boundary
+
+For every model:
+
+1. Record the raw controller state and the converted model state.
+2. Assert camera color order, dtype, shape, and source identity.
+3. Assert vector length, order, units, and finite values.
+4. Inspect one non-actuating prediction.
+5. Reject every output outside local limits before any coordinate conversion.
+6. Test hold and e-stop behavior without cloud connectivity.
+
+Continue to the [SO-101](/guides/so101) or [Franka](/guides/franka) recipe.

@@ -1,0 +1,21 @@
+```python first_prediction.py
+import dropbear
+
+from robot_adapter import robot
+
+
+observation = robot.read_observation()
+
+with dropbear.connect(model="molmoact2-so101") as policy:
+    result = policy.predict(
+        observation,
+        instruction="pick up the red cube",
+    )
+    session_id = policy.session_id
+
+print(f"session={session_id}")
+print(f"actions={len(result.actions)} dimensions={len(result.actions[0])}")
+print(f"observation_to_action_ms={result.timing.obs_to_action_ms:.1f}")
+print(f"transport={result.transport_mode}")
+print("No action was sent to the robot.")
+```

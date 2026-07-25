@@ -1,0 +1,50 @@
+name: Validate documentation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation tools
+        shell: bash
+        run: |
+          npm install --global mint@4.2.742
+          SDK_VERSION="$(python -c 'import json; print(json.load(open("docs.json"))["variables"]["sdkVersion"])')"
+          python -m pip install "dropbear==${SDK_VERSION}"
+
+      - name: Validate Mintlify project
+        run: mint validate
+
+      - name: Check links, anchors, redirects, and snippets
+        run: mint broken-links --check-anchors --check-redirects --check-snippets
+
+      - name: Check accessibility
+        run: mint a11y
+
+      - name: Enforce public content boundaries
+        run: python scripts/check_content.py
+
+      - name: Verify SDK and CLI contract
+        run: python scripts/check_sdk_contract.py
