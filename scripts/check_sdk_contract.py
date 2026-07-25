@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -34,10 +35,20 @@ def require_signature(
 
 
 def cli_help(*arguments: str) -> str:
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "COLUMNS": "200",
+            "FORCE_COLOR": "0",
+            "NO_COLOR": "1",
+            "TERM": "dumb",
+        }
+    )
     completed = subprocess.run(
         [sys.executable, "-m", "dropbear.cli", *arguments, "--help"],
         check=True,
         capture_output=True,
+        env=environment,
         text=True,
     )
     return completed.stdout
