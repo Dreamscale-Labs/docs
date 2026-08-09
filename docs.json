@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a2",
+    "sdkVersion": "0.1.0a4",
     "dashboardUrl": "https://dropbear.dreamscalelabs.com",
     "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
