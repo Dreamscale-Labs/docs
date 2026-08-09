@@ -14,7 +14,6 @@ import dropbear
 from dropbear import franka, libero, so101
 from dropbear.policy import RemotePolicy
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / "docs.json").read_text())
 SDK_VERSION = CONFIG["variables"]["sdkVersion"]
