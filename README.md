@@ -10,7 +10,6 @@ The documentation is organized around user jobs:
 - integrate Dropbear with an existing robot controller;
 - set up and run an SO-101 safely;
 - request MolmoAct2-DROID actions for a Franka;
-- run the browser simulation;
 - diagnose SDK, CLI, network, session, and hardware failures.
 
 The supported public integration surfaces are the Python SDK and CLI. This

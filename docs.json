@@ -51,12 +51,6 @@
         ]
       },
       {
-        "group": "Other paths",
-        "pages": [
-          "guides/browser-sim"
-        ]
-      },
-      {
         "group": "Reference",
         "pages": [
           "reference/cli"
@@ -107,6 +101,10 @@
     {
       "source": "/docs/golden-path",
       "destination": "/guides/so101"
+    },
+    {
+      "source": "/guides/browser-sim",
+      "destination": "/quickstart"
     }
   ]
 }
