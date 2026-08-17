@@ -98,6 +98,7 @@ epochs, scorer, logging — is unchanged.
 | --- | --- | --- |
 | `model` | required | Dropbear model id, for example `dreamzero-yam` |
 | `sampling` | `async_latest` | Action sampling mode, see below |
+| `control_hz` | model's native rate | Rate the action chunk is executed at, 5–30 Hz |
 | `startup_timeout_s` | `1800` | Budget for the first connection while the model loads and warms up |
 | `timeout_s` | `60` | Per-step action deadline |
 
@@ -110,6 +111,41 @@ each replan and is not intended for hardware.
 The first connection is slow on purpose. A cold model loads weights and warms up
 before it serves, which is why `startup_timeout_s` defaults to 30 minutes. Later
 trials in the same run reuse the open connection.
+
+### Control rate, and who owns the clock
+
+DreamZero-YAM emits 24 actions per chunk at a native 30 Hz. `control_hz` sets the
+rate you execute them at — any whole rate from 5 to 30:
+
+```bash
+--policy dropbear -P model=dreamzero-yam -P control_hz=15
+```
+
+The whole chunk is executed at the rate you choose, so it stretches in time
+rather than being resampled: 0.8 s at 30 Hz, 1.6 s at 15 Hz. Nothing is dropped
+or interpolated, so the trajectory the robot executes is the one the model
+emitted, just played slower. Nothing server-side takes a rate; this is entirely
+a client-side decision.
+
+<Warning>
+  **`control_hz` does not make anything run at that rate.** Inspect's rollout
+  imposes no wall-clock pacing, so the real rate is however fast your
+  embodiment's `step()` returns — hardware paces itself on its actuators, and
+  anything simulated or stubbed must pace itself deliberately. **Your embodiment
+  is the clock.**
+
+  What `control_hz` changes is what everything else *believes*: the action
+  scheduler sizes its replan threshold from it (a 400 ms round trip is 12 steps
+  of a 24-step chunk at 30 Hz, but 6 at 15 Hz), the compatibility check
+  reconciles it against your embodiment's declared rate, and it is stamped on
+  every action in the EvalLog. Declare the rate you actually achieve — a wrong
+  one degrades replanning while the run still looks healthy.
+
+  A rate disagreement between policy and embodiment is only a *warning*, never
+  an error, so it will not stop a run. The adapter measures the real gap between
+  policy steps, records it as `step_interval_ms` in the sidecar, and warns once
+  if the measured rate is more than 25% from the commanded one.
+</Warning>
 
 ## 4. Run the evaluation
 
@@ -258,7 +294,9 @@ model action or held its previous position.
 
 A high but non-zero hold fraction means the action buffer drained, usually
 because the round trip exceeded the chunk horizon. Lowering the command rate
-lengthens the horizon and can absorb it.
+lengthens the horizon and can absorb it — `-P control_hz=15` doubles it to
+1.6 s — but only if your embodiment actually slows to match. Changing the
+parameter alone just makes the scheduler wrong.
 
 ## Where the boundaries are
 
