@@ -13,16 +13,74 @@ and validate the returned model action before converting it back.
   gripper convention, and absolute-versus-delta semantics must all match.
 </Warning>
 
-The production catalog currently exposes the three contracts below. Check
+The production catalog exposes the contracts below. Check
 [Models](https://dropbear.dreamscalelabs.com/dashboard/models) before opening a
-session because
-availability is region- and account-dependent.
+session because availability is region- and account-dependent, and some models
+require an entitlement on your organization.
 
-| Model | Observation helper | Output | Nominal rate |
-| --- | --- | --- | --- |
-| `molmoact2-so101` | `dropbear.so101.observe` | 30 × 6 absolute joint positions | 30 Hz |
-| `molmoact2-libero` | `dropbear.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz |
-| `molmoact2-droid` | `dropbear.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz |
+| Model | Observation helper | Output | Nominal rate | Access |
+| --- | --- | --- | --- | --- |
+| `molmoact2-so101` | `dropbear.so101.observe` | 30 × 6 absolute joint positions | 30 Hz | Open |
+| `molmoact2-libero` | `dropbear.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz | Open |
+| `molmoact2-droid` | `dropbear.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz | Open |
+| `dreamzero-yam` | bimanual observation, see below | 24 × 14 absolute joint/gripper targets | 30 Hz | Entitlement required |
+
+<Note>
+  `molmoact2-droid` is listed in the catalog but has no serving capacity in the
+  current region set. `dropbear status --model molmoact2-droid` reports what is
+  actually available before you write against it.
+</Note>
+
+## DreamZero-YAM
+
+DreamZero-YAM drives a bimanual I2RT YAM. It is entitlement-gated: your
+organization must be granted access before a session will open.
+
+<Warning>
+  This is a research robot-control model. Validate the task, workspace, joint
+  and velocity limits, emergency stop, and human supervision before any
+  hardware use.
+</Warning>
+
+### Observation
+
+Three RGB cameras and the packed bimanual joint state, each frame carrying a
+real monotonic capture time:
+
+```python
+observation = dropbear.dreamzero_yam.observe(
+    top_frame=top_rgb,
+    left_frame=left_rgb,
+    right_frame=right_rgb,
+    camera_capture_times_ns=(top_ns, left_ns, right_ns),
+    left_joint_positions=left_six_joint_radians,
+    left_gripper=left_gripper_position,
+    right_joint_positions=right_six_joint_radians,
+    right_gripper=right_gripper_position,
+)
+```
+
+### Action
+
+| Property | Value |
+| --- | --- |
+| Shape | 24 × 14 |
+| Space | `raw_absolute_joint` |
+| Ordering | left six joints, left gripper, right six joints, right gripper |
+| Gripper indices | 6 and 13 |
+| Native rate | 30 Hz |
+| Horizon | 0.8 s per chunk |
+| Hold behaviour | holds current position when the buffer underruns |
+
+Grippers are continuous absolute joint positions, not binary open/close
+commands. Do not threshold them.
+
+### Command rate
+
+The model is native at 30 Hz. You may request 5–30 Hz at connect, and Dropbear
+stretches the action horizon to match rather than dropping actions, so a 24-step
+chunk covers 0.8 s at 30 Hz and 2.4 s at 10 Hz. Lower rates trade responsiveness
+for a longer buffer.
 
 ## MolmoAct2 SO-101
 

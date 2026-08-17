@@ -171,6 +171,39 @@ with dropbear.connect(
 - `transport="quic"` requires the UDP path.
 - `transport="relay"` uses the relay directly.
 
+## Command rate
+
+Models declare a native action rate. `control_hz` requests a different rate for
+your control loop:
+
+```python
+with dropbear.connect(
+    model="dreamzero-yam",
+    control_hz=15,
+) as policy:
+    ...
+```
+
+Dropbear stretches the action horizon to match rather than discarding actions,
+so a chunk covers proportionally more wall-clock time at a lower rate. For a
+24-step chunk that is 0.8 s at 30 Hz and 1.6 s at 15 Hz.
+
+Lower rates buy buffer against a slow round trip, at the cost of responsiveness.
+Leave it unset to run at the model's native rate. See
+[Model contracts](/sdk/model-contracts) for each model's native rate and
+supported range.
+
+## Keeping a session warm
+
+A cold model loads weights and warms up before it serves, which dominates the
+first connection. Two settings control that window:
+
+- `startup_timeout` bounds how long `connect()` waits for a cold model. Raise it
+  for large models on a slow first call.
+- `keep_warm` asks Dropbear to hold the session ready between calls instead of
+  releasing it. A warm session bills while it is held, so use it for an
+  interactive session or a batch of evaluations, not for an idle process.
+
 ## Progress, hooks, and timeouts
 
 `connect()` prints lifecycle progress by default. Supply a callback to route

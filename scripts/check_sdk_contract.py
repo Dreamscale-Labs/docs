@@ -73,7 +73,10 @@ def main() -> int:
         "calibration",
         "region",
         "idle_timeout",
+        "keep_warm",
+        "startup_timeout",
         "transport",
+        "control_hz",
         "on_progress",
     )
     require_signature("dropbear.connect", dropbear.connect, connect_parameters)

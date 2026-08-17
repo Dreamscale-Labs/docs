@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a4",
+    "sdkVersion": "0.1.0a9",
     "dashboardUrl": "https://dropbear.dreamscalelabs.com",
     "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
@@ -47,7 +47,8 @@
         "group": "Robot guides",
         "pages": [
           "guides/so101",
-          "guides/franka"
+          "guides/franka",
+          "guides/inspect-robots"
         ]
       },
       {
