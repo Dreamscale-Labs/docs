@@ -120,6 +120,13 @@ an error or cancellation:
 
 ```python
 from inspect_robots import eval as run_evaluation
+from inspect_robots.registry import resolve
+
+# `resolve` returns a constructed object, not a factory. Policy parameters are
+# the same ones you would pass with `-P`, given here as keyword arguments.
+policy = resolve("policy", "dropbear", model="dreamzero-yam")
+task = resolve("task", "your-task")
+embodiment = resolve("embodiment", "your-embodiment")
 
 try:
     logs = run_evaluation(task=task, policy=policy, embodiment=embodiment)
@@ -140,7 +147,8 @@ cannot help if the machine loses power.
 <Note>
   If you construct the policy object yourself rather than naming it in the
   registry, you own its lifecycle. Inspect closes what it resolved from a
-  registry name; it does not close objects you passed in.
+  registry name; it does not close objects you passed in. The example above
+  resolves the policy itself, so the explicit `close()` is required.
 </Note>
 
 ## 6. Diagnostics
@@ -161,9 +169,33 @@ Sidecars never contain action vectors, images, credentials, or endpoints, so
 they are safe to attach to a bug report.
 
 The two numbers worth reading first are the observation-to-action round trip and
-the fraction of steps where the robot held position. A high hold fraction means
-the action buffer drained, usually because the round trip exceeded the chunk
-horizon. Lowering the command rate lengthens the horizon and can absorb it.
+`action_source`, which records for every step whether the robot executed a
+model action or held its previous position.
+
+<Warning>
+  **A green evaluation can contain no model actions at all.** Inspect reports
+  success when trials complete without raising, and `episode_length` counts
+  steps, not inference. A run where every step held position looks identical in
+  the EvalLog to one the model drove throughout.
+
+  Check `action_source` in the sidecar before trusting a result:
+
+  ```python
+  import collections, json, pathlib
+
+  rows = [json.loads(line) for line in pathlib.Path(sidecar).read_text().splitlines() if line]
+  print(collections.Counter(row["action_source"] for row in rows))
+  ```
+
+  Seeing only `hold` means the model never contributed. The usual cause is a
+  control loop that runs faster than one round trip, so no chunk can arrive
+  before the episode ends — most often an embodiment that returns instantly
+  instead of pacing itself at the control rate the way hardware does.
+</Warning>
+
+A high but non-zero hold fraction means the action buffer drained, usually
+because the round trip exceeded the chunk horizon. Lowering the command rate
+lengthens the horizon and can absorb it.
 
 ## Where the boundaries are
 
