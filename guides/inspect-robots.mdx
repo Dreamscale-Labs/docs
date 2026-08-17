@@ -160,10 +160,10 @@ On every policy step, the task and embodiment must supply:
 - Inspect's integer `extra["env_step"]`, starting at zero and advancing once per
   delivered action.
 
-The adapter declares a 14-dimensional raw absolute-joint action at 30 Hz and
-returns exactly one action per `act()` call, while Dropbear owns the action
-buffering behind it. See [Model contracts](/sdk/model-contracts) for the full
-DreamZero-YAM contract, including gripper conventions.
+The adapter declares a 14-dimensional raw absolute-joint action at the commanded
+rate and returns exactly one action per `act()` call, while Dropbear owns the
+action buffering behind it. See [Model contracts](/sdk/model-contracts) for the
+full DreamZero-YAM contract, including gripper conventions.
 
 Capture times must be real. The model reasons over a short history of frames, so
 a fabricated or stale clock silently degrades its output rather than raising.
