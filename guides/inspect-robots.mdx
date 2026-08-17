@@ -17,9 +17,12 @@ Your registered task and embodiment stay exactly as they are.
 
 Runnable reference code for everything below lives in
 [`examples/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples):
-a complete evaluation script and a YAM embodiment skeleton, both adapted from a
-run that completed against production. Copy from there rather than retyping this
-guide.
+a complete evaluation script and a YAM embodiment skeleton, in two variants --
+[`native-30hz/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples/native-30hz)
+and
+[`reduced-15hz/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples/reduced-15hz)
+-- both adapted from runs that completed against production. Copy from there
+rather than retyping this guide.
 
 <Warning>
   This guide covers the software path. It does not authorize an unattended
@@ -61,13 +64,14 @@ The output must contain `dropbear`.
 dropbear login
 ```
 
-A robot controller usually has no browser, so use an API key there instead:
+A robot controller usually has no browser, so pass the key directly there
+instead:
 
 ```bash
-export DROPBEAR_API_KEY="<your key>"
+dropbear login --api-key "<your key>"
 ```
 
-Both paths are verified the same way:
+Both paths write the same credential file, and both are verified the same way:
 
 ```bash
 dropbear status --model dreamzero-yam
@@ -172,9 +176,9 @@ a fabricated or stale clock silently degrades its output rather than raising.
 
 The shape of a full run, with the hardware halves stubbed. The complete versions
 are
-[`run_eval.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/run_eval.py)
+[`run_eval.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/native-30hz/run_eval.py)
 and
-[`yam_embodiment.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/yam_embodiment.py).
+[`yam_embodiment.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/native-30hz/yam_embodiment.py).
 
 ```python
 import collections, json, pathlib, time
@@ -294,9 +298,24 @@ model action or held its previous position.
 
 A high but non-zero hold fraction means the action buffer drained, usually
 because the round trip exceeded the chunk horizon. Lowering the command rate
-lengthens the horizon and can absorb it — `-P control_hz=15` doubles it to
-1.6 s — but only if your embodiment actually slows to match. Changing the
-parameter alone just makes the scheduler wrong.
+lengthens the horizon and can absorb it — but only if your embodiment actually
+slows to match. Changing the parameter alone just makes the scheduler wrong.
+
+Two production runs from Sydney, same code and same input, show the size of the
+effect:
+
+| | 30 Hz | 15 Hz |
+| --- | --- | --- |
+| Chunk horizon | 0.8 s | 1.6 s |
+| Holds | 81 / 120 (67.5%) | 17 / 600 (2.8%) |
+| GPU inference p50 | 333 ms | 321 ms |
+| Observation-to-action p50 | 644 ms | 594 ms |
+
+Latency barely moved — that is distance and GPU, and the rate touches neither.
+What changed is that a chunk now covers 1.6 s of wall clock against a ~600 ms
+round trip, so the buffer stops draining. Note the cost: the arm sees a fresh
+observation half as often, which matters for contact-rich or fast motions. Treat
+a high hold fraction as the reason to drop the rate, not as the default.
 
 ## Where the boundaries are
 
