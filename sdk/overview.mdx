@@ -193,6 +193,18 @@ Leave it unset to run at the model's native rate. See
 [Model contracts](/sdk/model-contracts) for each model's native rate and
 supported range.
 
+Whether `control_hz` paces anything depends on which interface you chose above:
+
+- `run` owns the clock. It sleeps to each action's deadline, so the rate you set
+  is the rate it executes at.
+- `next_action`, and any other caller-owned loop, leaves the clock to you.
+  `control_hz` is then a declaration the action scheduler plans against — it
+  sizes the replan threshold from it — so set it to the rate your loop actually
+  achieves. Nothing corrects a wrong one, and the run will still look healthy.
+
+Nothing server-side takes a rate. The model always emits its chunk at the native
+rate; `control_hz` only decides how fast the client plays it out.
+
 ## Keeping a session warm
 
 A cold model loads weights and warms up before it serves, which dominates the
