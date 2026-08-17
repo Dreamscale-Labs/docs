@@ -23,6 +23,11 @@ FORBIDDEN_TEXT = {
     "mintlify.com/blog": "starter blog link",
     "https://dropbear.dreamscalelabs.com/docs": "stale documentation domain",
 }
+# Our own packages install from PyPI. A git reference is both a pin that goes
+# stale silently and, in any project that declares its own dependencies, an
+# outright failure: hatchling rejects direct references, so the reader's very
+# first command dies with an error that names hatchling rather than us.
+GIT_INSTALL_RE = re.compile(r"git\+\w+://[^\s\"']*dreamscale-labs", re.IGNORECASE)
 STAGED_MODEL_MARKERS = (
     "bimanual-yam",
     "bimanualyam",
@@ -99,6 +104,8 @@ def main() -> int:
         for marker in STAGED_MODEL_MARKERS:
             if marker in lowered:
                 errors.append(f"{relative}: mentions staged model {marker!r}")
+        if GIT_INSTALL_RE.search(text):
+            errors.append(f"{relative}: installs one of our packages from a git URL, not PyPI")
 
         for label, code in _python_blocks(path, text):
             try:
