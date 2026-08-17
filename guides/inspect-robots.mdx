@@ -1,0 +1,177 @@
+---
+title: "Inspect Robots"
+description: "Run a Dropbear-hosted policy on a physical robot from an existing Inspect Robots evaluation, using DreamZero-YAM on a bimanual YAM as the worked example."
+keywords: ["Inspect Robots", "inspect-robots-dropbear", "DreamZero-YAM", "bimanual YAM", "policy adapter"]
+---
+
+[Inspect Robots](https://github.com/robocurve/inspect-robots) is an evaluation
+framework for robot policies: you define a task, an embodiment, and a policy,
+and it runs trials and records an EvalLog. Dropbear plugs in as a **policy**, so
+a Dropbear-hosted model can be evaluated by the same harness, on the same task
+and embodiment, as any policy you already run.
+
+The adapter is
+[`inspect-robots-dropbear`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear)
+(Apache 2.0). It changes one thing in your evaluation: which policy is selected.
+Your registered task and embodiment stay exactly as they are.
+
+<Warning>
+  This guide covers the software path. It does not authorize an unattended
+  physical run. For any physical robot test you own the validated limits, an
+  attended operator gate, a working e-stop, and a rehearsed termination
+  procedure. Serving evidence is not safety evidence.
+</Warning>
+
+## Before you start
+
+You need an Inspect Robots evaluation that already runs on your hardware with
+some other policy — a scripted or teleop baseline is ideal. Bring up the robot,
+the cameras, and the task first, and confirm trials complete end to end. Adding
+Dropbear to an evaluation that is not yet working makes the first failure much
+harder to attribute.
+
+You also need a Dropbear API key and an entitlement for the model you intend to
+call. Some models, including DreamZero-YAM, are granted per organization.
+
+## 1. Install
+
+```bash
+uv add "inspect-robots-dropbear @ git+https://github.com/Dreamscale-Labs/inspect-robots-dropbear.git@v0.1.6"
+```
+
+The adapter pins the exact Dropbear SDK release it was qualified against, so it
+installs a matching `dropbear[dreamzero]` for you. Confirm the policy registered
+without opening a cloud session:
+
+```bash
+inspect-robots list policies
+```
+
+The output must contain `dropbear`.
+
+## 2. Authenticate
+
+```bash
+dropbear login
+```
+
+On a headless robot controller, use an API key instead:
+
+```bash
+export DROPBEAR_API_KEY="<your key>"
+dropbear status --model dreamzero-yam
+```
+
+`status` reports whether the model has capacity before you spend a session on
+it.
+
+## 3. Select the policy
+
+Change only the policy selection in your existing evaluation command:
+
+```bash
+--policy dropbear -P model=dreamzero-yam
+```
+
+Everything else — task, embodiment, epochs, scorer, logging — is unchanged.
+
+### Parameters
+
+| Parameter | Default | Meaning |
+| --- | --- | --- |
+| `model` | required | Dropbear model id, for example `dreamzero-yam` |
+| `sampling` | `async_latest` | Action sampling mode, see below |
+| `startup_timeout_s` | `1800` | Budget for the first connection while the model loads and warms up |
+| `timeout_s` | `60` | Per-step action deadline |
+
+`async_latest` is the qualified default: inference is single-flight and
+latest-only, so the robot always acts on the freshest available chunk. Use
+`async_8` only as an explicit compatibility or rollback path, and
+`upstream_eval` only for an agreed open-loop dataset evaluation — it blocks at
+each replan and is not intended for hardware.
+
+The first connection is slow on purpose. A cold model loads weights and warms up
+before it serves, which is why `startup_timeout_s` defaults to 30 minutes. Later
+trials in the same run reuse the open connection.
+
+## 4. What your embodiment must provide
+
+On every policy step, the task and embodiment must supply:
+
+- `top_cam`, `left_cam`, and `right_cam` uint8 images, each with a real
+  monotonic capture time;
+- finite packed `joint_pos` state with shape `(14,)`, ordered left arm, left
+  gripper, right arm, right gripper; and
+- Inspect's integer `extra["env_step"]`, starting at zero and advancing once per
+  delivered action.
+
+The adapter declares a 14-dimensional raw absolute-joint action at 30 Hz and
+returns exactly one action per `act()` call, while Dropbear owns the action
+buffering behind it. See [Model contracts](/sdk/model-contracts) for the full
+DreamZero-YAM contract, including gripper conventions.
+
+Capture times must be real. The model reasons over a short history of frames, so
+a fabricated or stale clock silently degrades its output rather than raising.
+
+## 5. Close the session
+
+Close the policy in a `finally` block after the run, even when Inspect reports
+an error or cancellation:
+
+```python
+from inspect_robots import eval as run_evaluation
+
+try:
+    logs = run_evaluation(task=task, policy=policy, embodiment=embodiment)
+finally:
+    policy.close()
+```
+
+Then confirm the session is gone:
+
+```bash
+dropbear sessions list
+```
+
+Sessions are billed while they are open. The adapter registers a bounded
+process-exit fallback, but it is not a substitute for an explicit close, and it
+cannot help if the machine loses power.
+
+<Note>
+  If you construct the policy object yourself rather than naming it in the
+  registry, you own its lifecycle. Inspect closes what it resolved from a
+  registry name; it does not close objects you passed in.
+</Note>
+
+## 6. Diagnostics
+
+The adapter writes one atomic sidecar per trial and records its relative path at
+`TrialRecord.metadata["dropbear_telemetry"]`:
+
+```text
+dropbear/<run_id>/<sanitized-scene-id>-e<epoch>.jsonl
+```
+
+Each row carries serving identity, the source control tick, camera
+capture-to-execution age, timing, chunk and merge disposition, and the same
+Inspect environment step. Join to the EvalLog, the action JSONL, or a Rerun
+timeline on `env_step`; use `join_key` for Dropbear chunk-level diagnostics.
+
+Sidecars never contain action vectors, images, credentials, or endpoints, so
+they are safe to attach to a bug report.
+
+The two numbers worth reading first are the observation-to-action round trip and
+the fraction of steps where the robot held position. A high hold fraction means
+the action buffer drained, usually because the round trip exceeded the chunk
+horizon. Lowering the command rate lengthens the horizon and can absorb it.
+
+## Where the boundaries are
+
+Inspect Robots remains canonical for the EvalLog, scores, commanded-action logs,
+stored frames, Rerun recordings, and trial termination state. Dropbear is
+responsible only for turning an observation into an action chunk. The adapter
+calls neither your embodiment nor your hardware directly.
+
+Compatibility with this contract means the cameras, state, action, clock, and
+rate line up. It does not by itself establish physics parity, task success, or
+physical-robot safety — those remain yours to demonstrate on your own hardware.

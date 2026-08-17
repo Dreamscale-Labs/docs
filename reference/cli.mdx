@@ -71,10 +71,11 @@ dropbear sessions stop --all
 Use `--all` only when you intend to terminate every open session on the
 account. Closing sessions stops continued usage from abandoned leases.
 
-## Browser-independent simulation
+## Local simulation
 
-The `sim` command runs Dropbear's curated local LIBERO path, not a generic
-adapter for your own simulator:
+The `sim` command runs Dropbear's curated local LIBERO path on your machine. It
+is not a generic adapter for your own simulator, and Dropbear does not host a
+browser-based simulator:
 
 ```bash
 dropbear sim \

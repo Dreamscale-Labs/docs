@@ -4,27 +4,35 @@ description: "Install the Dropbear SDK and CLI, authenticate, and keep the launc
 keywords: ["install Dropbear", "Python compatibility", "Dropbear login", "API key"]
 ---
 
-Dropbear `{{sdkVersion}}` supports Python 3.11 through 3.14 for cloud policy
-inference. Install only the extras required by your local robot or simulator
-stack.
+Dropbear supports Python 3.11 through 3.14 for cloud policy inference. The
+current release is `{{sdkVersion}}`. Install only the extras required by your
+local robot or simulator stack.
 
 ## Choose an install
 
 <CodeGroup>
 
 ```bash uv (recommended)
-uv add "dropbear=={{sdkVersion}}"
-uv tool install "dropbear=={{sdkVersion}}"
+uv add dropbear
+uv tool install dropbear
 ```
 
 ```bash pip
-python -m pip install "dropbear=={{sdkVersion}}"
+python -m pip install dropbear
 ```
 
 </CodeGroup>
 
 The base package includes the Python SDK, CLI, transport, and observation
-helpers. Pin the exact version while the SDK is pre-release.
+helpers.
+
+<Note>
+  Dropbear is pre-release, so install the latest version rather than pinning an
+  old one. Each release tracks what the hosted models actually serve; an
+  out-of-date SDK can disagree with the live control rate for a model. Pin an
+  exact version (`dropbear==<version>`) when you need a reproducible run, and
+  refresh the pin when you upgrade.
+</Note>
 
 | Install | Use it for | Compatibility |
 | --- | --- | --- |
@@ -38,11 +46,11 @@ simulator:
 <CodeGroup>
 
 ```bash SO-101
-uv add "dropbear[so101]=={{sdkVersion}}"
+uv add "dropbear[so101]"
 ```
 
 ```bash Local LIBERO
-uv add "dropbear[sim]=={{sdkVersion}}"
+uv add "dropbear[sim]"
 ```
 
 </CodeGroup>
@@ -101,13 +109,13 @@ aligned:
 <CodeGroup>
 
 ```bash uv
-uv add --upgrade "dropbear=={{sdkVersion}}"
+uv add --upgrade dropbear
 uv tool upgrade dropbear
 dropbear --help
 ```
 
 ```bash pip
-python -m pip install --upgrade "dropbear=={{sdkVersion}}"
+python -m pip install --upgrade dropbear
 dropbear --help
 ```
 

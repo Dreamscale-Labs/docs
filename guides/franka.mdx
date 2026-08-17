@@ -20,8 +20,8 @@ because the SDK does not ship a Franka safety controller.
 Use the base SDK alongside your existing Franka controller:
 
 ```bash
-uv add "dropbear=={{sdkVersion}}"
-uv tool install "dropbear=={{sdkVersion}}"
+uv add dropbear
+uv tool install dropbear
 dropbear login
 dropbear doctor
 dropbear status --model molmoact2-droid

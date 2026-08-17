@@ -14,7 +14,6 @@ import dropbear
 from dropbear import franka, libero, so101
 from dropbear.policy import RemotePolicy
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / "docs.json").read_text())
 SDK_VERSION = CONFIG["variables"]["sdkVersion"]
@@ -74,7 +73,10 @@ def main() -> int:
         "calibration",
         "region",
         "idle_timeout",
+        "keep_warm",
+        "startup_timeout",
         "transport",
+        "control_hz",
         "on_progress",
     )
     require_signature("dropbear.connect", dropbear.connect, connect_parameters)
