@@ -103,6 +103,7 @@ epochs, scorer, logging — is unchanged.
 | `model` | required | Dropbear model id, for example `dreamzero-yam` |
 | `sampling` | `async_latest` | Action sampling mode, see below |
 | `control_hz` | model's native rate | Rate the action chunk is executed at, 5–30 Hz |
+| `keep_warm_s` | `0` | Hold the session warm after close so the next run skips the cold start, 0–3600 s. **Billed while held** |
 | `startup_timeout_s` | `1800` | Budget for the first connection while the model loads and warms up |
 | `timeout_s` | `60` | Per-step action deadline |
 
@@ -115,6 +116,43 @@ each replan and is not intended for hardware.
 The first connection is slow on purpose. A cold model loads weights and warms up
 before it serves, which is why `startup_timeout_s` defaults to 30 minutes. Later
 trials in the same run reuse the open connection.
+
+### Skipping the cold start while you iterate
+
+A cold start is roughly two minutes, paid **once per connection** — every trial
+in one evaluation shares it. It only hurts when you are iterating: fixing a
+camera mapping, re-running, fixing the next thing, and paying two minutes each
+time.
+
+`keep_warm_s` holds the session after close so the next run reclaims it instead
+of starting cold:
+
+```bash
+--policy dropbear -P model=dreamzero-yam -P keep_warm_s=300
+```
+
+Measured against production, back to back:
+
+| | cold | reclaimed |
+| --- | --- | --- |
+| Time to first action | 147 s | **23 s** |
+
+The reclaim is matched on your organization, user, model, region mode, and
+optimization settings, so a later `inspect-robots run` with the same policy
+arguments picks up the session you left warm.
+
+<Warning>
+  **A warm hold is billed at the full rate, and `close()` no longer stops the
+  meter.** With `keep_warm_s` set, closing *parks* the session rather than
+  terminating it: the GPU stays reserved for you, and billing continues until
+  the window expires or you reclaim it. In a verified run, a session that was
+  active for well under a minute billed 141.9 s across its park.
+
+  So this is a cost you are choosing, not a cache. At DreamZero-YAM's rate a
+  five-minute hold is worth it only if you actually re-run inside it — otherwise
+  you have paid five minutes to save two. Leave it at `0` for unattended or
+  production runs, and reach for it only during hands-on iteration.
+</Warning>
 
 ### Control rate, and who owns the clock
 
@@ -316,6 +354,28 @@ What changed is that a chunk now covers 1.6 s of wall clock against a ~600 ms
 round trip, so the buffer stops draining. Note the cost: the arm sees a fresh
 observation half as often, which matters for contact-rich or fast motions. Treat
 a high hold fraction as the reason to drop the rate, not as the default.
+
+**Once the round trip exceeds the chunk horizon, the hold fraction does not
+degrade gracefully — it goes to 100%.** No chunk can ever land before the buffer
+it was meant to refill has drained, so every step holds and the model
+contributes nothing. Re-running the same 30 Hz configuration from a tethered
+mobile connection instead of fixed broadband, with nothing else changed, the
+round trip rose from 644 ms to 945 ms — past the 800 ms horizon — and
+model-sourced actions went from 39/120 to **0/120**. The run still reported
+success.
+
+That makes the horizon a threshold worth knowing:
+
+| rate | chunk horizon | round trip must stay under |
+| --- | --- | --- |
+| 30 Hz | 0.8 s | ~800 ms |
+| 15 Hz | 1.6 s | ~1.6 s |
+
+The margin at 30 Hz is thin if you are far from the serving region: a few
+hundred milliseconds of extra round trip is the difference between a working run
+and an empty one. Anything shared, metered, or wireless — a hotspot, a busy lab
+network, a VPN — can cost you that much on its own. Check `action_source` rather
+than trusting the status, and prefer 15 Hz when the margin is not comfortable.
 
 ## Where the boundaries are
 
