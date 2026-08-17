@@ -15,6 +15,12 @@ The adapter is
 (Apache 2.0). It changes one thing in your evaluation: which policy is selected.
 Your registered task and embodiment stay exactly as they are.
 
+Runnable reference code for everything below lives in
+[`examples/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples):
+a complete evaluation script and a YAM embodiment skeleton, both adapted from a
+run that completed against production. Copy from there rather than retyping this
+guide.
+
 <Warning>
   This guide covers the software path. It does not authorize an unattended
   physical run. For any physical robot test you own the validated limits, an
@@ -55,25 +61,36 @@ The output must contain `dropbear`.
 dropbear login
 ```
 
-On a headless robot controller, use an API key instead:
+A robot controller usually has no browser, so use an API key there instead:
 
 ```bash
 export DROPBEAR_API_KEY="<your key>"
+```
+
+Both paths are verified the same way:
+
+```bash
 dropbear status --model dreamzero-yam
 ```
 
-`status` reports whether the model has capacity before you spend a session on
-it.
+`status` confirms the credential is accepted and reports whether the model has
+capacity, before you spend a session finding out.
 
 ## 3. Select the policy
 
 Change only the policy selection in your existing evaluation command:
 
 ```bash
---policy dropbear -P model=dreamzero-yam
+inspect-robots run \
+  --task your-task \
+  --embodiment your-yam \
+  --policy dropbear -P model=dreamzero-yam \
+  --log-dir logs
 ```
 
-Everything else — task, embodiment, epochs, scorer, logging — is unchanged.
+Substitute your own registered `--task` and `--embodiment`;
+`--policy dropbear -P model=dreamzero-yam` is the entire edit. Everything else —
+epochs, scorer, logging — is unchanged.
 
 ### Parameters
 
@@ -94,7 +111,9 @@ The first connection is slow on purpose. A cold model loads weights and warms up
 before it serves, which is why `startup_timeout_s` defaults to 30 minutes. Later
 trials in the same run reuse the open connection.
 
-## 4. What your embodiment must provide
+## 4. Run the evaluation
+
+### What your embodiment must provide
 
 On every policy step, the task and embodiment must supply:
 
@@ -113,45 +132,96 @@ DreamZero-YAM contract, including gripper conventions.
 Capture times must be real. The model reasons over a short history of frames, so
 a fabricated or stale clock silently degrades its output rather than raising.
 
-## 5. Close the session
+### The whole script
 
-Close the policy in a `finally` block after the run, even when Inspect reports
-an error or cancellation:
+The shape of a full run, with the hardware halves stubbed. The complete versions
+are
+[`run_eval.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/run_eval.py)
+and
+[`yam_embodiment.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/yam_embodiment.py).
 
 ```python
-from inspect_robots import eval as run_evaluation
+import collections, json, pathlib, time
+
+import numpy as np
+from inspect_robots import Observation, eval as run_evaluation
+from inspect_robots.embodiment import EmbodimentBase, EmbodimentInfo, StepResult
 from inspect_robots.registry import resolve
 
-# `resolve` returns a constructed object, not a factory. Policy parameters are
-# the same ones you would pass with `-P`, given here as keyword arguments.
+LOG_DIR = "logs"
+
+
+class YamEmbodiment(EmbodimentBase):
+    """Your arm. Replace the driver calls; the rest is the contract above."""
+
+    @property
+    def info(self) -> EmbodimentInfo:
+        ...  # 14-D joint_pos action, three 360x640 cameras, control_hz=30.0
+
+    def _observation(self, instruction: str) -> Observation:
+        top, left, right, times = self._robot.frames()  # your driver
+        return Observation(
+            images={"top_cam": top, "left_cam": left, "right_cam": right},
+            # Seconds off a real capture clock, keyed per camera.
+            image_times=dict(zip(("top_cam", "left_cam", "right_cam"), times)),
+            state={"joint_pos": self._robot.state.astype(np.float64)},
+            state_time=time.monotonic_ns() / 1e9,
+            instruction=instruction,
+            extra={"env_step": self._env_step},  # advances once per action
+        )
+
+    def step(self, action) -> StepResult:
+        payload = getattr(action, "data", action)  # an Action, not a bare array
+        self._robot.execute(np.asarray(payload).reshape(-1))  # your driver
+        self._env_step += 1
+        return StepResult(
+            observation=self._observation(""),
+            reward=0.0,
+            terminated=False,
+            truncated=False,
+            info={},
+        )
+
+
+# `resolve` returns a constructed object, not a factory, and takes the same
+# parameters you would pass with `-P`.
 policy = resolve("policy", "dropbear", model="dreamzero-yam")
 task = resolve("task", "your-task")
-embodiment = resolve("embodiment", "your-embodiment")
+embodiment = resolve("embodiment", "your-yam")
 
 try:
-    logs = run_evaluation(task=task, policy=policy, embodiment=embodiment)
+    logs = run_evaluation(task=task, policy=policy, embodiment=embodiment, log_dir=LOG_DIR)
 finally:
+    # Sessions bill while open and hold an exclusive lease, so this is not
+    # optional — including when the run raised.
     policy.close()
+
+# Then check where the actions actually came from. See the warning below.
+sidecar = sorted(pathlib.Path(LOG_DIR).glob("dropbear/*/*.jsonl"))[-1]
+rows = [json.loads(line) for line in sidecar.read_text().splitlines() if line.strip()]
+print(collections.Counter(row["action_source"] for row in rows))
 ```
 
-Then confirm the session is gone:
+### Closing
+
+Confirm nothing is still running:
 
 ```bash
 dropbear sessions list
 ```
 
-Sessions are billed while they are open. The adapter registers a bounded
-process-exit fallback, but it is not a substitute for an explicit close, and it
-cannot help if the machine loses power.
+The adapter registers a bounded process-exit fallback, but it is not a
+substitute for the explicit `close()`, and it cannot help if the machine loses
+power. `dropbear sessions stop --all` clears a zombie lease.
 
 <Note>
   If you construct the policy object yourself rather than naming it in the
   registry, you own its lifecycle. Inspect closes what it resolved from a
-  registry name; it does not close objects you passed in. The example above
+  registry name; it does not close objects you passed in. The script above
   resolves the policy itself, so the explicit `close()` is required.
 </Note>
 
-## 6. Diagnostics
+## 5. Diagnostics
 
 The adapter writes one atomic sidecar per trial and records its relative path at
 `TrialRecord.metadata["dropbear_telemetry"]`:
@@ -178,16 +248,9 @@ model action or held its previous position.
   steps, not inference. A run where every step held position looks identical in
   the EvalLog to one the model drove throughout.
 
-  Check `action_source` in the sidecar before trusting a result:
-
-  ```python
-  import collections, json, pathlib
-
-  rows = [json.loads(line) for line in pathlib.Path(sidecar).read_text().splitlines() if line]
-  print(collections.Counter(row["action_source"] for row in rows))
-  ```
-
-  Seeing only `hold` means the model never contributed. The usual cause is a
+  Count `action_source` before trusting a result — the last few lines of the
+  script above. Seeing only `hold` means the model never contributed, and no
+  amount of green in the EvalLog says otherwise. The usual cause is a
   control loop that runs faster than one round trip, so no chunk can arrive
   before the episode ends — most often an embodiment that returns instantly
   instead of pacing itself at the control rate the way hardware does.
