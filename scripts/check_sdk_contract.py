@@ -10,9 +10,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-import dropbear
-from dropbear import franka, libero, so101
-from dropbear.policy import RemotePolicy
+import dreamscale
+from dreamscale import franka, libero, so101
+from dreamscale.policy import RemotePolicy
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / "docs.json").read_text())
@@ -44,7 +44,7 @@ def cli_help(*arguments: str) -> str:
         }
     )
     completed = subprocess.run(
-        [sys.executable, "-m", "dropbear.cli", *arguments, "--help"],
+        [sys.executable, "-m", "dreamscale.cli", *arguments, "--help"],
         check=True,
         capture_output=True,
         env=environment,
@@ -60,9 +60,9 @@ def require_words(label: str, text: str, expected: set[str]) -> None:
 
 
 def main() -> int:
-    if dropbear.__version__ != SDK_VERSION:
+    if dreamscale.__version__ != SDK_VERSION:
         raise AssertionError(
-            f"docs configure dropbear {SDK_VERSION}, installed {dropbear.__version__}"
+            f"docs configure dreamscale {SDK_VERSION}, installed {dreamscale.__version__}"
         )
 
     connect_parameters = (
@@ -72,6 +72,7 @@ def main() -> int:
         "rtc",
         "calibration",
         "region",
+        "provider",
         "idle_timeout",
         "keep_warm",
         "startup_timeout",
@@ -79,8 +80,8 @@ def main() -> int:
         "control_hz",
         "on_progress",
     )
-    require_signature("dropbear.connect", dropbear.connect, connect_parameters)
-    require_signature("dropbear.aconnect", dropbear.aconnect, connect_parameters)
+    require_signature("dreamscale.connect", dreamscale.connect, connect_parameters)
+    require_signature("dreamscale.aconnect", dreamscale.aconnect, connect_parameters)
     require_signature(
         "RemotePolicy.predict",
         RemotePolicy.predict,
@@ -94,16 +95,25 @@ def main() -> int:
     require_signature(
         "RemotePolicy.run",
         RemotePolicy.run,
-        ("self", "instruction", "observe", "act", "max_actions", "strategy", "hooks"),
+        (
+            "self",
+            "instruction",
+            "observe",
+            "act",
+            "read_hold_action",
+            "max_actions",
+            "strategy",
+            "hooks",
+        ),
     )
     require_signature("RemotePolicy.close", RemotePolicy.close, ("self",))
     require_signature(
-        "dropbear.so101.observe",
+        "dreamscale.so101.observe",
         so101.observe,
         ("side_frame", "wrist_frame", "frame", "joint_positions", "actions_remaining"),
     )
     require_signature(
-        "dropbear.franka.observe",
+        "dreamscale.franka.observe",
         franka.observe,
         (
             "exterior_frame",
@@ -115,13 +125,13 @@ def main() -> int:
         ),
     )
     require_signature(
-        "dropbear.libero.observe",
+        "dreamscale.libero.observe",
         libero.observe,
         ("agent_frame", "wrist_frame", "state", "actions_remaining"),
     )
 
     require_words(
-        "dropbear",
+        "dreamscale",
         cli_help(),
         {"login", "doctor", "sim", "status", "sessions", "robots", "run"},
     )
@@ -151,7 +161,7 @@ def main() -> int:
         {"--duration", "--fallback", "--no-fallback"},
     )
 
-    print(f"SDK contract passed for dropbear {SDK_VERSION}.")
+    print(f"SDK contract passed for dreamscale {SDK_VERSION}.")
     return 0
 
 

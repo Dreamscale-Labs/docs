@@ -1,24 +1,24 @@
-# Dropbear documentation guide
+# Dreamscale documentation guide
 
 ## Project context
 
-- This is the user-facing Dropbear documentation site, built with Mintlify.
+- This is the user-facing Dreamscale documentation site, built with Mintlify.
 - Pages are MDX with YAML frontmatter.
 - Navigation, global variables, branding, redirects, and agent instructions
   live in `docs.json`.
 - The Python SDK and CLI are the supported public integration surfaces.
-- Product behavior must be verified against the published `dropbear` package
+- Product behavior must be verified against the published `dreamscale` package
   and current production model catalog before it is documented.
 
 ## Canonical terminology
 
-- Use **Dropbear**, **Python SDK**, **CLI**, **API key**, **session**, **model**,
+- Use **Dreamscale**, **Python SDK**, **CLI**, **API key**, **session**, **model**,
   **SO-101**, **Franka**, **MolmoAct2-DROID**, and **LIBERO**.
 - Use `molmoact2-so101`, `molmoact2-droid`, and `molmoact2-libero` for exact
   model identifiers.
 - Say **action chunk** for the actions returned by `predict()`.
 - Distinguish model coordinates from robot-controller coordinates.
-- Treat `connect_so101()` as deprecated. Use `dropbear.connect()` in new
+- Treat `connect_so101()` as deprecated. Use `dreamscale.connect()` in new
   examples.
 
 ## Writing standard

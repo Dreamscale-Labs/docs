@@ -15,15 +15,15 @@
       "weight": 600
     }
   },
-  "favicon": "/logo/dropbear-mark.svg",
+  "favicon": "/logo/dreamscale-mark.svg",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a9",
-    "dashboardUrl": "https://dropbear.dreamscalelabs.com",
-    "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
+    "sdkVersion": "0.1.0a24",
+    "dashboardUrl": "https://app.dreamscalelabs.com",
+    "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
   },
   "navigation": {
@@ -75,7 +75,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dropbear.dreamscalelabs.com/dashboard"
+      "href": "https://app.dreamscalelabs.com/dashboard"
     }
   },
   "contextual": {
@@ -89,7 +89,7 @@
   },
   "markdown": {
     "instructions": [
-      "Treat the Dropbear Python SDK and CLI as the supported public integration surfaces.",
+      "Treat the Dreamscale Python SDK and CLI as the supported public integration surfaces.",
       "Prefer context-managed sessions and model-specific observation helpers.",
       "Do not infer or recommend internal control-plane APIs."
     ]

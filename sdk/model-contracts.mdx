@@ -1,10 +1,10 @@
 ---
 title: "Model contracts"
-description: "Match camera, state, action ordering, units, chunk size, and rate for the live Dropbear models."
+description: "Match camera, state, action ordering, units, chunk size, and rate for the live Dreamscale models."
 keywords: ["SO-101 observation", "LIBERO action space", "DROID Franka", "model contract"]
 ---
 
-A Dropbear observation is expressed in the selected model's coordinates, not
+A Dreamscale observation is expressed in the selected model's coordinates, not
 necessarily your controller's coordinates. Convert at the `RobotIO` boundary
 and validate the returned model action before converting it back.
 
@@ -14,20 +14,20 @@ and validate the returned model action before converting it back.
 </Warning>
 
 The production catalog exposes the contracts below. Check
-[Models](https://dropbear.dreamscalelabs.com/dashboard/models) before opening a
+[Models](https://app.dreamscalelabs.com/dashboard/models) before opening a
 session because availability is region- and account-dependent, and some models
 require an entitlement on your organization.
 
 | Model | Observation helper | Output | Nominal rate | Access |
 | --- | --- | --- | --- | --- |
-| `molmoact2-so101` | `dropbear.so101.observe` | 30 × 6 absolute joint positions | 30 Hz | Open |
-| `molmoact2-libero` | `dropbear.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz | Open |
-| `molmoact2-droid` | `dropbear.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz | Open |
+| `molmoact2-so101` | `dreamscale.so101.observe` | 30 × 6 absolute joint positions | 30 Hz | Open |
+| `molmoact2-libero` | `dreamscale.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz | Open |
+| `molmoact2-droid` | `dreamscale.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz | Open |
 | `dreamzero-yam` | bimanual observation, see below | 24 × 14 absolute joint/gripper targets | 30 Hz | Entitlement required |
 
 <Note>
   `molmoact2-droid` is listed in the catalog but has no serving capacity in the
-  current region set. `dropbear status --model molmoact2-droid` reports what is
+  current region set. `dreamscale status --model molmoact2-droid` reports what is
   actually available before you write against it.
 </Note>
 
@@ -48,7 +48,7 @@ Three RGB cameras and the packed bimanual joint state, each frame carrying a
 real monotonic capture time:
 
 ```python
-observation = dropbear.dreamzero_yam.observe(
+observation = dreamscale.dreamzero_yam.observe(
     top_frame=top_rgb,
     left_frame=left_rgb,
     right_frame=right_rgb,
@@ -77,7 +77,7 @@ commands. Do not threshold them.
 
 ### Command rate
 
-The model is native at 30 Hz. You may request 5–30 Hz at connect, and Dropbear
+The model is native at 30 Hz. You may request 5–30 Hz at connect, and Dreamscale
 stretches the action horizon to match rather than dropping actions, so a 24-step
 chunk covers 0.8 s at 30 Hz and 2.4 s at 10 Hz. Lower rates trade responsiveness
 for a longer buffer.
@@ -87,7 +87,7 @@ for a longer buffer.
 ### Observation
 
 ```python
-observation = dropbear.so101.observe(
+observation = dreamscale.so101.observe(
     side_frame=side_rgb,
     wrist_frame=wrist_rgb,
     joint_positions=[
@@ -128,7 +128,7 @@ limits, watchdogs, and the physical stop path.
 ### Observation
 
 ```python
-observation = dropbear.libero.observe(
+observation = dreamscale.libero.observe(
     agent_frame=agent_rgb,
     wrist_frame=wrist_rgb,
     state=[
@@ -164,7 +164,7 @@ configuration. A physical robot controller has a different contract.
 ### Observation
 
 ```python
-observation = dropbear.franka.observe(
+observation = dreamscale.franka.observe(
     exterior_frame=exterior_rgb,
     wrist_frame=wrist_rgb,
     joint_positions=joint_radians,
@@ -176,7 +176,7 @@ observation = dropbear.franka.observe(
 - `exterior_frame`: required H×W×3 `uint8` RGB view.
 - `wrist_frame`: required H×W×3 `uint8` RGB view.
 - `second_exterior_frame`: optional second exterior RGB view. When omitted,
-  Dropbear maps the first exterior view to both exterior inputs.
+  Dreamscale maps the first exterior view to both exterior inputs.
 - `joint_positions`: seven finite Franka joint positions in radians.
 - `gripper`: one finite value from 0 (open) to 1 (closed).
 
@@ -192,7 +192,7 @@ The values are absolute joint targets in radians followed by the unit-interval
 gripper target. A normal chunk contains 15 actions for a 15 Hz controller.
 
 <Warning>
-  Dropbear provides DROID inference, not a Franka safety controller. Stop at
+  Dreamscale provides DROID inference, not a Franka safety controller. Stop at
   `predict()` until your local stack validates joint, velocity, acceleration,
   workspace, collision, gripper, watchdog, and e-stop behavior.
 </Warning>

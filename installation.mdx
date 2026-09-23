@@ -1,10 +1,10 @@
 ---
 title: "Installation"
-description: "Install the Dropbear SDK and CLI, authenticate, and keep the launch package up to date."
-keywords: ["install Dropbear", "Python compatibility", "Dropbear login", "API key"]
+description: "Install the Dreamscale SDK and CLI, authenticate, and keep the launch package up to date."
+keywords: ["install Dreamscale", "Python compatibility", "Dreamscale login", "API key"]
 ---
 
-Dropbear supports Python 3.11 through 3.14 for cloud policy inference. The
+Dreamscale supports Python 3.11 through 3.14 for cloud policy inference. The
 current release is `{{sdkVersion}}`. Install only the extras required by your
 local robot or simulator stack.
 
@@ -13,12 +13,12 @@ local robot or simulator stack.
 <CodeGroup>
 
 ```bash uv (recommended)
-uv add dropbear
-uv tool install dropbear
+uv add dreamscale
+uv tool install dreamscale
 ```
 
 ```bash pip
-python -m pip install dropbear
+python -m pip install dreamscale
 ```
 
 </CodeGroup>
@@ -27,18 +27,24 @@ The base package includes the Python SDK, CLI, transport, and observation
 helpers.
 
 <Note>
-  Dropbear is pre-release, so install the latest version rather than pinning an
+  Dreamscale was previously called Dropbear. The legacy `dropbear` package,
+  `import dropbear`, and the `dropbear` command still work as aliases, so
+  existing projects keep running unchanged. Use `dreamscale` for new work.
+</Note>
+
+<Note>
+  Dreamscale is pre-release, so install the latest version rather than pinning an
   old one. Each release tracks what the hosted models actually serve; an
   out-of-date SDK can disagree with the live control rate for a model. Pin an
-  exact version (`dropbear==<version>`) when you need a reproducible run, and
+  exact version (`dreamscale==<version>`) when you need a reproducible run, and
   refresh the pin when you upgrade.
 </Note>
 
 | Install | Use it for | Compatibility |
 | --- | --- | --- |
-| `dropbear` | Existing robot controllers and cloud inference | Python 3.11–3.14 |
-| `dropbear[so101]` | Dropbear's SO-101 setup, calibration, and dry-run path | Python 3.12–3.13 |
-| `dropbear[sim]` | The local `dropbear sim` LIBERO path | Linux or WSL2 |
+| `dreamscale` | Existing robot controllers and cloud inference | Python 3.11–3.14 |
+| `dreamscale[so101]` | Dreamscale's SO-101 setup, calibration, and dry-run path | Python 3.12–3.13 |
+| `dreamscale[sim]` | The local `dreamscale sim` LIBERO path | Linux or WSL2 |
 
 Install an extra in the project that owns the corresponding hardware or
 simulator:
@@ -46,18 +52,18 @@ simulator:
 <CodeGroup>
 
 ```bash SO-101
-uv add "dropbear[so101]"
+uv add "dreamscale[so101]"
 ```
 
 ```bash Local LIBERO
-uv add "dropbear[sim]"
+uv add "dreamscale[sim]"
 ```
 
 </CodeGroup>
 
 <Note>
   Your own Franka or simulator integration should use its existing controller
-  dependencies plus the base `dropbear` package. Dropbear does not provide a
+  dependencies plus the base `dreamscale` package. Dreamscale does not provide a
   Franka controller.
 </Note>
 
@@ -66,16 +72,18 @@ uv add "dropbear[sim]"
 Browser login is the default:
 
 ```bash
-dropbear login
+dreamscale login
 ```
 
 The CLI opens a one-time approval page. After approval, it verifies the
-credential and writes `~/.dropbear/config.toml` with user-only permissions.
+credential and writes `~/.dreamscale/config.toml` with user-only permissions.
+If this machine already has a `~/.dropbear` directory from an earlier install
+and no `~/.dreamscale`, the CLI keeps reading and writing `~/.dropbear` in place.
 
 For a headless machine, paste an API key into the hidden prompt:
 
 ```bash
-dropbear login --api-key
+dreamscale login --api-key
 ```
 
 You can also pass an API key as the option value, but shell history and process
@@ -83,16 +91,16 @@ inspection can expose it. Prefer the hidden prompt or an existing secret
 manager.
 
 <Warning>
-  Do not commit `~/.dropbear/config.toml`, paste keys into source files, or log
+  Do not commit `~/.dreamscale/config.toml`, paste keys into source files, or log
   them in CI. Create and revoke keys in the
-  [dashboard](https://dropbear.dreamscalelabs.com/dashboard/keys).
+  [dashboard](https://app.dreamscalelabs.com/dashboard/keys).
 </Warning>
 
 ## Verify the machine
 
 ```bash
-dropbear doctor
-dropbear status
+dreamscale doctor
+dreamscale status
 ```
 
 `doctor` checks the robot-neutral installation, authentication, and network
@@ -109,19 +117,19 @@ aligned:
 <CodeGroup>
 
 ```bash uv
-uv add --upgrade dropbear
-uv tool upgrade dropbear
-dropbear --help
+uv add --upgrade dreamscale
+uv tool upgrade dreamscale
+dreamscale --help
 ```
 
 ```bash pip
-python -m pip install --upgrade dropbear
-dropbear --help
+python -m pip install --upgrade dreamscale
+dreamscale --help
 ```
 
 </CodeGroup>
 
-You are ready when `dropbear --help` lists `login`, `doctor`, `sim`, `status`,
+You are ready when `dreamscale --help` lists `login`, `doctor`, `sim`, `status`,
 `run`, `robots`, and `sessions`.
 
 Continue to the [Python quickstart](/quickstart) to request one non-actuating
