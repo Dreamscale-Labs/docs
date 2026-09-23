@@ -1,13 +1,13 @@
-# Dropbear documentation
+# Dreamscale documentation
 
-User-facing documentation for [Dropbear](https://dropbear.dreamscalelabs.com),
+User-facing documentation for [Dreamscale](https://app.dreamscalelabs.com),
 hosted by Mintlify at
 [docs.dropbear.dreamscalelabs.com](https://docs.dropbear.dreamscalelabs.com).
 
 The documentation is organized around user jobs:
 
 - request a policy prediction from Python;
-- integrate Dropbear with an existing robot controller;
+- integrate Dreamscale with an existing robot controller;
 - set up and run an SO-101 safely;
 - request MolmoAct2-DROID actions for a Franka;
 - diagnose SDK, CLI, network, session, and hardware failures.
@@ -44,7 +44,7 @@ python3 scripts/check_content.py
 python3 scripts/check_sdk_contract.py
 ```
 
-`check_sdk_contract.py` expects the Dropbear version configured in
+`check_sdk_contract.py` expects the Dreamscale version configured in
 `docs.json` to be installed in the active Python environment.
 
 ## Publishing

@@ -1,7 +1,7 @@
 ---
 title: "Python quickstart"
-description: "Send a real robot observation to Dropbear and inspect one action chunk without actuating."
-keywords: ["Python quickstart", "dropbear.connect", "robot integration", "policy prediction"]
+description: "Send a real robot observation to Dreamscale and inspect one action chunk without actuating."
+keywords: ["Python quickstart", "dreamscale.connect", "robot integration", "policy prediction"]
 ---
 
 import RobotIO from "/snippets/robot-io.mdx";
@@ -16,10 +16,10 @@ closes the cloud session. It does **not** send an action to the robot.
 You need:
 
 - Python 3.11–3.14;
-- a Dropbear account;
+- a Dreamscale account;
 - an existing robot controller that can read camera frames and state;
 - a robot/model pairing listed as live in
-  [Models](https://dropbear.dreamscalelabs.com/dashboard/models);
+  [Models](https://app.dreamscalelabs.com/dashboard/models);
 - `uv`, or another Python package manager.
 
 <Warning>
@@ -34,17 +34,17 @@ You need:
 Install the CLI and add the SDK to your project:
 
 ```bash
-uv tool install dropbear
-uv add dropbear
-dropbear login
-dropbear doctor
+uv tool install dreamscale
+uv add dreamscale
+dreamscale login
+dreamscale doctor
 ```
 
-`dropbear login` opens the dashboard in your browser. After approval, Dropbear
-saves a machine credential in `~/.dropbear/config.toml`.
+`dreamscale login` opens the dashboard in your browser. After approval, Dreamscale
+saves a machine credential in `~/.dreamscale/config.toml`.
 
 <Check>
-  `dropbear doctor` should finish with the core authentication and network
+  `dreamscale doctor` should finish with the core authentication and network
   checks ready. If it does not, follow the recovery step printed by the command
   or open [Troubleshooting](/troubleshooting).
 </Check>
@@ -56,7 +56,7 @@ Create `robot_adapter.py` in your project and implement this boundary:
 <RobotIO />
 
 For `molmoact2-so101`, `read_observation()` must call
-`dropbear.so101.observe(...)` with side and wrist RGB frames plus six joint
+`dreamscale.so101.observe(...)` with side and wrist RGB frames plus six joint
 positions in the model's SO-101 coordinate frame. See
 [Model contracts](/sdk/model-contracts#molmoact2-so-101) before converting
 units.
@@ -101,10 +101,10 @@ Copy this prompt into your coding agent from the root of your robot project:
 
 ```text
 Implement robot_adapter.py for my existing robot SDK using the RobotIO protocol
-from the Dropbear quickstart. Use dropbear.so101.observe for the observation.
+from the Dreamscale quickstart. Use dreamscale.so101.observe for the observation.
 Preserve the documented SO-101 camera order, joint order, and model units.
 Keep prediction non-actuating: do not call apply_action. Add explicit validation,
-hold, watchdog, and e-stop integration points, and never log my Dropbear API key.
+hold, watchdog, and e-stop integration points, and never log my Dreamscale API key.
 Show me the adapter and focused tests before adding any motion path.
 ```
 

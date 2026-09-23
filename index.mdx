@@ -1,17 +1,17 @@
 ---
-title: "Dropbear"
+title: "Dreamscale"
 description: "Run robot policies in the cloud through a small Python SDK and CLI."
 keywords: ["robot inference", "robot policy", "Python SDK", "physical AI"]
 ---
 
 # Cloud inference for your robot
 
-Dropbear runs robot policies in the cloud while your local controller keeps
+Dreamscale runs robot policies in the cloud while your local controller keeps
 ownership of sensing, actuation, and safety.
 
 ```mermaid
 flowchart LR
-  A["Robot cameras and state"] --> B["Dropbear Python SDK"]
+  A["Robot cameras and state"] --> B["Dreamscale Python SDK"]
   B --> C["Cloud policy"]
   C --> D["Action chunk"]
   D --> E["Your validated robot controller"]
@@ -28,7 +28,7 @@ flowchart LR
   </Card>
 </CardGroup>
 
-## What Dropbear owns
+## What Dreamscale owns
 
 - authenticated cloud sessions;
 - policy worker allocation and startup;
@@ -48,7 +48,7 @@ flowchart LR
   Open sessions consume prepaid credits. Use a context manager or call
   `close()` when work is complete. View current availability, balance, and
   usage in the
-  [dashboard](https://dropbear.dreamscalelabs.com/dashboard).
+  [dashboard](https://app.dreamscalelabs.com/dashboard).
 </Note>
 
 ## Choose your next step

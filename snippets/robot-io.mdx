@@ -4,11 +4,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol
 
-from dropbear.policy import ObservationLike
+from dreamscale.policy import ObservationLike
 
 
 class RobotIO(Protocol):
-    """Boundary between Dropbear and your local robot stack."""
+    """Boundary between Dreamscale and your local robot stack."""
 
     def read_observation(self) -> ObservationLike:
         """Read cameras and state, then build a model-specific observation."""

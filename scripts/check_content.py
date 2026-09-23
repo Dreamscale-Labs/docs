@@ -117,7 +117,7 @@ def main() -> int:
             language = match.group("language").lower()
             body = match.group("body")
             if language in {"python", "py"} and (
-                "dropbear.connect_so101(" in body
+                "dreamscale.connect_so101(" in body
                 or re.search(r"\bconnect_so101\s*\(", body)
             ):
                 errors.append(
@@ -130,7 +130,7 @@ def main() -> int:
     # the live control rate. The version is still surfaced in prose, and that
     # reference has to stay for the release check below to mean anything.
     quickstart = (ROOT / "quickstart.mdx").read_text()
-    if '"dropbear==' in quickstart or "'dropbear==" in quickstart:
+    if '"dreamscale==' in quickstart or "'dreamscale==" in quickstart:
         errors.append("quickstart.mdx: install examples must track the latest release, not a pin")
     if "{{sdkVersion}}" not in (ROOT / "installation.mdx").read_text():
         errors.append("installation.mdx: must state the current release via sdkVersion")

@@ -1,12 +1,12 @@
 ```python first_prediction.py
-import dropbear
+import dreamscale
 
 from robot_adapter import robot
 
 
 observation = robot.read_observation()
 
-with dropbear.connect(model="molmoact2-so101") as policy:
+with dreamscale.connect(model="molmoact2-so101") as policy:
     result = policy.predict(
         observation,
         instruction="pick up the red cube",

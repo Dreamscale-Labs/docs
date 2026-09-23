@@ -32,7 +32,7 @@ jobs:
         run: |
           npm install --global mint@4.2.742
           SDK_VERSION="$(python -c 'import json; print(json.load(open("docs.json"))["variables"]["sdkVersion"])')"
-          python -m pip install "dropbear==${SDK_VERSION}"
+          python -m pip install "dreamscale==${SDK_VERSION}"
 
       - name: Validate Mintlify project
         run: mint validate

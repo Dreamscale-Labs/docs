@@ -1,7 +1,7 @@
 ---
 title: "Python SDK"
-description: "Own the Dropbear policy lifecycle from connection through prediction, action buffering, and deterministic cleanup."
-keywords: ["dropbear.connect", "dropbear.aconnect", "predict", "next_action", "policy.run"]
+description: "Own the Dreamscale policy lifecycle from connection through prediction, action buffering, and deterministic cleanup."
+keywords: ["dreamscale.connect", "dreamscale.aconnect", "predict", "next_action", "policy.run"]
 ---
 
 The public Python lifecycle is small: build a model-shaped observation, open a
@@ -10,7 +10,7 @@ policy, choose one prediction interface, and close the policy deterministically.
 ```mermaid
 sequenceDiagram
   participant App as "Your application"
-  participant SDK as "Dropbear policy"
+  participant SDK as "Dreamscale policy"
   participant Cloud as "Cloud worker"
   App->>SDK: "connect(model=...)"
   SDK->>Cloud: "allocate session"
@@ -27,10 +27,10 @@ sequenceDiagram
 Use a context manager for the synchronous SDK:
 
 ```python
-import dropbear
+import dreamscale
 
 
-with dropbear.connect(model="molmoact2-so101") as policy:
+with dreamscale.connect(model="molmoact2-so101") as policy:
     print(policy.session_id)
     print(policy.region)
     print(policy.transport_mode)
@@ -41,11 +41,11 @@ Use `aconnect()` when your application already owns an async event loop:
 ```python
 import asyncio
 
-import dropbear
+import dreamscale
 
 
 async def main() -> None:
-    policy = await dropbear.aconnect(model="molmoact2-so101")
+    policy = await dreamscale.aconnect(model="molmoact2-so101")
     async with policy:
         print(policy.session_id)
 
@@ -59,8 +59,8 @@ If a context manager is impossible, call `policy.close()` or
 <Note>
   Open sessions consume prepaid credits. Deterministic closure matters even
   when inference has stopped. Inspect open sessions with
-  `dropbear sessions list`, and terminate an abandoned session with
-  `dropbear sessions stop <session-id>`.
+  `dreamscale sessions list`, and terminate an abandoned session with
+  `dreamscale sessions stop <session-id>`.
 </Note>
 
 ## Choose a prediction interface
@@ -69,7 +69,7 @@ If a context manager is impossible, call `policy.close()` or
 | --- | --- | --- |
 | `predict()` | One complete action chunk plus timing | You own all buffering and actuation |
 | `next_action()` | One action from a stateful client-side buffer | You own sensing, cadence, validation, and actuation |
-| `run()` | A `RunResult` after a bounded loop | Dropbear owns refill timing; your callbacks own sensing and actuation |
+| `run()` | A `RunResult` after a bounded loop | Dreamscale owns refill timing; your callbacks own sensing and actuation |
 
 ### Inspect a chunk with `predict`
 
@@ -118,8 +118,8 @@ actions and invoke your robot-side hold or stop path.
 chunks, and calls `act` up to `max_actions`:
 
 ```python
-import dropbear
-from dropbear.policy import RunContext
+import dreamscale
+from dreamscale.policy import RunContext
 
 from robot_adapter import robot
 
@@ -134,7 +134,7 @@ def act(action, context: RunContext):
     return False
 
 
-with dropbear.connect(model="molmoact2-so101") as policy:
+with dreamscale.connect(model="molmoact2-so101") as policy:
     outcome = policy.run(
         instruction="pick up the red cube",
         observe=observe,
@@ -154,7 +154,7 @@ are tested locally.
 Leave both settings on their defaults first:
 
 ```python
-with dropbear.connect(
+with dreamscale.connect(
     model="molmoact2-so101",
     region="nearest",
     transport="auto",
@@ -177,14 +177,14 @@ Models declare a native action rate. `control_hz` requests a different rate for
 your control loop:
 
 ```python
-with dropbear.connect(
+with dreamscale.connect(
     model="dreamzero-yam",
     control_hz=15,
 ) as policy:
     ...
 ```
 
-Dropbear stretches the action horizon to match rather than discarding actions,
+Dreamscale stretches the action horizon to match rather than discarding actions,
 so a chunk covers proportionally more wall-clock time at a lower rate. For a
 24-step chunk that is 0.8 s at 30 Hz and 1.6 s at 15 Hz.
 
@@ -212,7 +212,7 @@ first connection. Two settings control that window:
 
 - `startup_timeout` bounds how long `connect()` waits for a cold model. Raise it
   for large models on a slow first call.
-- `keep_warm` asks Dropbear to hold the session ready between calls instead of
+- `keep_warm` asks Dreamscale to hold the session ready between calls instead of
   releasing it. A warm session bills while it is held, so use it for an
   interactive session or a batch of evaluations, not for an idle process.
 
@@ -222,9 +222,9 @@ first connection. Two settings control that window:
 messages into your logger, or `None` to suppress them:
 
 ```python
-with dropbear.connect(
+with dreamscale.connect(
     model="molmoact2-so101",
-    on_progress=lambda message: logger.info("dropbear: %s", message),
+    on_progress=lambda message: logger.info("dreamscale: %s", message),
 ) as policy:
     ...
 ```
@@ -233,10 +233,10 @@ with dropbear.connect(
 `run()` call:
 
 ```python
-import dropbear
+import dreamscale
 
 
-hooks = dropbear.RunHooks(
+hooks = dreamscale.RunHooks(
     on_timing=lambda event: print(event.obs_to_action_ms),
     on_buffer=lambda event: print(event.health, event.remaining),
 )
@@ -250,11 +250,11 @@ substitute for closing the session.
 ## Optimization overrides
 
 `acceleration`, `control`, `rtc`, and `calibration` are advanced connection
-overrides. Keep each on `"auto"` unless Dropbear support asks you to test a
+overrides. Keep each on `"auto"` unless Dreamscale support asks you to test a
 specific configuration:
 
 ```python
-policy = dropbear.connect(
+policy = dreamscale.connect(
     model="molmoact2-so101",
     acceleration="auto",
     control="auto",
@@ -271,7 +271,7 @@ The resolved configuration is available as
 
 `connect_so101()` is a deprecated compatibility surface for the legacy
 turnkey SO-101 loop. New integrations should build observations with
-`dropbear.so101.observe()` and connect through `dropbear.connect()`. Existing
+`dreamscale.so101.observe()` and connect through `dreamscale.connect()`. Existing
 users can continue the [SO-101 guide](/guides/so101) while migrating their
 controller boundary.
 

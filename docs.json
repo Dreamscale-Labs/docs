@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Dropbear",
+  "name": "Dreamscale",
   "description": "Cloud robot policy inference through a small Python SDK and CLI.",
   "colors": {
     "primary": "#16181A",
@@ -21,8 +21,8 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a9",
-    "dashboardUrl": "https://dropbear.dreamscalelabs.com",
+    "sdkVersion": "0.1.0a24",
+    "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
   },
@@ -75,7 +75,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dropbear.dreamscalelabs.com/dashboard"
+      "href": "https://app.dreamscalelabs.com/dashboard"
     }
   },
   "contextual": {
@@ -89,7 +89,7 @@
   },
   "markdown": {
     "instructions": [
-      "Treat the Dropbear Python SDK and CLI as the supported public integration surfaces.",
+      "Treat the Dreamscale Python SDK and CLI as the supported public integration surfaces.",
       "Prefer context-managed sessions and model-specific observation helpers.",
       "Do not infer or recommend internal control-plane APIs."
     ]

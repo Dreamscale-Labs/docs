@@ -1,13 +1,13 @@
 ---
 title: "Inspect Robots"
-description: "Run a Dropbear-hosted policy on a physical robot from an existing Inspect Robots evaluation, using DreamZero-YAM on a bimanual YAM as the worked example."
+description: "Run a Dreamscale-hosted policy on a physical robot from an existing Inspect Robots evaluation, using DreamZero-YAM on a bimanual YAM as the worked example."
 keywords: ["Inspect Robots", "inspect-robots-dropbear", "DreamZero-YAM", "bimanual YAM", "policy adapter"]
 ---
 
 [Inspect Robots](https://github.com/robocurve/inspect-robots) is an evaluation
 framework for robot policies: you define a task, an embodiment, and a policy,
-and it runs trials and records an EvalLog. Dropbear plugs in as a **policy**, so
-a Dropbear-hosted model can be evaluated by the same harness, on the same task
+and it runs trials and records an EvalLog. Dreamscale plugs in as a **policy**, so
+a Dreamscale-hosted model can be evaluated by the same harness, on the same task
 and embodiment, as any policy you already run.
 
 The adapter is
@@ -36,10 +36,10 @@ rather than retyping this guide.
 You need an Inspect Robots evaluation that already runs on your hardware with
 some other policy — a scripted or teleop baseline is ideal. Bring up the robot,
 the cameras, and the task first, and confirm trials complete end to end. Adding
-Dropbear to an evaluation that is not yet working makes the first failure much
+Dreamscale to an evaluation that is not yet working makes the first failure much
 harder to attribute.
 
-You also need a Dropbear API key and an entitlement for the model you intend to
+You also need a Dreamscale API key and an entitlement for the model you intend to
 call. Some models, including DreamZero-YAM, are granted per organization.
 
 ## 1. Install
@@ -48,9 +48,22 @@ call. Some models, including DreamZero-YAM, are granted per organization.
 uv add inspect-robots-dropbear
 ```
 
-The adapter pins the exact Dropbear SDK release it was qualified against, so it
-installs a matching `dropbear[dreamzero]` for you. Confirm the policy registered
-without opening a cloud session:
+The adapter pins the exact SDK release it was qualified against, so it
+installs a matching `dropbear[dreamzero]` for you.
+
+<Note>
+  Dreamscale was previously called Dropbear. The current adapter release is
+  still pinned to an earlier SDK that only has the `dropbear` command and reads
+  credentials only from `~/.dropbear`. Until a new adapter release ships, use the
+  commands on this page exactly as written: `dropbear login`,
+  `dropbear status`, `dropbear sessions`, and `--policy dropbear`. Run
+  `dropbear login` inside the adapter's environment (for example
+  `uv run dropbear login` in the project where you added the adapter). A
+  separate `dreamscale login` writes `~/.dreamscale`, which the adapter does not
+  read.
+</Note>
+
+Confirm the policy registered without opening a cloud session:
 
 ```bash
 inspect-robots list policies
@@ -100,7 +113,7 @@ epochs, scorer, logging — is unchanged.
 
 | Parameter | Default | Meaning |
 | --- | --- | --- |
-| `model` | required | Dropbear model id, for example `dreamzero-yam` |
+| `model` | required | Dreamscale model id, for example `dreamzero-yam` |
 | `sampling` | `async_latest` | Action sampling mode, see below |
 | `control_hz` | model's native rate | Rate the action chunk is executed at, 5–30 Hz |
 | `keep_warm_s` | `0` | Hold the session warm after close so the next run skips the cold start, 0–3600 s. **Billed while held** |
@@ -203,7 +216,7 @@ On every policy step, the task and embodiment must supply:
   delivered action.
 
 The adapter declares a 14-dimensional raw absolute-joint action at the commanded
-rate and returns exactly one action per `act()` call, while Dropbear owns the
+rate and returns exactly one action per `act()` call, while Dreamscale owns the
 action buffering behind it. See [Model contracts](/sdk/model-contracts) for the
 full DreamZero-YAM contract, including gripper conventions.
 
@@ -311,7 +324,7 @@ dropbear/<run_id>/<sanitized-scene-id>-e<epoch>.jsonl
 Each row carries serving identity, the source control tick, camera
 capture-to-execution age, timing, chunk and merge disposition, and the same
 Inspect environment step. Join to the EvalLog, the action JSONL, or a Rerun
-timeline on `env_step`; use `join_key` for Dropbear chunk-level diagnostics.
+timeline on `env_step`; use `join_key` for Dreamscale chunk-level diagnostics.
 
 Sidecars never contain action vectors, images, credentials, or endpoints, so
 they are safe to attach to a bug report.
@@ -380,7 +393,7 @@ than trusting the status, and prefer 15 Hz when the margin is not comfortable.
 ## Where the boundaries are
 
 Inspect Robots remains canonical for the EvalLog, scores, commanded-action logs,
-stored frames, Rerun recordings, and trial termination state. Dropbear is
+stored frames, Rerun recordings, and trial termination state. Dreamscale is
 responsible only for turning an observation into an action chunk. The adapter
 calls neither your embodiment nor your hardware directly.
 

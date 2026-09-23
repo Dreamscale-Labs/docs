@@ -1,14 +1,14 @@
 ---
 title: "CLI reference"
-description: "Use the supported Dropbear command tree for authentication, diagnostics, sessions, simulation, and SO-101 setup."
-keywords: ["dropbear CLI", "dropbear doctor", "dropbear sessions", "dropbear status"]
+description: "Use the supported Dreamscale command tree for authentication, diagnostics, sessions, simulation, and SO-101 setup."
+keywords: ["dreamscale CLI", "dreamscale doctor", "dreamscale sessions", "dreamscale status"]
 ---
 
 The CLI supports account setup, diagnostics, live capacity checks, session
 cleanup, a curated simulator, and the turnkey SO-101 path.
 
 ```text
-dropbear
+dreamscale
 ├── login
 ├── doctor [core|so101|sim|all]
 ├── sim
@@ -24,48 +24,49 @@ dropbear
     └── pick-place
 ```
 
-Use `dropbear <command> --help` as the exact installed-version reference.
+Use `dreamscale <command> --help` as the exact installed-version reference.
 
 ## Account and health
 
 ```bash
 # Browser approval
-dropbear login
+dreamscale login
 
 # Hidden API-key prompt for a headless machine
-dropbear login --api-key
+dreamscale login --api-key
 
 # Robot-neutral checks
-dropbear doctor
+dreamscale doctor
 
 # Embodiment-specific checks
-dropbear doctor so101
-dropbear doctor sim
-dropbear doctor all
+dreamscale doctor so101
+dreamscale doctor sim
+dreamscale doctor all
 ```
 
-Credentials are written to `~/.dropbear/config.toml`. Never print or commit
+Credentials are written to `~/.dreamscale/config.toml` (or to an existing
+`~/.dropbear` from an earlier install). Never print or commit
 that file.
 
 ## Capacity
 
 ```bash
-dropbear status
-dropbear status --model molmoact2-so101
-dropbear status --model molmoact2-droid --region us-west-2
+dreamscale status
+dreamscale status --model molmoact2-so101
+dreamscale status --model molmoact2-droid --region us-west-2
 ```
 
 `status` checks live model-region capacity without opening a cloud session.
 Current model access and account-specific availability also appear in the
-[dashboard](https://dropbear.dreamscalelabs.com/dashboard/models).
+[dashboard](https://app.dreamscalelabs.com/dashboard/models).
 
 ## Sessions
 
 ```bash
-dropbear sessions list
-dropbear sessions list --json
-dropbear sessions stop <session-id>
-dropbear sessions stop --all
+dreamscale sessions list
+dreamscale sessions list --json
+dreamscale sessions stop <session-id>
+dreamscale sessions stop --all
 ```
 
 Use `--all` only when you intend to terminate every open session on the
@@ -73,12 +74,12 @@ account. Closing sessions stops continued usage from abandoned leases.
 
 ## Local simulation
 
-The `sim` command runs Dropbear's curated local LIBERO path on your machine. It
-is not a generic adapter for your own simulator, and Dropbear does not host a
+The `sim` command runs Dreamscale's curated local LIBERO path on your machine. It
+is not a generic adapter for your own simulator, and Dreamscale does not host a
 browser-based simulator:
 
 ```bash
-dropbear sim \
+dreamscale sim \
   --task-suite libero_spatial \
   --task-id 0 \
   --max-steps 600 \
@@ -97,20 +98,20 @@ Useful options:
 - `--verbose` exposes raw session and endpoint diagnostics.
 - `--output-root <path>` writes a run artifact bundle.
 
-The `sim` extra is Linux/WSL2 only. Run `dropbear doctor sim` first.
+The `sim` extra is Linux/WSL2 only. Run `dreamscale doctor sim` first.
 
 ## SO-101
 
 ```bash
-dropbear robots so101 setup
-dropbear robots so101 calibrate
-dropbear doctor so101
-dropbear run pick-place --duration 60
-dropbear run pick-place --no-fallback
+dreamscale robots so101 setup
+dreamscale robots so101 calibrate
+dreamscale doctor so101
+dreamscale run pick-place --duration 60
+dreamscale run pick-place --no-fallback
 ```
 
 - `setup` detects and saves the arm, side camera, and wrist camera.
-- `calibrate` writes `~/.dropbear/calibration/so101.json`.
+- `calibrate` writes `~/.dreamscale/calibration/so101.json`.
 - `doctor so101` gates the hardware path.
 - `run pick-place` starts dry on a newly configured machine and asks for
   explicit confirmation before persisting motion.
@@ -122,8 +123,8 @@ motion command.
 ## Shell completion
 
 ```bash
-dropbear --install-completion
+dreamscale --install-completion
 ```
 
-If a documented command is missing, compare `dropbear --help` with
+If a documented command is missing, compare `dreamscale --help` with
 `{{sdkVersion}}` and follow the [upgrade instructions](/installation#upgrade).
