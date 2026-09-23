@@ -1,7 +1,7 @@
 ---
 title: "Inspect Robots"
 description: "Run a Dreamscale-hosted policy on a physical robot from an existing Inspect Robots evaluation, using DreamZero-YAM on a bimanual YAM as the worked example."
-keywords: ["Inspect Robots", "inspect-robots-dropbear", "DreamZero-YAM", "bimanual YAM", "policy adapter"]
+keywords: ["Inspect Robots", "inspect-robots-dreamscale", "DreamZero-YAM", "bimanual YAM", "policy adapter"]
 ---
 
 [Inspect Robots](https://github.com/robocurve/inspect-robots) is an evaluation
@@ -10,10 +10,10 @@ and it runs trials and records an EvalLog. Dreamscale plugs in as a **policy**, 
 a Dreamscale-hosted model can be evaluated by the same harness, on the same task
 and embodiment, as any policy you already run.
 
-The adapter is
-[`inspect-robots-dropbear`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear)
-(Apache 2.0). It changes one thing in your evaluation: which policy is selected.
-Your registered task and embodiment stay exactly as they are.
+The adapter is `inspect-robots-dreamscale`
+([source](https://github.com/Dreamscale-Labs/inspect-robots-dropbear), Apache
+2.0). It changes one thing in your evaluation: which policy is selected. Your
+registered task and embodiment stay exactly as they are.
 
 Runnable reference code for everything below lives in
 [`examples/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples):
@@ -45,22 +45,20 @@ call. Some models, including DreamZero-YAM, are granted per organization.
 ## 1. Install
 
 ```bash
-uv add inspect-robots-dropbear
+uv add inspect-robots-dreamscale
 ```
 
 The adapter pins the exact SDK release it was qualified against, so it
-installs a matching `dropbear[dreamzero]` for you.
+installs a matching `dreamscale[dreamzero]` for you, including the `dreamscale`
+command used below.
 
 <Note>
-  Dreamscale was previously called Dropbear. The current adapter release is
-  still pinned to an earlier SDK that only has the `dropbear` command and reads
-  credentials only from `~/.dropbear`. Until a new adapter release ships, use the
-  commands on this page exactly as written: `dropbear login`,
-  `dropbear status`, `dropbear sessions`, and `--policy dropbear`. Run
-  `dropbear login` inside the adapter's environment (for example
-  `uv run dropbear login` in the project where you added the adapter). A
-  separate `dreamscale login` writes `~/.dreamscale`, which the adapter does not
-  read.
+  **Older adapter (`inspect-robots-dropbear`).** An existing install of the
+  adapter under its earlier name keeps working as it is: keep using its own
+  commands (`dropbear login`, `--policy dropbear`) until you switch. To switch,
+  replace the dependency with `inspect-robots-dreamscale`. Your existing login is
+  read in place, and `--policy dropbear` still selects the adapter with its
+  earlier artifact names (`dropbear_telemetry`, `dropbear/…` sidecars).
 </Note>
 
 Confirm the policy registered without opening a cloud session:
@@ -69,25 +67,25 @@ Confirm the policy registered without opening a cloud session:
 inspect-robots list policies
 ```
 
-The output must contain `dropbear`.
+The output must contain `dreamscale`.
 
 ## 2. Authenticate
 
 ```bash
-dropbear login
+uv run dreamscale login
 ```
 
 A robot controller usually has no browser, so pass the key directly there
 instead:
 
 ```bash
-dropbear login --api-key "<your key>"
+uv run dreamscale login --api-key "<your key>"
 ```
 
 Both paths write the same credential file, and both are verified the same way:
 
 ```bash
-dropbear status --model dreamzero-yam
+uv run dreamscale status --model dreamzero-yam
 ```
 
 `status` confirms the credential is accepted and reports whether the model has
@@ -101,12 +99,12 @@ Change only the policy selection in your existing evaluation command:
 inspect-robots run \
   --task your-task \
   --embodiment your-yam \
-  --policy dropbear -P model=dreamzero-yam \
+  --policy dreamscale -P model=dreamzero-yam \
   --log-dir logs
 ```
 
 Substitute your own registered `--task` and `--embodiment`;
-`--policy dropbear -P model=dreamzero-yam` is the entire edit. Everything else —
+`--policy dreamscale -P model=dreamzero-yam` is the entire edit. Everything else —
 epochs, scorer, logging — is unchanged.
 
 ### Parameters
@@ -141,7 +139,7 @@ time.
 of starting cold:
 
 ```bash
---policy dropbear -P model=dreamzero-yam -P keep_warm_s=300
+--policy dreamscale -P model=dreamzero-yam -P keep_warm_s=300
 ```
 
 Measured against production, back to back:
@@ -173,7 +171,7 @@ DreamZero-YAM emits 24 actions per chunk at a native 30 Hz. `control_hz` sets th
 rate you execute them at — any whole rate from 5 to 30:
 
 ```bash
---policy dropbear -P model=dreamzero-yam -P control_hz=15
+--policy dreamscale -P model=dreamzero-yam -P control_hz=15
 ```
 
 The whole chunk is executed at the rate you choose, so it stretches in time
@@ -276,7 +274,7 @@ class YamEmbodiment(EmbodimentBase):
 
 # `resolve` returns a constructed object, not a factory, and takes the same
 # parameters you would pass with `-P`.
-policy = resolve("policy", "dropbear", model="dreamzero-yam")
+policy = resolve("policy", "dreamscale", model="dreamzero-yam")
 task = resolve("task", "your-task")
 embodiment = resolve("embodiment", "your-yam")
 
@@ -288,7 +286,7 @@ finally:
     policy.close()
 
 # Then check where the actions actually came from. See the warning below.
-sidecar = sorted(pathlib.Path(LOG_DIR).glob("dropbear/*/*.jsonl"))[-1]
+sidecar = sorted(pathlib.Path(LOG_DIR).glob("dreamscale/*/*.jsonl"))[-1]
 rows = [json.loads(line) for line in sidecar.read_text().splitlines() if line.strip()]
 print(collections.Counter(row["action_source"] for row in rows))
 ```
@@ -298,12 +296,12 @@ print(collections.Counter(row["action_source"] for row in rows))
 Confirm nothing is still running:
 
 ```bash
-dropbear sessions list
+uv run dreamscale sessions list
 ```
 
 The adapter registers a bounded process-exit fallback, but it is not a
 substitute for the explicit `close()`, and it cannot help if the machine loses
-power. `dropbear sessions stop --all` clears a zombie lease.
+power. `uv run dreamscale sessions stop --all` clears a zombie lease.
 
 <Note>
   If you construct the policy object yourself rather than naming it in the
@@ -315,10 +313,10 @@ power. `dropbear sessions stop --all` clears a zombie lease.
 ## 5. Diagnostics
 
 The adapter writes one atomic sidecar per trial and records its relative path at
-`TrialRecord.metadata["dropbear_telemetry"]`:
+`TrialRecord.metadata["dreamscale_telemetry"]`:
 
 ```text
-dropbear/<run_id>/<sanitized-scene-id>-e<epoch>.jsonl
+dreamscale/<run_id>/<sanitized-scene-id>-e<epoch>.jsonl
 ```
 
 Each row carries serving identity, the source control tick, camera

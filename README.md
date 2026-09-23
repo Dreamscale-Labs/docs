@@ -2,7 +2,7 @@
 
 User-facing documentation for [Dreamscale](https://app.dreamscalelabs.com),
 hosted by Mintlify at
-[docs.dropbear.dreamscalelabs.com](https://docs.dropbear.dreamscalelabs.com).
+[docs.dreamscalelabs.com](https://docs.dreamscalelabs.com).
 
 The documentation is organized around user jobs:
 

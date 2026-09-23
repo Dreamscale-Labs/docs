@@ -15,7 +15,7 @@
       "weight": 600
     }
   },
-  "favicon": "/logo/dropbear-mark.svg",
+  "favicon": "/logo/dreamscale-mark.svg",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -23,7 +23,7 @@
   "variables": {
     "sdkVersion": "0.1.0a24",
     "dashboardUrl": "https://app.dreamscalelabs.com",
-    "docsUrl": "https://docs.dropbear.dreamscalelabs.com",
+    "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
   },
   "navigation": {

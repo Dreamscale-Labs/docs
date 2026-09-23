@@ -22,6 +22,7 @@ FORBIDDEN_TEXT = {
     "app.mintlify.com": "starter dashboard link",
     "mintlify.com/blog": "starter blog link",
     "https://dropbear.dreamscalelabs.com/docs": "stale documentation domain",
+    "docs.dropbear.dreamscalelabs.com": "legacy documentation domain",
 }
 # Our own packages install from PyPI. A git reference is both a pin that goes
 # stale silently and, in any project that declares its own dependencies, an
@@ -136,7 +137,7 @@ def main() -> int:
         errors.append("installation.mdx: must state the current release via sdkVersion")
     if "team@dreamscalelabs.com" not in DOCS_CONFIG.read_text():
         errors.append("docs.json: support email is missing")
-    if "https://docs.dropbear.dreamscalelabs.com" not in DOCS_CONFIG.read_text():
+    if '"docsUrl": "https://docs.dreamscalelabs.com"' not in DOCS_CONFIG.read_text():
         errors.append("docs.json: canonical docs URL is missing")
 
     if errors:
