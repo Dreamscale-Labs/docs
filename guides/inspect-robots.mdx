@@ -11,18 +11,15 @@ a Dreamscale-hosted model can be evaluated by the same harness, on the same task
 and embodiment, as any policy you already run.
 
 The adapter is `inspect-robots-dreamscale`
-([source](https://github.com/Dreamscale-Labs/inspect-robots-dropbear), Apache
+([source](https://github.com/Dreamscale-Labs/inspect-robots-dreamscale), Apache
 2.0). It changes one thing in your evaluation: which policy is selected. Your
 registered task and embodiment stay exactly as they are.
 
 Runnable reference code for everything below lives in
-[`examples/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples):
-a complete evaluation script and a YAM embodiment skeleton, in two variants --
-[`native-30hz/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples/native-30hz)
-and
-[`reduced-15hz/`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/tree/main/examples/reduced-15hz)
--- both adapted from runs that completed against production. Copy from there
-rather than retyping this guide.
+[`examples/native-30hz/`](https://github.com/Dreamscale-Labs/inspect-robots-dreamscale/tree/main/examples/native-30hz):
+a complete evaluation script and a YAM embodiment skeleton, adapted from a run
+that completed against production. Copy from there rather than retyping this
+guide.
 
 <Warning>
   This guide covers the software path. It does not authorize an unattended
@@ -50,16 +47,12 @@ uv add inspect-robots-dreamscale
 
 The adapter pins the exact SDK release it was qualified against, so it
 installs a matching `dreamscale[dreamzero]` for you, including the `dreamscale`
-command used below.
+command used below. Adapter 0.1.18 pins `dreamscale[dreamzero]==0.1.0a26`;
+confirm that is the SDK your environment resolved:
 
-<Note>
-  **Older adapter (`inspect-robots-dropbear`).** An existing install of the
-  adapter under its earlier name keeps working as it is: keep using its own
-  commands (`dropbear login`, `--policy dropbear`) until you switch. To switch,
-  replace the dependency with `inspect-robots-dreamscale`. Your existing login is
-  read in place, and `--policy dropbear` still selects the adapter with its
-  earlier artifact names (`dropbear_telemetry`, `dropbear/…` sidecars).
-</Note>
+```bash
+uv run python -c 'import dreamscale; assert dreamscale.__version__ == "0.1.0a26"'
+```
 
 Confirm the policy registered without opening a cloud session:
 
@@ -113,7 +106,7 @@ epochs, scorer, logging — is unchanged.
 | --- | --- | --- |
 | `model` | required | Dreamscale model id, for example `dreamzero-yam` |
 | `sampling` | `async_latest` | Action sampling mode, see below |
-| `control_hz` | model's native rate | Rate the action chunk is executed at, 5–30 Hz |
+| `control_hz` | `30` | Rate the action chunk is executed at. DreamZero-YAM accepts only `30`; any other value fails when the policy is constructed, before a session opens |
 | `keep_warm_s` | `0` | Hold the session warm after close so the next run skips the cold start, 0–3600 s. **Billed while held** |
 | `startup_timeout_s` | `1800` | Budget for the first connection while the model loads and warms up |
 | `timeout_s` | `60` | Per-step action deadline |
@@ -167,18 +160,17 @@ arguments picks up the session you left warm.
 
 ### Control rate, and who owns the clock
 
-DreamZero-YAM emits 24 actions per chunk at a native 30 Hz. `control_hz` sets the
-rate you execute them at — any whole rate from 5 to 30:
+DreamZero-YAM emits 24 actions per chunk on a 30 Hz action timebase, so one
+chunk covers 0.8 s. The model is qualified at exactly 30 Hz. You can pass the
+rate explicitly:
 
 ```bash
---policy dreamscale -P model=dreamzero-yam -P control_hz=15
+--policy dreamscale -P model=dreamzero-yam -P control_hz=30
 ```
 
-The whole chunk is executed at the rate you choose, so it stretches in time
-rather than being resampled: 0.8 s at 30 Hz, 1.6 s at 15 Hz. Nothing is dropped
-or interpolated, so the trajectory the robot executes is the one the model
-emitted, just played slower. Nothing server-side takes a rate; this is entirely
-a client-side decision.
+Any other value fails when the policy is constructed, before a paid session
+opens. The 30 Hz timebase is the rate your embodiment executes actions at; it is
+not the inference call rate or your robot driver's internal servo loop.
 
 <Warning>
   **`control_hz` does not make anything run at that rate.** Inspect's rollout
@@ -189,10 +181,10 @@ a client-side decision.
 
   What `control_hz` changes is what everything else *believes*: the action
   scheduler sizes its replan threshold from it (a 400 ms round trip is 12 steps
-  of a 24-step chunk at 30 Hz, but 6 at 15 Hz), the compatibility check
+  of a 24-step chunk at 30 Hz), the compatibility check
   reconciles it against your embodiment's declared rate, and it is stamped on
-  every action in the EvalLog. Declare the rate you actually achieve — a wrong
-  one degrades replanning while the run still looks healthy.
+  every action in the EvalLog. Pace your embodiment at 30 Hz — a loop that runs
+  at any other rate degrades replanning while the run still looks healthy.
 
   A rate disagreement between policy and embodiment is only a *warning*, never
   an error, so it will not stop a run. The adapter measures the real gap between
@@ -206,8 +198,9 @@ a client-side decision.
 
 On every policy step, the task and embodiment must supply:
 
-- `top_cam`, `left_cam`, and `right_cam` uint8 images, each with a real
-  monotonic capture time;
+- `top_cam`, `left_cam`, and `right_cam` uint8 images, each with its own real
+  capture time in Unix-epoch seconds (not a process-monotonic clock, and not one
+  synthetic time shared across cameras);
 - finite packed `joint_pos` state with shape `(14,)`, ordered left arm, left
   gripper, right arm, right gripper; and
 - Inspect's integer `extra["env_step"]`, starting at zero and advancing once per
@@ -225,9 +218,9 @@ a fabricated or stale clock silently degrades its output rather than raising.
 
 The shape of a full run, with the hardware halves stubbed. The complete versions
 are
-[`run_eval.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/native-30hz/run_eval.py)
+[`run_eval.py`](https://github.com/Dreamscale-Labs/inspect-robots-dreamscale/blob/main/examples/native-30hz/run_eval.py)
 and
-[`yam_embodiment.py`](https://github.com/Dreamscale-Labs/inspect-robots-dropbear/blob/main/examples/native-30hz/yam_embodiment.py).
+[`yam_embodiment.py`](https://github.com/Dreamscale-Labs/inspect-robots-dreamscale/blob/main/examples/native-30hz/yam_embodiment.py).
 
 ```python
 import collections, json, pathlib, time
@@ -251,7 +244,7 @@ class YamEmbodiment(EmbodimentBase):
         top, left, right, times = self._robot.frames()  # your driver
         return Observation(
             images={"top_cam": top, "left_cam": left, "right_cam": right},
-            # Seconds off a real capture clock, keyed per camera.
+            # Real per-camera capture times, in Unix-epoch seconds.
             image_times=dict(zip(("top_cam", "left_cam", "right_cam"), times)),
             state={"joint_pos": self._robot.state.astype(np.float64)},
             state_time=time.monotonic_ns() / 1e9,
@@ -346,25 +339,21 @@ model action or held its previous position.
 </Warning>
 
 A high but non-zero hold fraction means the action buffer drained, usually
-because the round trip exceeded the chunk horizon. Lowering the command rate
-lengthens the horizon and can absorb it — but only if your embodiment actually
-slows to match. Changing the parameter alone just makes the scheduler wrong.
+because the round trip came close to the 0.8 s chunk horizon. Treat it as a
+diagnostic to investigate, not a reason to change the rate. A production run
+from Sydney shows the size of the effect:
 
-Two production runs from Sydney, same code and same input, show the size of the
-effect:
+| | 30 Hz from Sydney |
+| --- | --- |
+| Chunk horizon | 0.8 s |
+| Holds | 81 / 120 (67.5%) |
+| GPU inference p50 | 333 ms |
+| Observation-to-action p50 | 644 ms |
 
-| | 30 Hz | 15 Hz |
-| --- | --- | --- |
-| Chunk horizon | 0.8 s | 1.6 s |
-| Holds | 81 / 120 (67.5%) | 17 / 600 (2.8%) |
-| GPU inference p50 | 333 ms | 321 ms |
-| Observation-to-action p50 | 644 ms | 594 ms |
-
-Latency barely moved — that is distance and GPU, and the rate touches neither.
-What changed is that a chunk now covers 1.6 s of wall clock against a ~600 ms
-round trip, so the buffer stops draining. Note the cost: the arm sees a fresh
-observation half as often, which matters for contact-rich or fast motions. Treat
-a high hold fraction as the reason to drop the rate, not as the default.
+Most of that round trip is distance and GPU. `obs_to_action_ms` minus
+`server_inference_ms` is network, encode, decode, and scheduling combined, and it
+is dominated by distance to the serving region, `us-west-2`. Running the client
+closer to the region reduces it far more than any client-side tuning.
 
 **Once the round trip exceeds the chunk horizon, the hold fraction does not
 degrade gracefully — it goes to 100%.** No chunk can ever land before the buffer
@@ -375,18 +364,13 @@ round trip rose from 644 ms to 945 ms — past the 800 ms horizon — and
 model-sourced actions went from 39/120 to **0/120**. The run still reported
 success.
 
-That makes the horizon a threshold worth knowing:
-
-| rate | chunk horizon | round trip must stay under |
-| --- | --- | --- |
-| 30 Hz | 0.8 s | ~800 ms |
-| 15 Hz | 1.6 s | ~1.6 s |
-
-The margin at 30 Hz is thin if you are far from the serving region: a few
-hundred milliseconds of extra round trip is the difference between a working run
-and an empty one. Anything shared, metered, or wireless — a hotspot, a busy lab
-network, a VPN — can cost you that much on its own. Check `action_source` rather
-than trusting the status, and prefer 15 Hz when the margin is not comfortable.
+That makes the horizon a threshold worth knowing: the observation-to-action
+round trip must stay under about 800 ms. The margin is thin if you are far from
+the serving region: a few hundred milliseconds of extra round trip is the
+difference between a working run and an empty one. Anything shared, metered, or
+wireless — a hotspot, a busy lab network, a VPN — can cost you that much on its
+own. Check `action_source` rather than trusting the status, and prefer a fixed,
+wired connection close to the region.
 
 ## Where the boundaries are
 

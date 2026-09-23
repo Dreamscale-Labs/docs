@@ -29,7 +29,9 @@ helpers.
 <Note>
   Dreamscale was previously called Dropbear. The legacy `dropbear` package,
   `import dropbear`, and the `dropbear` command still work as aliases, so
-  existing projects keep running unchanged. Use `dreamscale` for new work.
+  existing projects keep running unchanged, and an existing `~/.dropbear`
+  sign-in is read in place when there is no `~/.dreamscale`. Use `dreamscale`
+  for new work.
 </Note>
 
 <Note>
@@ -77,8 +79,8 @@ dreamscale login
 
 The CLI opens a one-time approval page. After approval, it verifies the
 credential and writes `~/.dreamscale/config.toml` with user-only permissions.
-If this machine already has a `~/.dropbear` directory from an earlier install
-and no `~/.dreamscale`, the CLI keeps reading and writing `~/.dropbear` in place.
+A sign-in from an earlier install keeps working; see the note under
+[Choose an install](#choose-an-install).
 
 For a headless machine, paste an API key into the hidden prompt:
 
