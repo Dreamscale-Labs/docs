@@ -171,6 +171,33 @@ with dreamscale.connect(
 - `transport="quic"` requires the UDP path.
 - `transport="relay"` uses the relay directly.
 
+## Speed
+
+Some models offer a faster hardware tier. Request it per connection with
+`speed="fast"`:
+
+```python
+with dreamscale.connect(
+    model="pi05-yam",
+    region="available",
+    speed="fast",
+) as policy:
+    print(policy.speed)
+```
+
+- `speed="standard"` is the default and uses the model's normal placement.
+- `speed="fast"` runs on a dedicated high-end GPU for lower inference latency.
+  It is billed at a higher rate than standard; see
+  [Models]({{dashboardUrl}}/dashboard/models) for the current price.
+- Fast never falls back to standard hardware. If no fast capacity can start,
+  `connect()` fails instead of running slower hardware at the fast rate.
+- Before creating compute, the SDK confirms that the service supports fast for
+  the model. `policy.speed` reports the tier the service confirmed.
+- Fast is available for `pi05-yam` and `pi05-trossen-widowx` in `us-west-2`.
+  It requires `transport="auto"` and does not accept `provider="aws"`.
+
+The action contract is identical at both speeds; only inference latency changes.
+
 ## Command rate
 
 Models declare a native action rate. `control_hz` requests a different rate for

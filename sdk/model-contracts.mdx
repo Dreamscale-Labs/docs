@@ -1,7 +1,7 @@
 ---
 title: "Model contracts"
 description: "Match camera, state, action ordering, units, chunk size, and rate for the live Dreamscale models."
-keywords: ["SO-101 observation", "LIBERO action space", "DROID Franka", "model contract"]
+keywords: ["SO-101 observation", "LIBERO action space", "DROID Franka", "π0.5 YAM", "Trossen WidowX", "model contract"]
 ---
 
 A Dreamscale observation is expressed in the selected model's coordinates, not
@@ -24,6 +24,8 @@ require an entitlement on your organization.
 | `molmoact2-libero` | `dreamscale.libero.observe` | 10 × 7 delta end-effector actions | 10 Hz | Open |
 | `molmoact2-droid` | `dreamscale.franka.observe` | 15 × 8 absolute joint/gripper targets | 15 Hz | Open |
 | `dreamzero-yam` | bimanual observation, see below | 24 × 14 absolute joint/gripper targets | 30 Hz | Entitlement required |
+| `pi05-yam` | `dreamscale.yam.observe` | 16 × 14 absolute joint/gripper targets | 30 Hz | Open |
+| `pi05-trossen-widowx` | `dreamscale.trossen.observe` | 50 × 14 absolute joint/gripper targets | 30 Hz | Open |
 
 <Note>
   `molmoact2-droid` is listed in the catalog but has no serving capacity in the
@@ -81,6 +83,85 @@ The model is native at 30 Hz. You may request 5–30 Hz at connect, and Dreamsca
 stretches the action horizon to match rather than dropping actions, so a 24-step
 chunk covers 0.8 s at 30 Hz and 2.4 s at 10 Hz. Lower rates trade responsiveness
 for a longer buffer.
+
+## π0.5 YAM
+
+`pi05-yam` is a π0.5 checkpoint for a bimanual I2RT YAM. Both π0.5 models also
+offer `speed="fast"`; see [Speed](/sdk/overview#speed).
+
+### Observation
+
+Three RGB cameras at 640 × 360 in top, left wrist, right wrist order, and the
+packed bimanual state:
+
+```python
+observation = dreamscale.yam.observe(
+    top_frame=top_rgb,
+    left_frame=left_wrist_rgb,
+    right_frame=right_wrist_rgb,
+    left_joint_positions=left_six_joint_radians,
+    left_gripper=left_gripper_0_to_1,
+    right_joint_positions=right_six_joint_radians,
+    right_gripper=right_gripper_0_to_1,
+)
+```
+
+### Action
+
+| Property | Value |
+| --- | --- |
+| Shape | 16 × 14 |
+| Space | `absolute_joint_position` |
+| Ordering | left six joints, left gripper, right six joints, right gripper |
+| Joint units | radians |
+| Grippers | indices 6 and 13, normalized to 0–1 |
+| Rate | 30 Hz, fixed; omit `control_hz` |
+| Hold behaviour | holds current position when the buffer underruns |
+
+## π0.5 Trossen WidowX
+
+`pi05-trossen-widowx` is Trossen Robotics' π0.5 checkpoint for pouring items
+from a red cup on the stationary bimanual WidowX AI.
+
+### Observation
+
+Three RGB cameras at 640 × 480 in left wrist, high, right wrist order. Joints
+are radians; grippers are carriage positions in the robot's native units and
+are not rescaled:
+
+```python
+observation = dreamscale.trossen.observe(
+    left_wrist_frame=left_wrist_rgb,
+    high_frame=high_rgb,
+    right_wrist_frame=right_wrist_rgb,
+    left_joint_positions=left_six_joint_radians,
+    left_gripper=left_carriage_position,
+    right_joint_positions=right_six_joint_radians,
+    right_gripper=right_carriage_position,
+)
+```
+
+The checkpoint was trained on one task. An empty instruction uses its trained
+prompt, "Pour the items from the red cup into the empty container".
+
+### Action
+
+| Property | Value |
+| --- | --- |
+| Shape | 50 × 14 |
+| Space | `absolute_joint_position` |
+| Ordering | left six joints, left gripper, right six joints, right gripper |
+| Joint units | radians |
+| Grippers | indices 6 and 13, native carriage positions (no clipping) |
+| Rate | 30 Hz, fixed; omit `control_hz` |
+| Horizon | about 1.7 s per chunk |
+| Hold behaviour | holds current position when the buffer underruns |
+
+<Warning>
+  Both π0.5 models return absolute joint targets. Validate joint, velocity,
+  workspace, collision, and gripper limits on every target, and keep a local
+  safety controller and emergency stop in place, before any hardware use.
+</Warning>
 
 ## MolmoAct2 SO-101
 

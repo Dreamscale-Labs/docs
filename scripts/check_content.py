@@ -34,7 +34,6 @@ STAGED_MODEL_MARKERS = (
     "bimanualyam",
     "gr00t",
     "groot",
-    "pi05",
 )
 
 
