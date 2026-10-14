@@ -259,7 +259,7 @@ def robot_type_of(model: str | None) -> str:
 
 
 @contextlib.contextmanager
-def stand_in_connect(contracts: dict[str, tuple[int, int]]):
+def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
     """Replace dreamscale.connect with a policy that binds each call to the real API."""
     import dreamscale
     from dreamscale.policy.remote import RemotePolicy
@@ -269,7 +269,7 @@ def stand_in_connect(contracts: dict[str, tuple[int, int]]):
     class StandInPolicy:
         def __init__(self, model: str) -> None:
             self.model = model
-            self.chunk, self.width = contracts.get(model, (1, 6))
+            self.chunk, self.width, self.action_hz = contracts.get(model, (1, 6, 30.0))
 
         def _actions(self, observation) -> tuple[tuple[float, ...], ...]:
             hold = getattr(observation, "hold_action", None) or (0.0,) * self.width
@@ -357,10 +357,10 @@ def check_models_table(report: Report) -> None:
             report.ok("models.mdx", f"`{model}` row", f"matches SDK {actual}")
 
 
-def documented_contracts() -> dict[str, tuple[int, int]]:
+def documented_contracts() -> dict[str, tuple[int, int, float]]:
     text = (ROOT / "models.mdx").read_text()
-    return {m: (int(c), int(w)) for m, c, w in
-            re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d+) × (\d+) \|", text, re.M)}
+    return {m: (int(c), int(w), float(hz)) for m, c, w, hz in
+            re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|", text, re.M)}
 
 
 # ---------------------------------------------------------------- live CLI
