@@ -109,7 +109,7 @@ An underrun means the next chunk arrived late, so the robot held its position.
 ```python
 dreamscale.connect(
     "pi05-yam",
-    keep_warm=300,          # keep the GPU reserved 300 s after close (billed); default 60
+    keep_warm=0,            # release the GPU on close (default: keep it 300 s, billed)
     speed="fast",           # faster GPU where the model offers it
     startup_timeout=600,    # give up if a cold start takes longer
 )
