@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a100",
+    "sdkVersion": "0.1.0a101",
     "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
