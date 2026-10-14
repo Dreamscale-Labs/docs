@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import dreamscale
-from dreamscale import franka, libero, so101
+from dreamscale import franka, libero, robot, so101, trossen, yam
 from dreamscale.policy import RemotePolicy
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,17 +136,50 @@ def main() -> int:
         ("agent_frame", "wrist_frame", "state", "actions_remaining", "model"),
     )
 
+    for name, helper in (("yam", yam.observe), ("trossen", trossen.observe)):
+        documented = {
+            "yam": ("top_frame", "left_frame", "right_frame"),
+            "trossen": ("left_wrist_frame", "high_frame", "right_wrist_frame"),
+        }[name] + (
+            "left_joint_positions",
+            "left_gripper",
+            "right_joint_positions",
+            "right_gripper",
+        )
+        missing = set(documented) - set(parameter_names(helper))
+        if missing:
+            raise AssertionError(f"dreamscale.{name}.observe lost parameters: {sorted(missing)}")
+    require_signature(
+        "dreamscale.robot.observe",
+        robot.observe,
+        ("cameras", "state", "actions_remaining"),
+    )
+
     require_words(
         "dreamscale",
         cli_help(),
-        {"login", "doctor", "sim", "models", "sessions", "robots", "run", "deployments"},
+        {
+            "login",
+            "doctor",
+            "sim",
+            "models",
+            "sessions",
+            "robots",
+            "run",
+            "deployments",
+            "integrations",
+        },
     )
     require_words("login", cli_help("login"), {"--api-key"})
-    require_words("doctor", cli_help("doctor"), {"core", "so101", "sim", "all"})
+    require_words("doctor", cli_help("doctor"), {"core", "so101", "yam", "sim", "all", "--model"})
     require_words(
         "sim",
         cli_help("sim"),
         {
+            "libero",
+            "--model",
+            "--keep-warm",
+            "--output-root",
             "--task-suite",
             "--task-id",
             "--max-steps",
@@ -163,11 +196,63 @@ def main() -> int:
     require_words(
         "robots so101", cli_help("robots", "so101"), {"setup", "calibrate", "home", "release"}
     )
-    require_words("run so101", cli_help("run", "so101"), {"--model", "--max-actions"})
+    require_words("robots yam", cli_help("robots", "yam"), {"setup", "home", "release"})
+    require_words("robots yam setup", cli_help("robots", "yam", "setup"), {"--cli", "--config"})
+    require_words("robots so101 home", cli_help("robots", "so101", "home"), {"--set"})
+    run_options = {
+        "--model",
+        "--instruction",
+        "--max-actions",
+        "--keep-warm",
+        "--mode",
+        "--deployment",
+        "--speed",
+        "--region",
+        "--max-joint-step",
+        "--max-joint-velocity",
+        "--effort",
+        "--max-cost",
+        "--hud",
+        "--hud-job",
+        "--inspect-robots",
+        "--task",
+        "--epochs",
+        "--log-dir",
+        "--trace-dir",
+        "--trace-images",
+    }
+    require_words("run so101", cli_help("run", "so101"), run_options)
+    require_words("run yam", cli_help("run", "yam"), run_options | {"--config"})
+    require_words("integrations", cli_help("integrations"), {"hud", "inspect-robots"})
+    require_words("integrations hud setup", cli_help("integrations", "hud", "setup"), {"--api-key"})
     require_words(
         "deployments",
         cli_help("deployments"),
         {"create", "inspect", "list", "show", "keep-warm", "restore", "rm"},
+    )
+    require_words(
+        "deployments create",
+        cli_help("deployments", "create"),
+        {
+            "--preset",
+            "--region",
+            "--camera",
+            "--image-size",
+            "--dataset",
+            "--action-dim",
+            "--state-dim",
+            "--chunk",
+            "--hz",
+            "--context",
+            "--revision",
+            "--hf-token",
+            "--no-wait",
+        },
+    )
+    require_words(
+        "deployments keep-warm",
+        cli_help("deployments", "keep-warm"),
+        {"--take-over-from", "always"},
     )
 
     print(f"SDK contract passed for dreamscale {SDK_VERSION}.")

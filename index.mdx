@@ -1,59 +1,55 @@
 ---
-title: "Dreamscale"
-description: "Run robot policies in the cloud through a small Python SDK and CLI."
-keywords: ["robot inference", "robot policy", "Python SDK", "physical AI"]
+title: "Overview"
+description: "Run robot foundation models on cloud GPUs from a CLI or a few lines of Python."
+keywords: ["robot inference", "robot policy", "VLA", "physical AI", "Dreamscale"]
 ---
 
-# Cloud inference for your robot
-
-Dreamscale runs robot policies in the cloud while your local controller keeps
-ownership of sensing, actuation, and safety.
+Your robot sends camera frames and joint state, and gets back the next actions
+in real time. You don't need a local GPU or any model setup.
 
 ```mermaid
 flowchart LR
-  A["Robot cameras and state"] --> B["Dreamscale Python SDK"]
-  B --> C["Cloud policy"]
-  C --> D["Action chunk"]
-  D --> E["Your validated robot controller"]
+  A["Your robot"] -->|cameras and joint state| B["Dreamscale CLI or SDK"]
+  B --> C["Model on a cloud GPU"]
+  C -->|actions| A
 ```
 
+## Start here
+
 <CardGroup cols={2}>
-  <Card title="Integrate with Python" icon="code" href="/quickstart">
-    Send one real robot observation and inspect the returned action chunk
-    without moving the robot.
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Install, sign in, and watch a model complete a task in simulation. No robot
+    needed.
   </Card>
-  <Card title="Set up an SO-101" icon="robot" href="/guides/so101">
-    Configure, calibrate, diagnose, dry-run, and safely start the supported arm
-    workflow.
+  <Card title="SO-101" icon="robot" href="/robots/so101">
+    Set up a single SO-101 arm and run a model on it.
+  </Card>
+  <Card title="Bimanual YAM" icon="hands" href="/robots/yam">
+    Set up two I2RT YAM arms and run a model on them.
+  </Card>
+  <Card title="Python SDK" icon="code" href="/python/run-a-policy">
+    Call a model from your own robot code.
   </Card>
 </CardGroup>
 
-## What Dreamscale owns
+## How it works
 
-- authenticated cloud sessions;
-- policy worker allocation and startup;
-- observation transport and action-chunk delivery;
-- automatic QUIC-to-relay transport selection;
-- session lifecycle and usage reporting.
+- **Pick a model.** `dreamscale models` lists the models your organization can
+  run. Each model is trained for a specific robot.
+- **Start a session.** Dreamscale starts a GPU for you. The first connection
+  can take a few minutes while the model loads.
+- **Stream observations, get actions.** The CLI and SDK handle networking,
+  buffering, and timing.
+- **Pay per session.** Sessions bill per second from prepaid credits. Rates
+  and your balance are on the [dashboard](https://app.dreamscalelabs.com/dashboard).
 
-## What you own
+<Warning>
+  Cloud inference does not replace your robot's safety controller. Keep joint
+  and speed limits, a clear workspace, and a physical e-stop on every robot.
+</Warning>
 
-- cameras and robot state;
-- conversion into the selected model's observation contract;
-- action validation and robot-coordinate conversion;
-- local watchdogs, limits, collision handling, and e-stop behavior;
-- deterministic session cleanup.
-
-<Note>
-  Open sessions consume prepaid credits. Use a context manager or call
-  `close()` when work is complete. View current availability, balance, and
-  usage in the
-  [dashboard](https://app.dreamscalelabs.com/dashboard).
-</Note>
-
-## Choose your next step
-
-- Have a controller already? Start with the [Python quickstart](/quickstart).
-- Need package or platform details? Read [Installation](/installation).
-- Need exact shapes and units? Open [Model contracts](/sdk/model-contracts).
-- Something failed? Use [Troubleshooting](/troubleshooting).
+<Tip>
+  Using a coding agent? Point it at
+  [docs.dreamscalelabs.com/llms-full.txt](https://docs.dreamscalelabs.com/llms-full.txt)
+  for these docs as one file.
+</Tip>

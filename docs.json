@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Dreamscale",
-  "description": "Cloud robot policy inference through a small Python SDK and CLI.",
+  "description": "Run robot foundation models in the cloud from a CLI or a small Python SDK.",
   "colors": {
     "primary": "#16181A",
     "light": "#F7F8F7",
@@ -32,41 +32,42 @@
         "group": "Getting started",
         "pages": [
           "index",
-          "quickstart",
-          "installation"
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Robots",
+        "pages": [
+          "robots/so101",
+          "robots/yam"
         ]
       },
       {
         "group": "Build with Python",
         "pages": [
-          "sdk/overview",
-          "sdk/model-contracts"
+          "python/run-a-policy",
+          "python/models"
         ]
       },
       {
-        "group": "Your fine-tunes",
+        "group": "Fine-tuning",
         "pages": [
-          "guides/deployments"
-        ]
-      },
-      {
-        "group": "Robot guides",
-        "pages": [
-          "guides/so101",
-          "guides/franka",
-          "guides/inspect-robots"
+          "fine-tuning/deployments"
         ]
       },
       {
         "group": "Reference",
         "pages": [
-          "reference/cli"
+          "reference/cli",
+          "reference/sdk",
+          "reference/troubleshooting"
         ]
       },
       {
-        "group": "Help",
+        "group": "Integrations",
         "pages": [
-          "troubleshooting"
+          "integrations/inspect-robots",
+          "integrations/hud"
         ]
       }
     ]
@@ -95,23 +96,55 @@
   },
   "markdown": {
     "instructions": [
-      "Treat the Dreamscale Python SDK and CLI as the supported public integration surfaces.",
-      "Prefer context-managed sessions and model-specific observation helpers.",
+      "Treat the Dreamscale CLI and Python SDK as the supported public integration surfaces.",
+      "Prefer `dreamscale run <robot>` for supported robots and `dreamscale.connect()` with a context manager in Python.",
       "Do not infer or recommend internal control-plane APIs."
     ]
   },
   "redirects": [
     {
+      "source": "/installation",
+      "destination": "/quickstart"
+    },
+    {
+      "source": "/guides/so101",
+      "destination": "/robots/so101"
+    },
+    {
       "source": "/golden-path",
-      "destination": "/guides/so101"
+      "destination": "/robots/so101"
     },
     {
       "source": "/docs/golden-path",
-      "destination": "/guides/so101"
+      "destination": "/robots/so101"
     },
     {
       "source": "/guides/browser-sim",
       "destination": "/quickstart"
+    },
+    {
+      "source": "/guides/franka",
+      "destination": "/python/models"
+    },
+    {
+      "source": "/guides/deployments",
+      "destination": "/fine-tuning/deployments"
+    },
+    {
+      "source": "/guides/inspect-robots",
+      "destination": "/integrations/inspect-robots"
+    },
+    {
+      "source": "/sdk/overview",
+      "destination": "/python/run-a-policy"
+    },
+    {
+      "source": "/sdk/model-contracts",
+      "destination": "/python/models"
+    },
+    {
+      "source": "/troubleshooting",
+      "destination": "/reference/troubleshooting"
     }
   ]
 }

@@ -1,0 +1,108 @@
+---
+title: "SDK reference"
+description: "dreamscale.connect parameters, policy methods, results, observation helpers, and errors."
+keywords: ["dreamscale.connect", "aconnect", "RemotePolicy", "predict", "next_action", "run", "RunHooks", "DreamscaleError"]
+---
+
+```bash
+uv add dreamscale
+```
+
+## `dreamscale.connect`
+
+```python
+policy = dreamscale.connect(model, **options)
+```
+
+Starts a cloud session and returns a policy. Use it as a context manager, or
+call `policy.close()` when done. `await dreamscale.aconnect(...)` takes the same
+arguments and returns an async policy.
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `model` | required | Model ID, for example `"molmoact2-so101"` |
+| `api_key` | `None` | API key. Otherwise uses `DREAMSCALE_API_KEY`, then the saved login |
+| `deployment` | `None` | Your [deployment](/fine-tuning/deployments) ID, `"ckpt_..."` |
+| `region` | `"nearest"` | `"nearest"`, `"available"` (any region with capacity), or a region such as `"us-west-2"` |
+| `speed` | `"standard"` | `"fast"` for a faster GPU at a higher rate, where the model offers it. Never falls back to standard |
+| `transport` | `"auto"` | `"auto"` tries QUIC and falls back to a relay. `"quic"` or `"relay"` to force one |
+| `keep_warm` | `60` | Seconds to keep the GPU reserved after `close()` so the next connection starts fast. Billed |
+| `startup_timeout` | server default | Seconds to wait for a cold start |
+| `idle_timeout` | `3600` | Seconds of inactivity before the server ends the session |
+| `control_hz` | model's rate | Rate your loop runs at, if different from the model's. Chunks stretch to match |
+| `on_progress` | `print` | Callback for startup messages. `None` silences them |
+| `acceleration`, `control`, `rtc`, `calibration`, `context` | `"auto"` | Advanced. Leave on `"auto"` unless support asks |
+
+## Policy
+
+| Attribute | Description |
+| --- | --- |
+| `session_id` | Cloud session ID |
+| `model` | Model ID |
+| `region` | Region the session runs in |
+| `transport_mode` | `"quic"` or `"relay"` |
+| `action_hz` | Rate actions are meant to run at |
+| `chunk_size` | Actions per chunk |
+
+| Method | Returns |
+| --- | --- |
+| `predict(observation, instruction, timeout_s=60.0)` | One action chunk (`ActionChunkResult`). Never moves anything |
+| `next_action(observation, instruction, timeout_s=60.0)` | The next single action, from a buffer refilled in the background |
+| `run(instruction, observe, act, max_actions, hooks=None)` | Runs a timed loop and returns a `RunResult`. `max_actions=None` runs until `act` returns `True` |
+| `close()` | Ends the session. Called for you by `with` |
+
+### `run` callbacks
+
+- `observe(context)` returns an observation.
+- `act(action, context)` sends one action to the robot. Return `True` to stop.
+
+Pass `hooks=dreamscale.RunHooks(on_timing=..., on_buffer=..., on_summary=...)`
+for timing and buffer events.
+
+## Results
+
+**`ActionChunkResult`** from `predict()`:
+
+| Field | Description |
+| --- | --- |
+| `actions` | List of actions. Each action is a tuple of floats |
+| `timing.obs_to_action_ms` | Round trip from sending the observation to receiving actions |
+| `timing.server_inference_ms` | Time spent in the model |
+| `transport_mode` | `"quic"` or `"relay"` |
+
+**`RunResult`** from `run()`:
+
+| Field | Description |
+| --- | --- |
+| `actions` | Actions sent to `act` |
+| `underruns` | Ticks where no action was ready, so the robot held position |
+| `elapsed_s` | Wall-clock duration |
+| `stop_reason` | Why the loop ended |
+
+## Observation helpers
+
+| Helper | Models |
+| --- | --- |
+| `dreamscale.so101.observe(side_frame, wrist_frame, joint_positions)` | `molmoact2-so101` |
+| `dreamscale.yam.observe(top_frame, left_frame, right_frame, left_joint_positions, left_gripper, right_joint_positions, right_gripper)` | `molmoact2-bimanual-yam`, `pi05-yam` |
+| `dreamscale.trossen.observe(left_wrist_frame, high_frame, right_wrist_frame, left_joint_positions, left_gripper, right_joint_positions, right_gripper)` | `pi05-trossen-widowx` |
+| `dreamscale.franka.observe(exterior_frame, wrist_frame, joint_positions, gripper)` | `molmoact2-droid` |
+| `dreamscale.libero.observe(agent_frame, wrist_frame, state)` | `molmoact2-libero` |
+| `dreamscale.robot.observe(cameras, state)` | Your deployments |
+
+All arguments are keyword-only. Units and ordering are on [Models](/python/models).
+
+## Errors
+
+All SDK errors subclass `dreamscale.errors.DreamscaleError`. Each has
+`error.info.problem`, `cause`, and `fix`, and `error.render()` formats them.
+`CapacityError` means no GPU is available for this model and region right now:
+
+```python
+from dreamscale.errors import CapacityError
+
+try:
+    policy = dreamscale.connect("pi05-yam", region="nearest")
+except CapacityError:
+    policy = dreamscale.connect("pi05-yam", region="available")
+```

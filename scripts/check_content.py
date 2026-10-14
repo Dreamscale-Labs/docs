@@ -30,8 +30,6 @@ FORBIDDEN_TEXT = {
 # first command dies with an error that names hatchling rather than us.
 GIT_INSTALL_RE = re.compile(r"git\+\w+://[^\s\"']*dreamscale-labs", re.IGNORECASE)
 STAGED_MODEL_MARKERS = (
-    "bimanual-yam",
-    "bimanualyam",
     "gr00t",
     "groot",
 )
@@ -132,8 +130,8 @@ def main() -> int:
     quickstart = (ROOT / "quickstart.mdx").read_text()
     if '"dreamscale==' in quickstart or "'dreamscale==" in quickstart:
         errors.append("quickstart.mdx: install examples must track the latest release, not a pin")
-    if "{{sdkVersion}}" not in (ROOT / "installation.mdx").read_text():
-        errors.append("installation.mdx: must state the current release via sdkVersion")
+    if "{{sdkVersion}}" not in quickstart:
+        errors.append("quickstart.mdx: must state the current release via sdkVersion")
     if "team@dreamscalelabs.com" not in DOCS_CONFIG.read_text():
         errors.append("docs.json: support email is missing")
     if '"docsUrl": "https://docs.dreamscalelabs.com"' not in DOCS_CONFIG.read_text():
