@@ -26,28 +26,29 @@ uv add dreamscale
 
 ## Get one action chunk
 
-This runs as-is, with blank frames and zero joints:
+This runs as-is. It sends blank frames and a zero state to `pi05-libero`, the
+π0.5 model for the LIBERO simulator:
 
 ```python
 import numpy as np
 
 import dreamscale
 
-policy = dreamscale.connect("pi05-so101")
-frame = np.zeros((480, 640, 3), dtype=np.uint8)  # H×W×3 uint8 RGB
-observation = dreamscale.so101.observe(
-    side_frame=frame,
+policy = dreamscale.connect("pi05-libero")
+frame = np.zeros((256, 256, 3), dtype=np.uint8)  # H×W×3 uint8 RGB
+observation = dreamscale.libero.observe(
+    agent_frame=frame,
     wrist_frame=frame,
-    joint_positions=[0.0] * 6,  # degrees; gripper 0–100
+    state=[0.0] * 8,
 )
-chunk = policy.predict(observation, instruction="pick up the red block")
+chunk = policy.predict(observation, instruction="pick up the black bowl")
 print(len(chunk.actions), "x", len(chunk.actions[0]))
 ```
 
-It prints `30 x 6`: 30 actions of 6 absolute joint targets. `connect` returns
-when a GPU is ready; if every GPU is busy, it waits in a queue and shows your
-position. Now replace the frames and joints with your camera frames and joint
-readings. See [Models](/models) for each robot's observation and actions.
+It prints `20 x 7`: 20 actions of 7 values. `connect` returns when a GPU is
+ready; if every GPU is busy, it waits in a queue and shows your position. Now
+replace the frames and state with your own. See [Models](/models) for each
+robot's observation and actions.
 
 ## Drive a robot
 
@@ -58,12 +59,13 @@ readings. See [Models](/models) for each robot's observation and actions.
 </Warning>
 
 Call `next_action` once per control tick. It returns one action on the model's
-clock, so the loop needs no timing code.
+clock, so the loop needs no timing code. This loop drives an SO-101; pick a
+model for your robot from `uv run dreamscale models`.
 
 ```python
 import dreamscale
 
-policy = dreamscale.connect("pi05-so101")
+policy = dreamscale.connect("flux-3-action-so101")
 while True:
     action = policy.next_action(read_observation(), instruction="pick up the red block")
     robot.send(action)
