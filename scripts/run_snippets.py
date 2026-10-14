@@ -366,7 +366,9 @@ def documented_contracts() -> dict[str, tuple[int, int, float]]:
 # ---------------------------------------------------------------- live CLI
 
 
-def run_cli(argv: list[str], report: Report, label: str, *, timeout: float = 120) -> None:
+def run_cli(argv: list[str], report: Report, label: str, *, timeout: float = 120,
+            expect: str | None = None) -> None:
+    """Run one command; with `expect`, its stdout must contain that line, as the page says."""
     started = time.perf_counter()
     done = subprocess.run(
         [sys.executable, "-m", "dreamscale.cli", *argv], capture_output=True, text=True,
@@ -375,6 +377,12 @@ def run_cli(argv: list[str], report: Report, label: str, *, timeout: float = 120
     )
     tail = (done.stdout + done.stderr).strip().splitlines()[-1:] or [""]
     what = "dreamscale " + " ".join(argv)
+    if expect is not None:
+        tail = [line for line in done.stdout.splitlines() if line.startswith("Using ")][:1]
+        tail = [" / ".join(tail + [expect if expect in done.stdout else "no " + repr(expect)])]
+        if expect not in done.stdout:
+            report.fail(label, what, f"exit {done.returncode}: {tail[0][:200]}")
+            return
     if done.returncode == 0:
         report.ok(label, what, f"({time.perf_counter() - started:.1f} s; {tail[0][:100]})")
     else:
@@ -489,10 +497,12 @@ def main() -> int:
                     continue
                 seen.add(path)
                 argv = shlex.split(snippet.code)[1:]
+                expect = None
                 if path[:2] == ("sim", "libero"):
-                    # Headless here: no window, a short episode.
-                    argv += ["--non-interactive", "--max-steps", "60"]
-                run_cli(argv, report, snippet.label, timeout=1800)
+                    # Headless here (no window); the page's success line must still print.
+                    argv += ["--non-interactive"]
+                    expect = "result: success condition reached"
+                run_cli(argv, report, snippet.label, timeout=1800, expect=expect)
     else:
         with stand_in_connect(documented_contracts()):
             for snippet in python:
