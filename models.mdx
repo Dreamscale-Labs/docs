@@ -1,11 +1,13 @@
 ---
-title: "Models"
+title: "Models for the Python SDK"
+sidebarTitle: "Models"
 description: "What each shared Dreamscale model takes in and returns: robot, observation, action chunk and rate."
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot type. Build observations with that robot's
-helper; the helper is the same for every model on that robot. Frames are
+This page is for the Python SDK: what each model takes in and returns. Each
+model is trained for one robot type. Build observations with that robot's
+helper, which is the same for every model on that robot. Frames are
 H×W×3 `uint8` RGB at any size: the SDK resizes them.
 
 | Model | Robot | Chunk × values | Rate |

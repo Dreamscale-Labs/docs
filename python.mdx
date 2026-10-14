@@ -1,22 +1,21 @@
 ---
-title: "Python"
+title: "Python SDK quick start"
+sidebarTitle: "Quick start"
 description: "Call a Dreamscale model from your own robot, simulator or pipeline with a few lines of Python."
 keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action chunk"]
 ---
 
-Have an SO-101 or a bimanual YAM? `dreamscale run` drives it with no code. See
-[SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
+Call a model on a cloud GPU from your own robot, simulator or pipeline. No GPU
+or robot needed to try it.
 
 ## What you need
 
-- Python 3.11 or newer.
-- A Dreamscale account. Sign in with `dreamscale login`, or set
+- Python 3.11 or newer, in a project (`uv init` makes one).
+- A Dreamscale account. Sign in once with `uv run dreamscale login`, or set
   `DREAMSCALE_API_KEY` to a key from
   [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys).
 
 ## Install
-
-In your project (`uv init` makes one):
 
 ```bash
 uv add dreamscale
@@ -27,23 +26,28 @@ uv add dreamscale
 
 ## Get one action chunk
 
+This runs as-is, with blank frames and zero joints:
+
 ```python
+import numpy as np
+
 import dreamscale
 
 policy = dreamscale.connect("pi05-so101")
+frame = np.zeros((480, 640, 3), dtype=np.uint8)  # H×W×3 uint8 RGB
 observation = dreamscale.so101.observe(
-    side_frame=side,         # H×W×3 uint8 RGB
-    wrist_frame=wrist,       # H×W×3 uint8 RGB
-    joint_positions=joints,  # 6 values, degrees; gripper 0–100
+    side_frame=frame,
+    wrist_frame=frame,
+    joint_positions=[0.0] * 6,  # degrees; gripper 0–100
 )
 chunk = policy.predict(observation, instruction="pick up the red block")
-print(len(chunk.actions), "actions")
+print(len(chunk.actions), "x", len(chunk.actions[0]))
 ```
 
-`connect` returns when a GPU is ready. If every GPU is busy, it waits in a queue
-and shows your position. `chunk.actions` holds absolute joint targets in the
-same order and units as `joints`. Nothing moves until you send them. See
-[Models](/models) for each robot's observation and actions.
+It prints `30 x 6`: 30 actions of 6 absolute joint targets. `connect` returns
+when a GPU is ready; if every GPU is busy, it waits in a queue and shows your
+position. Now replace the frames and joints with your camera frames and joint
+readings. See [Models](/models) for each robot's observation and actions.
 
 ## Drive a robot
 

@@ -29,20 +29,15 @@
   "navigation": {
     "pages": [
       {
-        "group": "Get started",
+        "group": "CLI",
         "pages": [
-          "index"
-        ]
-      },
-      {
-        "group": "Robots",
-        "pages": [
+          "index",
           "robots/so101",
           "robots/yam"
         ]
       },
       {
-        "group": "Python",
+        "group": "Python SDK",
         "pages": [
           "python",
           "models"
@@ -51,12 +46,7 @@
       {
         "group": "Help",
         "pages": [
-          "troubleshooting"
-        ]
-      },
-      {
-        "group": "Your own models",
-        "pages": [
+          "troubleshooting",
           "deployments"
         ]
       }
