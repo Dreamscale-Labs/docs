@@ -44,6 +44,12 @@
         ]
       },
       {
+        "group": "Your fine-tunes",
+        "pages": [
+          "guides/deployments"
+        ]
+      },
+      {
         "group": "Robot guides",
         "pages": [
           "guides/so101",
