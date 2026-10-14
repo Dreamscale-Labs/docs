@@ -47,8 +47,9 @@ Clear the table and follow the prompts to move each joint through its range.
 dreamscale doctor so101
 ```
 
-It checks the port, calibration and both cameras, and shows your side camera
-next to the reference framing. Every line shows a `✓`.
+It prints the model `run` will use, then checks the port, calibration, both
+cameras and your access to that model, and shows your side camera next to the
+reference framing. Every line shows a `✓`.
 
 ## 5. Run a model
 
@@ -62,12 +63,12 @@ next to the reference framing. Every line shows a `✓`.
 dreamscale run so101
 ```
 
-It prints `Using <model> (pass --model to choose)`, then:
+It prints `Using molmoact2-so101 (pass --model to choose)`, then:
 
-1. Press **Enter** to connect the arm.
-2. Type an instruction, for example `pick up the red block and put it in the box`.
-3. The arm moves to home and shows a preview of the first actions. Nothing
-   moves yet.
+1. At `Enter to start`, press **Enter** to connect the arm.
+2. At `Instruction`, type a task, for example
+   `pick up the red block and put it in the box`.
+3. The arm shows a preview of the first actions. Nothing moves yet.
 4. Press **Enter** to run. Press **Ctrl+C** to stop.
 5. The arm returns home and asks for the next instruction. Press **Ctrl+C**
    again to exit.
