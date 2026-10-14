@@ -49,8 +49,8 @@ No browser? Use `dreamscale robots yam setup --cli`.
 dreamscale doctor yam
 ```
 
-It prints the model `run` will use, then checks the cameras, CAN buses and
-your access to that model without moving the arms. Every line shows a `✓`.
+It checks the cameras, CAN buses and
+model access without moving the arms. Every line shows a `✓`.
 
 ## 4. Run a model
 
@@ -61,10 +61,10 @@ your access to that model without moving the arms. Every line shows a `✓`.
 </Warning>
 
 ```bash
-dreamscale run yam
+dreamscale run yam --model molmoact2-bimanual-yam
 ```
 
-It prints `Using molmoact2-bimanual-yam (pass --model to choose)`, then:
+Then:
 
 1. At `Enter to start`, press **Enter** to connect. Both arms power on and
    calibrate their grippers.

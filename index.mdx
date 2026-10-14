@@ -44,12 +44,12 @@ Both install the same `dreamscale` package. The rest of this page is the CLI.
 3. Run a model in the LIBERO simulator.
 
    ```bash
-   dreamscale sim libero
+   dreamscale sim libero --model pi05-libero
    ```
 
    The first run downloads the simulator (several GB on Linux), which can take a
    few minutes. A GPU connects in seconds, longer if all are busy.
-   It prints `Using pi05-libero (pass --model to choose)`, a window
+   Then a window
    opens and the model drives the arm. The run ends with
    `result: success condition reached`.
 

@@ -48,8 +48,8 @@ Clear the table and follow the prompts to move each joint through its range.
 dreamscale doctor so101
 ```
 
-It prints the model `run` will use, then checks the port, calibration, both
-cameras and your access to that model, and shows your side camera next to the
+It checks the port, calibration, both
+cameras, and shows your side camera next to the
 reference framing. Every line shows a `✓`.
 
 ## 5. Run a model
@@ -61,10 +61,10 @@ reference framing. Every line shows a `✓`.
 </Warning>
 
 ```bash
-dreamscale run so101
+dreamscale run so101 --model molmoact2-so101
 ```
 
-It prints `Using molmoact2-so101 (pass --model to choose)`, then:
+Then:
 
 1. At `Enter to start`, press **Enter** to connect the arm.
 2. At `Instruction`, type a task, for example
