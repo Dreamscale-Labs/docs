@@ -78,11 +78,11 @@ uv run dreamscale login --api-key "<your key>"
 Both paths write the same credential file, and both are verified the same way:
 
 ```bash
-uv run dreamscale status --model dreamzero-yam
+uv run dreamscale models --verbose
 ```
 
-`status` confirms the credential is accepted and reports whether the model has
-capacity, before you spend a session finding out.
+`models --verbose` confirms the credential is accepted and reports whether
+`dreamzero-yam` has capacity, before you spend a session finding out.
 
 ## 3. Select the policy
 

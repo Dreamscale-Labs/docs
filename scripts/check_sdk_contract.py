@@ -73,11 +73,17 @@ def main() -> int:
         "calibration",
         "region",
         "provider",
+        "speed",
         "idle_timeout",
         "keep_warm",
         "startup_timeout",
         "transport",
         "control_hz",
+        "deployment",
+        "checkpoint",
+        "endpoint",
+        "api_key",
+        "context",
         "on_progress",
     )
     require_signature("dreamscale.connect", dreamscale.connect, connect_parameters)
@@ -127,13 +133,13 @@ def main() -> int:
     require_signature(
         "dreamscale.libero.observe",
         libero.observe,
-        ("agent_frame", "wrist_frame", "state", "actions_remaining"),
+        ("agent_frame", "wrist_frame", "state", "actions_remaining", "model"),
     )
 
     require_words(
         "dreamscale",
         cli_help(),
-        {"login", "doctor", "sim", "status", "sessions", "robots", "run"},
+        {"login", "doctor", "sim", "models", "sessions", "robots", "run", "deployments"},
     )
     require_words("login", cli_help("login"), {"--api-key"})
     require_words("doctor", cli_help("doctor"), {"core", "so101", "sim", "all"})
@@ -150,15 +156,18 @@ def main() -> int:
             "--region",
         },
     )
-    require_words("status", cli_help("status"), {"--model", "--region"})
+    require_words("models", cli_help("models"), {"--verbose", "--json"})
     require_words("sessions", cli_help("sessions"), {"list", "stop"})
     require_words("sessions list", cli_help("sessions", "list"), {"--json"})
     require_words("sessions stop", cli_help("sessions", "stop"), {"--all", "SESSION_ID"})
-    require_words("robots so101", cli_help("robots", "so101"), {"setup", "calibrate"})
     require_words(
-        "run pick-place",
-        cli_help("run", "pick-place"),
-        {"--duration", "--fallback", "--no-fallback"},
+        "robots so101", cli_help("robots", "so101"), {"setup", "calibrate", "home", "release"}
+    )
+    require_words("run so101", cli_help("run", "so101"), {"--model", "--max-actions"})
+    require_words(
+        "deployments",
+        cli_help("deployments"),
+        {"create", "inspect", "list", "show", "keep-warm", "restore", "rm"},
     )
 
     print(f"SDK contract passed for dreamscale {SDK_VERSION}.")

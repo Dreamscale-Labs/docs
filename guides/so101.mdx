@@ -1,13 +1,13 @@
 ---
 title: "SO-101"
-description: "Configure, calibrate, diagnose, dry-run, and safely confirm motion on an SO-101."
-keywords: ["SO-101 setup", "SO-101 calibration", "dreamscale doctor so101", "pick place"]
+description: "Configure, calibrate, diagnose, preview, and safely confirm motion on an SO-101."
+keywords: ["SO-101 setup", "SO-101 calibration", "dreamscale doctor so101", "dreamscale run so101"]
 ---
 
 This is Dreamscale's turnkey hardware path. It configures one SO-101 follower arm,
-a side camera, and a distinct wrist camera before running a dry prediction loop.
-Motor commands remain disabled until the dry run finishes and the operator
-explicitly confirms motion.
+a side camera, and a distinct wrist camera, then previews each prediction
+without motion. The arm moves only after the operator reviews the preview and
+explicitly confirms the task.
 
 <Warning>
   Keep the robot inside a clear workspace with a reachable physical power stop.
@@ -42,7 +42,7 @@ Before connecting:
 2. Route the wrist-camera cable so no joint can pull or trap it.
 3. Remove tools and unused props from the swept volume.
 4. Test the robot's physical power stop.
-5. Place the terminal where `Space`, `q`, or `Ctrl-C` is immediately reachable.
+5. Place the terminal where `Ctrl-C` is immediately reachable.
 
 ### Side camera
 
@@ -115,78 +115,74 @@ The command checks:
 - side-camera framing against the reference;
 - the current network path when a warmed session is available.
 
-Expected result:
-
-```text
-All hardware checks passed. Next: dreamscale run pick-place
-```
+The command ends with a `✓` verdict line when every check passes.
 
 Fix every failure and re-run the command. A skipped network preflight is
 acceptable when no warm session exists; connection performs the check again.
 
-## 6. Run without motion
+## 6. Preview one prediction without motion
 
 Stage a red block and target square, keep the workspace clear, and run:
 
 ```bash
-dreamscale run pick-place --duration 60
+dreamscale run so101 --model molmoact2-so101
 ```
 
-On a newly configured machine, the terminal must show:
+The command asks you to press Enter to start, connects the arm, and asks for an
+instruction. For each instruction, it moves the arm to its saved home pose (if
+you saved one), then requests one prediction and dispatches none of it:
 
 ```text
-motion: dry-run
-DRY RUN (no motion until you enable it)
+Prediction only: ... actions; none dispatched.
+Largest requested joint change from current pose: ...
 ```
 
-The arm is observed but not commanded. Inspect the `would move` lines for:
+Inspect the preview for:
 
 - six finite values in the documented joint order;
 - plausible targets near the current pose;
 - stable camera framing;
 - no unexpected discontinuities.
 
-Press `Space`, `q`, or `Ctrl-C` to test the software e-stop during the dry run.
-Do not approve motion if the stop path, cameras, calibration, or targets are
-wrong.
+Press `Ctrl-C` to cancel if the stop path, cameras, calibration, or targets
+are wrong.
 
 ## 7. Confirm one live run
 
-After a successful dry run, the same command asks:
+After the preview, the command asks:
 
 ```text
-Dry run complete. Enable real motion? [y/N]
+Press Enter to execute until stopped, or Ctrl+C to cancel:
 ```
 
-Before entering `y`, confirm again that:
+Before pressing Enter, confirm again that:
 
 - the physical stop works and is reachable;
 - one operator is watching the entire workspace;
 - no person or object is inside the swept volume;
 - calibration and diagnostics passed in this setup;
-- the dry-run targets were plausible.
+- the previewed targets were plausible.
 
-Enter `y` only when all checks pass. Dreamscale then persists motion enablement
-and continues on the same warmed session. The turnkey loop clamps each
-per-tick joint change, checks the keyboard e-stop every tick, and freezes stale
-actions after a disconnect.
+Press Enter only when all checks pass. Every task previews first and asks
+again; nothing is remembered between runs. The loop caps each per-tick joint
+change (`--max-joint-step`) and joint speed (`--max-joint-velocity`). Press
+`Ctrl-C` to stop the task: the arm holds, returns to its saved home pose (if
+any), and the command asks for the next instruction. Press `Ctrl-C` at the instruction prompt to disconnect.
+Add `--max-actions` to limit each task.
 
 <Warning>
-  Persisted motion means later `dreamscale run pick-place` invocations can start
-  live after diagnostics. To return to a safe default, set
-  `enabled = false` under `[motion]` in `~/.dreamscale/config.toml` before the
-  next run.
+  The arm holds its pose when the command exits. Physically support the arm,
+  then run `dreamscale robots so101 release` to release motor torque.
 </Warning>
 
 ## Stop and recover
 
-- Press `Space`, `q`, or `Ctrl-C` for the software e-stop.
+- Press `Ctrl-C` to stop the task in software.
 - Use the physical power stop for unexpected motion or any loss of confidence.
 - After a disconnect or timeout, leave the arm stopped, inspect
   `dreamscale sessions list`, and run `dreamscale doctor so101` before retrying.
-- If UDP is unavailable, the default command may use the hosted relay and will
-  report reduced responsiveness. Use `--no-fallback` when the run must refuse
-  that path.
+- If UDP is unavailable, the command may use the hosted relay and will report
+  reduced responsiveness.
 - If a session remains open, terminate it with
   `dreamscale sessions stop <session-id>`.
 

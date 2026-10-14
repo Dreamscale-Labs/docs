@@ -141,11 +141,12 @@ ends with `(from DREAMSCALE_API_KEY)` or `(from login)`.
 
 ```bash
 dreamscale doctor
-dreamscale status
+dreamscale models --verbose
 ```
 
 `doctor` checks the robot-neutral installation, authentication, and network
-path. `status` reports live model-region capacity without opening a session.
+path. `models --verbose` lists the models your organization can run and their
+live capacity in each region, without opening a session.
 
 If either command fails, use the command's printed recovery step and then open
 [Troubleshooting](/troubleshooting).

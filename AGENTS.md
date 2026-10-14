@@ -18,8 +18,7 @@
   model identifiers.
 - Say **action chunk** for the actions returned by `predict()`.
 - Distinguish model coordinates from robot-controller coordinates.
-- Treat `connect_so101()` as deprecated. Use `dreamscale.connect()` in new
-  examples.
+- `connect_so101()` is removed. Use `dreamscale.connect()` in examples.
 
 ## Writing standard
 

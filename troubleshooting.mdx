@@ -10,7 +10,7 @@ Start with the narrowest diagnostic that matches your job:
 dreamscale doctor
 dreamscale doctor so101
 dreamscale doctor sim
-dreamscale status
+dreamscale models --verbose
 dreamscale sessions list
 ```
 
@@ -24,7 +24,7 @@ failures. Apply that recovery step before retrying.
 | `the API key in DREAMSCALE_API_KEY was rejected` | The environment key is invalid, revoked, or from an organization you left | Set `DREAMSCALE_API_KEY` to a current key, or unset it to use your login | `dreamscale doctor` |
 | `your API key was rejected` | The saved login key is invalid, revoked, or from an organization you left | Run `dreamscale login` again to create a fresh local key | `dreamscale doctor` |
 | Insufficient credits | The account balance cannot open or continue the requested session | Review balance and usage in the dashboard and add prepaid credits | Retry one bounded prediction |
-| Worker stays in `starting` | Cold capacity is still booting | Keep the command/page open while progress advances; avoid parallel retries | `dreamscale status --model <model>` |
+| Worker stays in `starting` | Cold capacity is still booting | Keep the command/page open while progress advances; avoid parallel retries | `dreamscale models --verbose` |
 | Capacity unavailable | No eligible worker is available in the requested region | Try `region="available"` or wait for capacity; verify model access in the dashboard | Retry once |
 | QUIC/UDP preflight fails but relay works | A firewall, NAT, VPN, or network policy blocks UDP | Keep `transport="auto"` or choose `"relay"`; expect different responsiveness | Run one non-actuating prediction |
 | `transport="quic"` fails | QUIC was required, so fallback was disabled | Use `"auto"` unless the job must refuse relay | Re-run diagnostics |
@@ -109,7 +109,7 @@ Cold starts and capacity failures are different:
 Check without creating another session:
 
 ```bash
-dreamscale status --model molmoact2-so101
+dreamscale models --verbose
 ```
 
 ## Transport fallback
