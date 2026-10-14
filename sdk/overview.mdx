@@ -56,6 +56,42 @@ asyncio.run(main())
 If a context manager is impossible, call `policy.close()` or
 `await policy.close()` in a `finally` block.
 
+### Credentials
+
+`connect()` and `aconnect()` use your `dreamscale login` by default. On a
+machine without a browser, pass an API key with `api_key=` (SDK 0.1.0a100 or
+later):
+
+```python
+import dreamscale
+
+from my_secrets import read_secret  # your secret manager
+
+
+with dreamscale.connect(
+    model="molmoact2-so101",
+    api_key=read_secret("dreamscale-api-key"),
+) as policy:
+    print(policy.session_id)
+```
+
+The SDK uses the first credential it finds: the `api_key=` argument, then the
+`DREAMSCALE_API_KEY` environment variable, then the key saved by
+`dreamscale login`. See [Sign in](/installation#sign-in) for creating keys.
+
+### Your own fine-tune
+
+To run a [deployment](/guides/deployments) of your own weights, pass its ID
+with `deployment=` (SDK 0.1.0a100 or later):
+
+```python
+import dreamscale
+
+
+with dreamscale.connect("perceptron-isaac05", deployment="ckpt_...") as policy:
+    print(policy.session_id, policy.region)
+```
+
 <Note>
   Open sessions consume prepaid credits. Deterministic closure matters even
   when inference has stopped. Inspect open sessions with
@@ -188,7 +224,7 @@ with dreamscale.connect(
 - `speed="standard"` is the default and uses the model's normal placement.
 - `speed="fast"` runs on a dedicated high-end GPU for lower inference latency.
   It is billed at a higher rate than standard; see
-  [Models]({{dashboardUrl}}/dashboard/models) for the current price.
+  [Models](https://app.dreamscalelabs.com/dashboard/models) for the current price.
 - Fast never falls back to standard hardware. If no fast capacity can start,
   `connect()` fails instead of running slower hardware at the fast rate.
 - Before creating compute, the SDK confirms that the service supports fast for
@@ -243,6 +279,10 @@ first connection. Two settings control that window:
   releasing it. A warm session bills while it is held, so use it for an
   interactive session or a batch of evaluations, not for an idle process.
 
+For a [deployment](/guides/deployments), set keep-warm on the deployment
+instead. When it is on, the deployment's setting replaces the `keep_warm` you
+pass to `connect()`.
+
 ## Progress, hooks, and timeouts
 
 `connect()` prints lifecycle progress by default. Supply a callback to route
@@ -294,13 +334,19 @@ policy.close()
 The resolved configuration is available as
 `policy.resolved_optimization_config` for diagnostics.
 
+Network calibration is off by default, so `connect()` no longer spends about
+7 seconds calibrating before the first prediction. The service decides this,
+so it also applies to older SDKs. Only models with static real-time chunking
+contracts still calibrate automatically. To request calibration anyway, pass
+it explicitly, for example `calibration="default"`. From SDK 0.1.0a100, an
+explicit calibration is reused for 24 hours on the same warm session.
+
 ## Migrating existing SO-101 code
 
-`connect_so101()` is a deprecated compatibility surface for the legacy
-turnkey SO-101 loop. New integrations should build observations with
-`dreamscale.so101.observe()` and connect through `dreamscale.connect()`. Existing
-users can continue the [SO-101 guide](/guides/so101) while migrating their
-controller boundary.
+`connect_so101()` was removed in SDK 0.1.0a82. Build observations with
+`dreamscale.so101.observe()` and connect through `dreamscale.connect()`, or run
+the attended loop with `dreamscale run so101 --model <model>` from the
+[SO-101 guide](/guides/so101).
 
 Next, confirm the exact camera, state, and action ordering in
 [Model contracts](/sdk/model-contracts).

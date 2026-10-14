@@ -10,7 +10,7 @@ Start with the narrowest diagnostic that matches your job:
 dreamscale doctor
 dreamscale doctor so101
 dreamscale doctor sim
-dreamscale status
+dreamscale models --verbose
 dreamscale sessions list
 ```
 
@@ -20,12 +20,16 @@ failures. Apply that recovery step before retrying.
 | Symptom | Likely cause | Fix | Next step |
 | --- | --- | --- | --- |
 | Login expires or approval never completes | Browser approval was not completed in time, or the login service was unreachable | Re-run `dreamscale login`; on a headless machine use the hidden `dreamscale login --api-key` prompt | `dreamscale doctor` |
-| `api key` is missing or rejected | No saved credential, a revoked key, or a key copied incorrectly | Sign in again or create a replacement key in the dashboard; never paste it into logs | `dreamscale doctor` |
+| `Dreamscale is not set up on this machine yet` | No saved login and `DREAMSCALE_API_KEY` is not set | Run `dreamscale login`; on a machine without a browser, set `DREAMSCALE_API_KEY` | `dreamscale doctor` |
+| `the API key in DREAMSCALE_API_KEY was rejected` | The environment key is invalid, revoked, or from an organization you left | Set `DREAMSCALE_API_KEY` to a current key, or unset it to use your login | `dreamscale doctor` |
+| `your API key was rejected` | The saved login key is invalid, revoked, or from an organization you left | Run `dreamscale login` again to create a fresh local key | `dreamscale doctor` |
 | Insufficient credits | The account balance cannot open or continue the requested session | Review balance and usage in the dashboard and add prepaid credits | Retry one bounded prediction |
-| Worker stays in `starting` | Cold capacity is still booting | Keep the command/page open while progress advances; avoid parallel retries | `dreamscale status --model <model>` |
+| Worker stays in `starting` | Cold capacity is still booting | Keep the command/page open while progress advances; avoid parallel retries | `dreamscale models --verbose` |
 | Capacity unavailable | No eligible worker is available in the requested region | Try `region="available"` or wait for capacity; verify model access in the dashboard | Retry once |
 | QUIC/UDP preflight fails but relay works | A firewall, NAT, VPN, or network policy blocks UDP | Keep `transport="auto"` or choose `"relay"`; expect different responsiveness | Run one non-actuating prediction |
 | `transport="quic"` fails | QUIC was required, so fallback was disabled | Use `"auto"` unless the job must refuse relay | Re-run diagnostics |
+| `This session ended because its GPU server reached its 24-hour limit.` | Each deployment GPU server runs at most 24 hours, so Dreamscale ends the session cleanly at about 23.5 hours | Connect again; a deployment kept on Always has its replacement ready | [Keep a deployment warm](/guides/deployments#keep-a-deployment-warm) |
+| `Only organization owners can delete deployments.` | Deleting and restoring deployments is limited to owners | Ask an owner; Settings → Organization lists them | [Who can do what](/guides/deployments#who-can-do-what) |
 | An open session remains after a crash | The process exited before deterministic cleanup | Run `dreamscale sessions list`, then `dreamscale sessions stop <session-id>` | Confirm the session disappears |
 | Camera missing or busy | Wrong index, unplugged camera, or another application owns the device | Close camera applications, reconnect the device, and repeat SO-101 setup | `dreamscale doctor so101` |
 | Side and wrist camera use the same index | The two required views resolve to one device | Select two distinct physical cameras | `dreamscale robots so101 setup` |
@@ -53,6 +57,46 @@ dreamscale login --api-key
 The prompt hides the value. Do not place the key directly in a shell command,
 source file, screenshot, or support email.
 
+### A rejected API key
+
+From SDK 0.1.0a100, a rejected key says where it came from. Dreamscale checks the
+`api_key=` argument first, then `DREAMSCALE_API_KEY`, then your saved login, so
+an old environment key can hide a working login. Run `dreamscale doctor` to see
+which one is in use.
+
+If the key came from the environment, the CLI prints:
+
+```text
+✗ the API key in DREAMSCALE_API_KEY was rejected
+  cause: the key is invalid or has been revoked
+  fix:   set DREAMSCALE_API_KEY to a current key from https://app.dreamscalelabs.com/dashboard/settings#api-keys, or unset it to use your `dreamscale login`
+```
+
+Set the variable to a current key, or remove it and use your login:
+
+```bash
+unset DREAMSCALE_API_KEY
+dreamscale doctor
+```
+
+If the key came from your saved login, the CLI prints
+`your API key was rejected`. Sign in again to replace it:
+
+```bash
+dreamscale login
+```
+
+A key acts for the organization it was created in. If you have left or moved
+to another organization, the cause reads
+`the key belongs to an organization you are no longer in`. Create a new key in
+your current organization under
+[Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys),
+or run `dreamscale login`.
+
+When `doctor` reports `api key: configured`, it means a key was found. A
+command that reaches Dreamscale, such as `dreamscale sessions list`, confirms
+that the key is accepted.
+
 ## Worker startup and capacity
 
 Cold starts and capacity failures are different:
@@ -65,7 +109,7 @@ Cold starts and capacity failures are different:
 Check without creating another session:
 
 ```bash
-dreamscale status --model molmoact2-so101
+dreamscale models --verbose
 ```
 
 ## Transport fallback

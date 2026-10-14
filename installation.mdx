@@ -92,21 +92,61 @@ You can also pass an API key as the option value, but shell history and process
 inspection can expose it. Prefer the hidden prompt or an existing secret
 manager.
 
+### Use an API key without signing in
+
+Robots, servers, notebooks, and CI jobs often have no browser. From SDK
+0.1.0a100, they can use an API key directly instead of a saved login. Create
+the key in the dashboard under
+[Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys),
+then either set it in the environment:
+
+```bash
+export DREAMSCALE_API_KEY="dreamscale_sk_..."
+```
+
+or pass it to `connect()` from your own secret store:
+
+```python
+import dreamscale
+
+from my_secrets import read_secret  # your secret manager
+
+
+api_key = read_secret("dreamscale-api-key")
+with dreamscale.connect(model="molmoact2-so101", api_key=api_key) as policy:
+    print(policy.session_id)
+```
+
+Dreamscale uses the first credential it finds, in this order:
+
+1. the `api_key=` argument to `dreamscale.connect()` or `dreamscale.aconnect()`;
+2. the `DREAMSCALE_API_KEY` environment variable;
+3. the key saved by `dreamscale login`.
+
+A key from `DREAMSCALE_API_KEY` is never written to
+`~/.dreamscale/config.toml`. If you run `dreamscale login` while the variable is
+set, the CLI saves the new login and reminds you that the environment key still
+takes precedence. The legacy `DROPBEAR_API_KEY` variable is not read.
+
+To see which credential is in use, run `dreamscale doctor`. Its `api key` line
+ends with `(from DREAMSCALE_API_KEY)` or `(from login)`.
+
 <Warning>
   Do not commit `~/.dreamscale/config.toml`, paste keys into source files, or log
-  them in CI. Create and revoke keys in the
-  [dashboard](https://app.dreamscalelabs.com/dashboard/keys).
+  them in CI. Create and revoke keys in the dashboard under
+  [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys).
 </Warning>
 
 ## Verify the machine
 
 ```bash
 dreamscale doctor
-dreamscale status
+dreamscale models --verbose
 ```
 
 `doctor` checks the robot-neutral installation, authentication, and network
-path. `status` reports live model-region capacity without opening a session.
+path. `models --verbose` lists the models your organization can run and their
+live capacity in each region, without opening a session.
 
 If either command fails, use the command's printed recovery step and then open
 [Troubleshooting](/troubleshooting).

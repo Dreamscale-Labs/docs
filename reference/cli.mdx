@@ -1,27 +1,40 @@
 ---
 title: "CLI reference"
-description: "Use the supported Dreamscale command tree for authentication, diagnostics, sessions, simulation, and SO-101 setup."
-keywords: ["dreamscale CLI", "dreamscale doctor", "dreamscale sessions", "dreamscale status"]
+description: "Use the supported Dreamscale command tree for authentication, diagnostics, sessions, deployments, simulation, and SO-101 setup."
+keywords: ["dreamscale CLI", "dreamscale doctor", "dreamscale sessions", "dreamscale models", "dreamscale deployments"]
 ---
 
 The CLI supports account setup, diagnostics, live capacity checks, session
-cleanup, a curated simulator, and the turnkey SO-101 path.
+cleanup, deployments of your own fine-tunes, a curated simulator, and the
+turnkey SO-101 path.
 
 ```text
 dreamscale
 ├── login
 ├── doctor [core|so101|sim|all]
 ├── sim
-├── status
+├── models
 ├── sessions
 │   ├── list
 │   └── stop
+├── deployments
+│   ├── create
+│   ├── inspect
+│   ├── list
+│   ├── show
+│   ├── keep-warm
+│   ├── restore
+│   └── rm
 ├── robots
-│   └── so101
-│       ├── setup
-│       └── calibrate
+│   ├── so101
+│   │   ├── setup
+│   │   ├── calibrate
+│   │   ├── home
+│   │   └── release
+│   └── yam
 └── run
-    └── pick-place
+    ├── so101
+    └── yam
 ```
 
 Use `dreamscale <command> --help` as the exact installed-version reference.
@@ -47,16 +60,22 @@ dreamscale doctor all
 Credentials are written to `~/.dreamscale/config.toml`, or read in place from
 an [earlier install](/installation#choose-an-install). Never print or commit that file.
 
-## Capacity
+From 0.1.0a100, every command also accepts an API key from the
+`DREAMSCALE_API_KEY` environment variable, which takes precedence over the saved
+login and is never written to disk. `dreamscale doctor` shows which one is in
+use. See [Sign in](/installation#sign-in).
+
+## Models and capacity
 
 ```bash
-dreamscale status
-dreamscale status --model molmoact2-so101
-dreamscale status --model molmoact2-droid --region us-west-2
+dreamscale models
+dreamscale models --verbose
+dreamscale models --json
 ```
 
-`status` checks live model-region capacity without opening a cloud session.
-Current model access and account-specific availability also appear in the
+`models` lists the models your organization can run. `--verbose` adds a row for
+every region, provider, and variant that serves each model, with its live
+state, without opening a cloud session. Current model access and account-specific availability also appear in the
 [dashboard](https://app.dreamscalelabs.com/dashboard/models).
 
 ## Sessions
@@ -70,6 +89,65 @@ dreamscale sessions stop --all
 
 Use `--all` only when you intend to terminate every open session on the
 account. Closing sessions stops continued usage from abandoned leases.
+
+## Deployments
+
+Requires 0.1.0a100 or later. A deployment serves your own Isaac 0.5 fine-tune
+from Hugging Face for your robot, in one region. See
+[Deploy your fine-tune](/guides/deployments) for the full workflow.
+
+```bash
+dreamscale deployments inspect hf://your-org/isaac-finetune
+dreamscale deployments create hf://your-org/isaac-finetune --preset so101 --region us-west
+dreamscale deployments list
+dreamscale deployments show ckpt_...
+dreamscale deployments keep-warm ckpt_... 30m
+dreamscale deployments rm ckpt_...
+dreamscale deployments restore ckpt_...
+```
+
+### `deployments create REPO`
+
+Builds a deployment from a Hugging Face repo (`hf://owner/name` or
+`owner/name`). The build downloads the weights, converts them, and tests them
+once on a GPU, which usually takes about 15 minutes. The command waits and
+shows each build step.
+
+| Option | Meaning |
+| --- | --- |
+| `--preset` | `bimanual_yam`, `so101`, or `custom`. Default: the robot the repo's deployment adapter declares |
+| `--camera key=view` | One camera, repeated in the order your robot sends them |
+| `--image-size HxW` | Frame height and width in pixels, for example `360x640` |
+| `--action-dim` | Action width, checked against the weights |
+| `--state-dim` | State width, checked against the weights |
+| `--chunk` | Actions executed per chunk (1–50) |
+| `--hz` | Control rate the weights expect |
+| `--dataset` | Robot unit conversion: the dataset its normalization statistics were measured on |
+| `--context` | Context frames: `1` or `3` |
+| `--revision` | Branch, tag, or commit |
+| `--name` | Display name |
+| `--hf-token` | Read token for a private repo. Default: `$HF_TOKEN`. Not stored |
+| `--region` | `us-west` (Oregon, default) or `us-east` (Virginia) |
+| `--no-wait` | Return once the build starts |
+
+A preset fills every robot field. Any shape flag you add on top makes the
+robot custom. A custom robot needs at least `--camera`, `--image-size`, and
+`--dataset`. Prefer `HF_TOKEN` in the environment over `--hf-token`, which
+shell history can expose.
+
+### Other deployment commands
+
+| Command | What it does |
+| --- | --- |
+| `deployments inspect REPO [--revision] [--hf-token] [--json]` | Shows the robot the repo declares and the training datasets its normalization statistics cover |
+| `deployments list [--model MODEL] [--json]` | Lists your organization's deployments with status, region, robot, and keep-warm |
+| `deployments show ID` | Shows one deployment, with build progress, or the error and its fix |
+| `deployments keep-warm ID VALUE [--take-over-from ID]` | Sets keep-warm: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h`, or `always`. Any member can set it |
+| `deployments rm ID` | Deletes the deployment and ends its running sessions. Owners only |
+| `deployments restore ID` | Restores a deployment deleted in the last 7 days, with keep-warm off. Owners only |
+
+`--take-over-from` moves Always-on from another deployment: it turns off once
+this one is warm. Warm time is billed like GPU time.
 
 ## Local simulation
 
@@ -105,16 +183,19 @@ The `sim` extra is Linux/WSL2 only. Run `dreamscale doctor sim` first.
 dreamscale robots so101 setup
 dreamscale robots so101 calibrate
 dreamscale doctor so101
-dreamscale run pick-place --duration 60
-dreamscale run pick-place --no-fallback
+dreamscale run so101 --model molmoact2-so101
+dreamscale run so101 --model molmoact2-so101 --max-actions 300
+dreamscale robots so101 release
 ```
 
 - `setup` detects and saves the arm, side camera, and wrist camera.
 - `calibrate` writes `~/.dreamscale/calibration/so101.json`.
 - `doctor so101` gates the hardware path.
-- `run pick-place` starts dry on a newly configured machine and asks for
-  explicit confirmation before persisting motion.
-- `--no-fallback` refuses the hosted relay if QUIC/UDP is unavailable.
+- `run so101` previews each prediction without motion and asks for
+  confirmation before every task. `Ctrl-C` stops the task.
+- `--max-actions` limits each task.
+- `robots so101 release` releases the arm's held motor torque after the
+  command exits. Support the arm first.
 
 Read the complete [SO-101 safety sequence](/guides/so101) before running the
 motion command.
