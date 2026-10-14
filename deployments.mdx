@@ -1,0 +1,51 @@
+---
+title: "Deployments"
+description: "Serve your own Isaac 0.5 fine-tune from Hugging Face on your robot."
+keywords: ["deployment", "fine-tune", "Isaac 0.5", "Hugging Face", "dreamscale deployments"]
+---
+
+A deployment serves your own fine-tune from Hugging Face, shaped to your robot.
+
+## What you need
+
+- Isaac 0.5 enabled for your organization. Email
+  [{{supportEmail}}](mailto:{{supportEmail}}) to request it.
+- A Hugging Face repo with your full Isaac 0.5 fine-tune and the normalization
+  statistics from its training data. For a private repo, set `HF_TOKEN`.
+
+## 1. Create it
+
+```bash
+dreamscale deployments create hf://your-org/isaac-finetune --preset so101
+```
+
+Use `--preset bimanual_yam` for a bimanual YAM. The first build takes about 15 minutes.
+`dreamscale deployments list` then shows it as **Ready** with an ID like
+`ckpt_...`. You can also create one on the
+[Deployments](https://app.dreamscalelabs.com/dashboard/deployments) page.
+
+## 2. Run it
+
+After the robot's setup ([SO-101](/robots/so101) or [Bimanual YAM](/robots/yam)):
+
+```bash
+dreamscale run so101 --model perceptron-isaac05-so101 --deployment ckpt_...
+```
+
+From Python:
+
+```python
+policy = dreamscale.connect("perceptron-isaac05", checkpoint="ckpt_...")
+```
+
+Build observations with `dreamscale.robot.observe`, using the camera keys and
+state width shown on the deployment's page.
+
+## 3. Keep it warm (optional)
+
+A cold start takes 2–3 minutes. Keep-warm keeps a GPU ready between runs, and
+is billed like connected time:
+
+```bash
+dreamscale deployments keep-warm ckpt_... 30m
+```

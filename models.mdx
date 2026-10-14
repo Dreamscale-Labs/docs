@@ -1,0 +1,71 @@
+---
+title: "Models"
+description: "What each shared Dreamscale model takes in and returns: robot, observation, action chunk and rate."
+keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
+---
+
+Each model is trained for one robot type. Build observations with that robot's
+helper; the helper is the same for every model on that robot. Frames are
+H×W×3 `uint8` RGB at any size: the SDK resizes them.
+
+| Model | Robot | Chunk × values | Rate |
+| --- | --- | --- | --- |
+| `molmoact2-so101` | SO-101 | 30 × 6 | 30 Hz |
+| `flux-3-action-so101` | SO-101 | 42 × 6 | 30 Hz |
+| `pi05-so101` | SO-101 | 30 × 6 | 30 Hz |
+| `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
+| `pi05-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
+| `pi05-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
+
+`dreamscale models` shows which ones your organization can run right now.
+
+## SO-101
+
+```python
+observation = dreamscale.so101.observe(
+    side_frame=side,
+    wrist_frame=wrist,
+    joint_positions=joints,  # 6 values
+)
+```
+
+- Joint order: `shoulder_pan`, `shoulder_lift`, `elbow_flex`, `wrist_flex`,
+  `wrist_roll`, `gripper`.
+- Joints are in calibrated LeRobot degrees; the gripper is 0–100.
+- Actions are absolute targets in the same order and units.
+- `flux-3-action-so101` builds on the actions it already sent, so call it with
+  `next_action`, not `predict`.
+
+## Bimanual YAM
+
+```python
+observation = dreamscale.yam.observe(
+    top_frame=top,
+    left_frame=left_wrist,
+    right_frame=right_wrist,
+    left_joint_positions=left_joints,    # 6 values, radians
+    left_gripper=left_gripper,           # 0 closed to 1 open
+    right_joint_positions=right_joints,  # 6 values, radians
+    right_gripper=right_gripper,         # 0 closed to 1 open
+)
+```
+
+- Actions are 14 absolute targets: left joints 1–6, left gripper, right joints
+  1–6, right gripper. Grippers are at indices 6 and 13.
+- Grippers are continuous. Don't threshold them to open or closed.
+
+## LIBERO
+
+```python
+observation = dreamscale.libero.observe(
+    agent_frame=agent_view,  # agentview_image
+    wrist_frame=wrist_view,  # robot0_eye_in_hand_image
+    state=state,             # 8 values
+)
+```
+
+- State: end-effector position (3), end-effector rotation as an axis-angle
+  vector (3), then the two gripper joint positions.
+- Pass frames as LIBERO renders them. The SDK flips them upright.
+- Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
+  deltas, then the gripper (−1 open, +1 close).

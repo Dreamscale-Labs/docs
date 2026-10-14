@@ -1,0 +1,78 @@
+---
+title: "Python"
+description: "Call a Dreamscale model from your own robot, simulator or pipeline with a few lines of Python."
+keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action chunk"]
+---
+
+Have an SO-101 or a bimanual YAM? `dreamscale run` drives it with no code. See
+[SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
+
+## What you need
+
+- Python 3.11 or newer.
+- A Dreamscale account. Sign in with `dreamscale login`, or set
+  `DREAMSCALE_API_KEY` to a key from
+  [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys).
+
+## Install
+
+In your project (`uv init` makes one):
+
+```bash
+uv add dreamscale
+```
+
+`uv run python -c "import dreamscale; print(dreamscale.__version__)"` prints
+`{{sdkVersion}}` or newer.
+
+## Get one action chunk
+
+```python
+import dreamscale
+
+policy = dreamscale.connect("pi05-so101")
+observation = dreamscale.so101.observe(
+    side_frame=side,         # H×W×3 uint8 RGB
+    wrist_frame=wrist,       # H×W×3 uint8 RGB
+    joint_positions=joints,  # 6 values, degrees; gripper 0–100
+)
+chunk = policy.predict(observation, instruction="pick up the red block")
+print(len(chunk.actions), "actions")
+```
+
+`connect` returns when a GPU is ready. If every GPU is busy, it waits in a queue
+and shows your position. `chunk.actions` holds absolute joint targets in the
+same order and units as `joints`. Nothing moves until you send them. See
+[Models](/models) for each robot's observation and actions.
+
+## Drive a robot
+
+<Warning>
+  The robot will move. Enforce joint, speed and workspace limits locally, and
+  keep a physical e-stop within reach. Cloud inference does not replace your
+  robot's safety controller.
+</Warning>
+
+Call `next_action` once per control tick. It returns one action on the model's
+clock, so the loop needs no timing code.
+
+```python
+import dreamscale
+
+policy = dreamscale.connect("pi05-so101")
+while True:
+    action = policy.next_action(read_observation(), instruction="pick up the red block")
+    robot.send(action)
+```
+
+Pass a new instruction at any time to switch tasks.
+
+## What the SDK handles
+
+The SDK checks each observation before sending it and names the field that is
+wrong. It prepares images, streams to the GPU over the fastest path your network
+allows, and blends chunks so motion stays smooth. If the connection drops, it
+reconnects and holds the robot still until actions arrive. It releases the GPU
+after a minute without calls and reconnects on the next one. Sessions close
+when your program exits, or call `policy.close()`. In async code, use
+`await dreamscale.aconnect(...)`.

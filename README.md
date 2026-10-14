@@ -4,14 +4,16 @@ User-facing documentation for [Dreamscale](https://app.dreamscalelabs.com),
 hosted by Mintlify at
 [docs.dreamscalelabs.com](https://docs.dreamscalelabs.com).
 
-The documentation is organized around user jobs:
+The documentation is organized around user jobs, one page each:
 
-- try a cloud model in simulation (Quick start);
-- set up and run an SO-101 or a bimanual YAM;
+- see a model work in two minutes (Quick start);
+- run a model on an SO-101 or a bimanual YAM;
 - call a model from your own Python code;
-- deploy your own fine-tune;
-- record runs on HUD or Inspect Robots;
-- look up CLI and SDK details, and fix problems.
+- know what each model takes in and returns (Models);
+- fix what just failed (Troubleshooting).
+
+A short Deployments page, outside the main path, covers serving your own
+fine-tune.
 
 The supported public integration surfaces are the Python SDK and CLI. This
 repository does not document internal control-plane, worker, infrastructure, or
@@ -42,11 +44,25 @@ mint validate
 mint broken-links --check-anchors --check-redirects --check-snippets
 mint a11y
 python3 scripts/check_content.py
-python3 scripts/check_sdk_contract.py
+python3 scripts/run_snippets.py
 ```
 
-`check_sdk_contract.py` expects the Dreamscale version configured in
-`docs.json` to be installed in the active Python environment.
+`run_snippets.py` expects the Dreamscale version configured in `docs.json` to
+be installed in the active Python environment. It checks every `dreamscale`
+command against the CLI's `--help`, runs every Python block against the SDK with
+synthetic observations and a stand-in `connect`, and checks the Models table
+against the SDK's model contracts.
+
+Before publishing, run the snippets live, one session at a time, first on dev
+and then on prod:
+
+```bash
+set -a; . ~/.config/dreamscale/dev.env; set +a
+python3 scripts/run_snippets.py --live dev --sim --uv
+```
+
+Robot commands (`robots`, `run`, `doctor so101|yam`) need hardware, so the
+script checks them against `--help` only.
 
 ## Publishing
 

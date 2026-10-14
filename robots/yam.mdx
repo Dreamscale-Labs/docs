@@ -1,14 +1,14 @@
 ---
 title: "Bimanual YAM"
-description: "Set up two I2RT YAM arms with three cameras, then run a cloud model on them from the CLI."
+description: "Set up two I2RT YAM arms with three cameras and run a cloud model on them from the CLI."
 keywords: ["bimanual YAM", "I2RT YAM", "dreamscale robots yam setup", "dreamscale run yam", "CAN"]
 ---
 
 ## What you need
 
 - Two I2RT YAM arms with grippers, each on its own CAN adapter.
-- Three RGB cameras: **top**, **left wrist**, and **right wrist**. USB (UVC),
-  ZED, and RealSense cameras work.
+- Three RGB cameras: **top**, **left wrist** and **right wrist**. USB (UVC),
+  ZED and RealSense cameras work.
 - A Linux computer wired to the arms and cameras.
 - A hardware e-stop within reach.
 
@@ -24,9 +24,9 @@ uv tool install dreamscale
 dreamscale login
 ```
 
-Bring both CAN interfaces up at 1 Mbit/s. To keep names stable across reboots,
-follow I2RT's
-[persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/120c3c81400171174604e503943f8d1ebc891058/docs/guides/set-persistent-can-ids.md).
+`dreamscale login` prints `✓ saved login to ...`. Then bring both CAN
+interfaces up at 1 Mbit/s. To keep their names stable across reboots, follow
+I2RT's [persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/120c3c81400171174604e503943f8d1ebc891058/docs/guides/set-persistent-can-ids.md).
 
 ## 2. Set up the rig
 
@@ -34,20 +34,13 @@ follow I2RT's
 dreamscale robots yam setup
 ```
 
-The first run installs the YAM driver and camera support. Then open the printed
-URL from any computer on the same network and:
+Open the URL it prints from any computer on the same network, then:
 
-1. Preview each camera and assign it to top, left, or right. Set rotation if
-   needed.
-2. Pick each arm's CAN adapter, arm variant, and gripper variant.
+1. Preview each camera and assign it to top, left or right.
+2. Pick each arm's CAN adapter, arm variant and gripper variant.
 
 Setup does not move the arms. It saves your rig to `~/.config/dreamscale/yam.json`.
-
-<Tip>
-  Can't open the page? Use `dreamscale robots yam setup --cli` to set up in the
-  terminal instead. Running more than one rig? Pass `--config PATH` to
-  `setup`, `doctor`, and `run`.
-</Tip>
+No browser? Use `dreamscale robots yam setup --cli`.
 
 ## 3. Check everything
 
@@ -55,23 +48,22 @@ Setup does not move the arms. It saves your rig to `~/.config/dreamscale/yam.jso
 dreamscale doctor yam
 ```
 
-This checks the cameras, CAN buses, and your model access without moving the
-arms or starting a paid session.
-
-<Check>
-  Every line shows a `✓`.
-</Check>
+It checks the cameras, CAN buses and model access without moving the arms.
+Every line shows a `✓`.
 
 ## 4. Run a model
 
 <Warning>
-  Both arms will move. Clear the workspace and keep the e-stop within reach.
-  Software limits do not prevent collisions.
+  Both arms will move. Clear the workspace and keep the e-stop
+  within reach. Software limits do not prevent collisions, and cloud inference
+  does not replace your robot's safety limits.
 </Warning>
 
 ```bash
-dreamscale run yam --model molmoact2-bimanual-yam
+dreamscale run yam
 ```
+
+It prints `Using <model> (pass --model to choose)`, then:
 
 1. Press **Enter** to connect. Both arms power on and calibrate their grippers.
 2. Type an instruction, for example `fold the towel`.
@@ -79,7 +71,7 @@ dreamscale run yam --model molmoact2-bimanual-yam
    yet.
 4. Press **Enter** to run. Press **Ctrl+C** to stop.
 5. The arms return home and ask for the next instruction. Press **Ctrl+C**
-   again to disconnect.
+   again to exit.
 
 The arms keep holding their pose after the command exits. This is powered
 holding, not a brake. Support the arms, then release the motors:
@@ -88,32 +80,12 @@ holding, not a brake. Support the arms, then release the motors:
 dreamscale robots yam release
 ```
 
-`dreamscale robots yam home` moves both arms home first, then releases.
-
 ## Models
 
-| Model | Notes |
-| --- | --- |
-| `molmoact2-bimanual-yam` | MolmoAct2, the default YAM policy |
-| `pi05-yam` | π0.5. Add `--speed fast` for a faster GPU at a higher rate |
-| `fable`, `opus`, `astra`, `sol`, `argon` | Language models that plan with bounded arm tools. Add `--effort low\|medium\|high` |
-| `perceptron-isaac05-yam` | Your own Isaac 0.5 fine-tune, with `--deployment ckpt_...`. See [Deploy your fine-tune](/fine-tuning/deployments) |
+Choose one with `--model`, for example `dreamscale run yam --model pi05-yam`:
 
-Run `dreamscale models` to see every model your organization can use.
+- `molmoact2-bimanual-yam`: MolmoAct2.
+- `pi05-yam`: π0.5.
 
-## Useful options
-
-| Option | What it does |
-| --- | --- |
-| `--instruction TEXT` | Run one task, then exit |
-| `--max-actions N` | Stop each task after `N` actions |
-| `--max-joint-velocity` | Joint speed cap in radians per second (default 1.0) |
-| `--keep-warm SECONDS` | Keep the GPU reserved after each task (default 300, billed). `0` releases it |
-| `--hud` | Record each task on [HUD](/integrations/hud) |
-| `--inspect-robots` | Record the run as an [Inspect Robots](/integrations/inspect-robots) eval log |
-
-The default home pose is all joints at zero with grippers open. To change it,
-set the 14-value `home_pose` in `yam.json`.
-
-See the [CLI reference](/reference/cli#run) for every option. Stuck? See
-[Troubleshooting](/reference/troubleshooting).
+`dreamscale models` shows which ones your organization can run right now.
+Stuck? See [Troubleshooting](/troubleshooting).
