@@ -1,0 +1,52 @@
+---
+title: "HUD"
+description: "Record and grade real-robot runs on HUD, with camera video, joints, and actions for every task."
+keywords: ["HUD", "hud.ai", "dreamscale run --hud", "robot evaluation", "traces"]
+---
+
+[HUD](https://hud.ai) records each robot task as a trace you can replay and
+grade. Add `--hud` to any `dreamscale run` command.
+
+## 1. Connect HUD
+
+```bash
+dreamscale integrations hud setup
+```
+
+This installs HUD support, opens HUD's API key page, and saves the key you
+paste. You only do this once per computer.
+
+## 2. Record a run
+
+```bash
+dreamscale run yam --model molmoact2-bimanual-yam --hud --hud-job "Towel folding"
+```
+
+`--hud` works the same with `dreamscale run so101`. The run itself doesn't
+change.
+
+- Each `dreamscale run` session is one HUD **job**. `--hud-job` names it.
+- Each task is one **trace**, with the instruction, one video per camera,
+  measured and commanded joints, and the model's action chunks.
+- Tasks with the same instruction are grouped, so the job shows a success rate
+  per instruction.
+
+## 3. Grade each task
+
+When a task stops, the robot holds its final pose and asks for a grade:
+
+| Answer | Grade |
+| --- | --- |
+| `y` | Success |
+| `n` | Failure |
+| A number from 0 to 1 | Partial score |
+| `n dropped the towel` | Grade plus a note |
+| Enter | Leave ungraded |
+
+The grade becomes the trace's reward on HUD.
+
+<Note>
+  Recording never slows the robot. If it falls behind, it drops recorded frames
+  and the trace reports how many. `--hud` can't be combined with
+  `--inspect-robots`.
+</Note>

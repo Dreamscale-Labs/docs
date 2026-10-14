@@ -1,112 +1,72 @@
 ---
-title: "Python quickstart"
-description: "Send a real robot observation to Dreamscale and inspect one action chunk without actuating."
-keywords: ["Python quickstart", "dreamscale.connect", "robot integration", "policy prediction"]
+title: "Quick start"
+description: "Install the Dreamscale CLI, sign in, and run a cloud model in a local simulator in about five minutes."
+keywords: ["install Dreamscale", "dreamscale login", "dreamscale sim", "LIBERO", "quick start"]
 ---
 
-import RobotIO from "/snippets/robot-io.mdx";
-import FirstPrediction from "/snippets/first-prediction.mdx";
+No robot or GPU needed. The current release is `{{sdkVersion}}`.
 
-This guide connects your existing robot stack to
-`molmoact2-so101`, requests one action chunk, prints its shape and timing, and
-closes the cloud session. It does **not** send an action to the robot.
+<Tip>
+  Just want to look? Open the [browser simulator](https://app.dreamscalelabs.com/dashboard/sim)
+  in the dashboard. Nothing to install.
+</Tip>
 
-## Prerequisites
-
-You need:
-
-- Python 3.11–3.14;
-- a Dreamscale account;
-- an existing robot controller that can read camera frames and state;
-- a robot/model pairing listed as live in
-  [Models](https://app.dreamscalelabs.com/dashboard/models);
-- `uv`, or another Python package manager.
-
-<Warning>
-  A returned action is a model output, not a safe robot command. Do not actuate
-  until you have implemented model-to-controller conversion, bounds, velocity
-  and acceleration limits, collision checks, watchdogs, hold behavior, and a
-  physical e-stop.
-</Warning>
-
-## 1. Install and sign in
-
-Install the CLI and add the SDK to your project:
+## 1. Install
 
 ```bash
 uv tool install dreamscale
-uv add dreamscale
-dreamscale login
-dreamscale doctor
 ```
 
-`dreamscale login` opens the dashboard in your browser. After approval, Dreamscale
-saves a machine credential in `~/.dreamscale/config.toml`.
+No `uv` yet? Install it with `curl -LsSf https://astral.sh/uv/install.sh | sh`,
+or use `pip install dreamscale`. Dreamscale supports macOS, Linux, and Windows
+(WSL2) with Python 3.11–3.14.
 
-<Check>
-  `dreamscale doctor` should finish with the core authentication and network
-  checks ready. If it does not, follow the recovery step printed by the command
-  or open [Troubleshooting](/troubleshooting).
-</Check>
-
-## 2. Map your robot I/O
-
-Create `robot_adapter.py` in your project and implement this boundary:
-
-<RobotIO />
-
-For `molmoact2-so101`, `read_observation()` must call
-`dreamscale.so101.observe(...)` with side and wrist RGB frames plus six joint
-positions in the model's SO-101 coordinate frame. See
-[Model contracts](/sdk/model-contracts#molmoact2-so-101) before converting
-units.
-
-## 3. Request one prediction
-
-Save the following as `first_prediction.py`:
-
-<FirstPrediction />
-
-Run it:
+## 2. Sign in
 
 ```bash
-uv run python first_prediction.py
+dreamscale login
 ```
 
-A successful run prints:
+This opens your browser. Create an account or sign in, then approve the
+machine.
 
-```text
-session=<session-id>
-actions=30 dimensions=6
-observation_to_action_ms=<measured latency>
-transport=quic
-No action was sent to the robot.
+<Check>
+  `dreamscale doctor` shows a green check for every core item.
+</Check>
+
+## 3. Run a model in simulation
+
+```bash
+dreamscale sim libero --model molmoact2-libero --task-suite libero_spatial --task-id 0
 ```
 
-`transport` may be `relay` when UDP is unavailable. That is a supported
-automatic fallback, not a failed prediction.
+The first run installs simulator support and downloads the LIBERO scenes, which
+takes a minute or two. Then a window opens and the model drives a simulated arm
+through the task.
 
-## 4. Continue safely
+<Check>
+  The run ends with `result: success condition reached`.
+</Check>
 
-You have now verified authentication, worker allocation, observation encoding,
-transport, inference, response decoding, and session cleanup.
+<Note>
+  After a run, the GPU stays reserved for 5 minutes so your next run starts
+  instantly. Reserved time is billed. Add `--keep-warm 0` to release it right
+  away.
+</Note>
 
-- Learn the full lifecycle in [Python SDK](/sdk/overview).
-- Configure a supported arm with [SO-101](/guides/so101).
-- Integrate inference-only DROID actions with [Franka](/guides/franka).
+## Next steps
 
-## Use a coding agent
-
-Copy this prompt into your coding agent from the root of your robot project:
-
-```text
-Implement robot_adapter.py for my existing robot SDK using the RobotIO protocol
-from the Dreamscale quickstart. Use dreamscale.so101.observe for the observation.
-Preserve the documented SO-101 camera order, joint order, and model units.
-Keep prediction non-actuating: do not call apply_action. Add explicit validation,
-hold, watchdog, and e-stop integration points, and never log my Dreamscale API key.
-Show me the adapter and focused tests before adding any motion path.
-```
-
-Need help mapping your controller? Email
-[{{supportEmail}}](mailto:{{supportEmail}}).
+<CardGroup cols={2}>
+  <Card title="Run on an SO-101" icon="robot" href="/robots/so101">
+    One arm, two cameras, about 20 minutes.
+  </Card>
+  <Card title="Run on a bimanual YAM" icon="hands" href="/robots/yam">
+    Two arms, three cameras.
+  </Card>
+  <Card title="Call a model from Python" icon="code" href="/python/run-a-policy">
+    Bring your own robot or simulator.
+  </Card>
+  <Card title="Deploy your fine-tune" icon="upload" href="/fine-tuning/deployments">
+    Serve your own weights.
+  </Card>
+</CardGroup>

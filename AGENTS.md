@@ -13,15 +13,17 @@
 ## Canonical terminology
 
 - Use **Dreamscale**, **Python SDK**, **CLI**, **API key**, **session**, **model**,
-  **SO-101**, **Franka**, **MolmoAct2-DROID**, and **LIBERO**.
-- Use `molmoact2-so101`, `molmoact2-droid`, and `molmoact2-libero` for exact
-  model identifiers.
+  **deployment**, **SO-101**, **Bimanual YAM**, and **LIBERO**.
+- Use exact model identifiers in code, for example `molmoact2-so101`,
+  `molmoact2-bimanual-yam`, `pi05-yam`, and `molmoact2-libero`.
 - Say **action chunk** for the actions returned by `predict()`.
 - Distinguish model coordinates from robot-controller coordinates.
-- `connect_so101()` is removed. Use `dreamscale.connect()` in examples.
+- Write for a first-time user: no legacy names, migrations, or version
+  qualifiers such as "from SDK 0.1.0a…".
 
 ## Writing standard
 
+- Keep pages short. Prefer a command, a table, or a step list over prose.
 - Start with the user outcome and prerequisites.
 - Use active voice, second person, and sentence-case headings.
 - Keep one main job per page and one idea per sentence.
@@ -37,14 +39,11 @@
 
 ## Safety rules
 
-- The Python quickstart must not actuate a robot.
-- Any motion example must require robot-side position, velocity, acceleration,
-  workspace, collision, watchdog, and e-stop protections appropriate to the
-  hardware.
-- SO-101 motion must follow setup, calibration, diagnostics, dry-run success,
-  and explicit operator confirmation.
-- Franka examples stop at inference unless the user supplies and validates
-  their own controller.
+- The quick start runs in simulation and never moves a robot.
+- Any motion example must sit behind a visible warning about local limits and
+  a physical e-stop.
+- Robot pages follow setup, diagnostics, a no-motion preview, and explicit
+  operator confirmation before motion.
 - Never imply that cloud inference replaces a local safety controller.
 
 ## Content boundaries
@@ -55,15 +54,14 @@ Do not document:
 - internal worker, admin, billing-reconciliation, or infrastructure workflows;
 - secrets, test credentials, internal tokens, or private operational URLs;
 - models marked coming soon or beta-only as generally available;
-- exact model prices outside the live dashboard;
-- BimanualYAM until it is generally available.
+- exact model prices outside the live dashboard.
 
 ## Page requirements
 
 Every navigable MDX page must include:
 
 - `title`, `description`, and `keywords` frontmatter;
-- prerequisites before procedural steps;
+- prerequisites ("What you need") before procedural steps;
 - language tags on code fences;
 - root-relative internal links;
 - descriptive alt text for meaningful images;

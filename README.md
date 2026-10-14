@@ -6,11 +6,12 @@ hosted by Mintlify at
 
 The documentation is organized around user jobs:
 
-- request a policy prediction from Python;
-- integrate Dreamscale with an existing robot controller;
-- set up and run an SO-101 safely;
-- request MolmoAct2-DROID actions for a Franka;
-- diagnose SDK, CLI, network, session, and hardware failures.
+- try a cloud model in simulation (Quick start);
+- set up and run an SO-101 or a bimanual YAM;
+- call a model from your own Python code;
+- deploy your own fine-tune;
+- record runs on HUD or Inspect Robots;
+- look up CLI and SDK details, and fix problems.
 
 The supported public integration surfaces are the Python SDK and CLI. This
 repository does not document internal control-plane, worker, infrastructure, or

@@ -1,0 +1,125 @@
+---
+title: "Models"
+description: "Observation helpers and action formats for each Dreamscale model: cameras, joint order, units, chunk size, and rate."
+keywords: ["model contract", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "DROID", "Trossen WidowX"]
+---
+
+Each model expects observations in its own format and returns actions in its
+own units. Build observations with the model's helper, and convert actions
+back to your robot's units before sending them.
+
+| Model | Robot | Helper | Actions per chunk × values | Rate |
+| --- | --- | --- | --- | --- |
+| `molmoact2-so101` | SO-101 | `dreamscale.so101.observe` | 30 × 6 | 30 Hz |
+| `molmoact2-bimanual-yam` | Bimanual YAM | `dreamscale.yam.observe` | 30 × 14 | 30 Hz |
+| `pi05-yam` | Bimanual YAM | `dreamscale.yam.observe` | 16 × 14 | 30 Hz |
+| `pi05-trossen-widowx` | Trossen WidowX AI | `dreamscale.trossen.observe` | 50 × 14 | 30 Hz |
+| `molmoact2-droid` | Franka (DROID) | `dreamscale.franka.observe` | 15 × 8 | 15 Hz |
+| `molmoact2-libero` | LIBERO simulator | `dreamscale.libero.observe` | 10 × 7 | 10 Hz |
+| Your deployment | Any | `dreamscale.robot.observe` | Set by the deployment | Set by the deployment |
+
+Run `dreamscale models` for every model your organization can use. All camera
+frames are H×W×3 `uint8` RGB.
+
+<Warning>
+  Matching the vector length is not enough. Joint order, units, camera order,
+  and gripper convention must all match, or the robot moves to the wrong place.
+</Warning>
+
+## MolmoAct2 SO-101
+
+```python
+observation = dreamscale.so101.observe(
+    side_frame=side_rgb,
+    wrist_frame=wrist_rgb,
+    joint_positions=[shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll, gripper],
+)
+```
+
+- Joints are in LeRobot SO-101 degrees. The gripper uses LeRobot's 0–100 range.
+- Actions are absolute targets in the same order and units.
+
+## Bimanual YAM
+
+`molmoact2-bimanual-yam` and `pi05-yam` share one helper:
+
+```python
+observation = dreamscale.yam.observe(
+    top_frame=top_rgb,
+    left_frame=left_wrist_rgb,
+    right_frame=right_wrist_rgb,
+    left_joint_positions=left_six_joints,    # radians
+    left_gripper=left_gripper,               # 0 closed to 1 open
+    right_joint_positions=right_six_joints,  # radians
+    right_gripper=right_gripper,             # 0 closed to 1 open
+)
+```
+
+- Actions are absolute targets: left six joints, left gripper, right six joints,
+  right gripper. Grippers are at indices 6 and 13.
+- Grippers are continuous. Don't threshold them to open or closed.
+- `pi05-yam` was trained on 640 × 360 frames.
+
+## π0.5 Trossen WidowX
+
+```python
+observation = dreamscale.trossen.observe(
+    left_wrist_frame=left_wrist_rgb,
+    high_frame=high_rgb,
+    right_wrist_frame=right_wrist_rgb,
+    left_joint_positions=left_six_joints,    # radians
+    left_gripper=left_carriage_position,     # robot's native units
+    right_joint_positions=right_six_joints,  # radians
+    right_gripper=right_carriage_position,
+)
+```
+
+- Actions use the same order as YAM: left arm, left gripper, right arm, right
+  gripper.
+- Trained on one task: pouring items from a red cup. An empty instruction uses
+  that task.
+
+## MolmoAct2 DROID
+
+```python
+observation = dreamscale.franka.observe(
+    exterior_frame=exterior_rgb,
+    wrist_frame=wrist_rgb,
+    joint_positions=seven_joints,  # radians
+    gripper=gripper,               # 0 open to 1 closed
+)
+```
+
+- Actions are seven absolute joint targets in radians, then the gripper.
+- Pass `second_exterior_frame=` if you have a second exterior camera.
+
+## MolmoAct2 LIBERO
+
+```python
+observation = dreamscale.libero.observe(
+    agent_frame=agent_rgb,
+    wrist_frame=wrist_rgb,
+    state=[eef_x, eef_y, eef_z, axis_angle_x, axis_angle_y, axis_angle_z, gripper_qpos_0, gripper_qpos_1],
+)
+```
+
+- State is end-effector position, end-effector rotation as an axis-angle
+  vector, then the two gripper joint positions.
+- Actions are robosuite delta actions:
+  `[dx, dy, dz, d_axis_x, d_axis_y, d_axis_z, gripper]`. They only fit the
+  LIBERO environment.
+
+## Your deployment
+
+A [deployment](/fine-tuning/deployments) names its own cameras and state width.
+Key frames by the deployment's camera keys, in order, and send state in the
+units your checkpoint was trained on:
+
+```python
+observation = dreamscale.robot.observe(
+    cameras={"side_cam": side_rgb, "wrist_cam": wrist_rgb},
+    state=joints_and_gripper,
+)
+```
+
+The camera keys and state width are on the deployment's page in the dashboard.

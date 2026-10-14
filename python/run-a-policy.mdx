@@ -1,0 +1,119 @@
+---
+title: "Run a policy"
+description: "Call a Dreamscale model from your own robot or simulator code with the Python SDK."
+keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "policy.run"]
+---
+
+Have an SO-101 or a bimanual YAM? You can skip code and use `dreamscale run`
+from [SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
+
+## Install
+
+```bash
+uv add dreamscale
+```
+
+The SDK uses your `dreamscale login`. On a machine without a browser, set an
+API key from [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys):
+
+```bash
+export DREAMSCALE_API_KEY="dreamscale_sk_..."
+```
+
+## Get one action chunk
+
+This connects to `molmoact2-so101`, sends one observation, and prints the
+actions. It does not move the robot.
+
+```python
+import dreamscale
+
+observation = dreamscale.so101.observe(
+    side_frame=side_rgb,    # H×W×3 uint8 RGB
+    wrist_frame=wrist_rgb,  # H×W×3 uint8 RGB
+    joint_positions=joints, # 6 values, LeRobot degrees
+)
+
+with dreamscale.connect("molmoact2-so101") as policy:
+    result = policy.predict(observation, instruction="pick up the red block")
+
+print(len(result.actions), "actions of", len(result.actions[0]), "values")
+print(f"{result.timing.obs_to_action_ms:.0f} ms")
+```
+
+Each model has its own observation helper and action format. See
+[Models](/python/models).
+
+<Note>
+  The `with` block closes the session. Open sessions bill until closed. If your
+  process crashes, run `dreamscale sessions list` and `dreamscale sessions stop <id>`.
+</Note>
+
+## Drive a robot
+
+<Warning>
+  Actions are model outputs, not safe commands. Before sending them to a
+  robot, enforce joint, speed, and workspace limits locally, and keep a
+  physical e-stop in reach.
+</Warning>
+
+Pick the loop that fits your code.
+
+### You own the loop: `next_action`
+
+Call `next_action()` once per control tick. Dreamscale requests and buffers
+chunks in the background.
+
+```python
+import time
+
+with dreamscale.connect("molmoact2-so101") as policy:
+    period = 1.0 / policy.action_hz
+    while running:
+        start = time.perf_counter()
+        action = policy.next_action(read_observation(), instruction="pick up the red block")
+        send_to_robot(action)
+        time.sleep(max(0.0, period - (time.perf_counter() - start)))
+```
+
+### Dreamscale owns the loop: `run`
+
+Pass two callbacks. `run()` keeps time, refills chunks, and calls `act` once
+per action.
+
+```python
+def observe(context):
+    return read_observation()
+
+
+def act(action, context):
+    send_to_robot(action)
+    return False  # return True to stop early
+
+
+with dreamscale.connect("molmoact2-so101") as policy:
+    result = policy.run(
+        instruction="pick up the red block",
+        observe=observe,
+        act=act,
+        max_actions=300,
+    )
+
+print(result.actions, "actions,", result.underruns, "underruns")
+```
+
+An underrun means the next chunk arrived late, so the robot held its position.
+
+## Common options
+
+```python
+dreamscale.connect(
+    "pi05-yam",
+    keep_warm=300,          # keep the GPU reserved 300 s after close (billed); default 60
+    speed="fast",           # faster GPU where the model offers it
+    startup_timeout=600,    # give up if a cold start takes longer
+)
+```
+
+Use `await dreamscale.aconnect(...)` in async code. See the
+[SDK reference](/reference/sdk) for every parameter.

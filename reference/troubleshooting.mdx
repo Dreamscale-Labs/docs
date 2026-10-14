@@ -1,0 +1,71 @@
+---
+title: "Troubleshooting"
+description: "Fix common Dreamscale sign-in, session, network, camera, and robot setup problems."
+keywords: ["Dreamscale errors", "API key rejected", "capacity", "relay", "session cleanup", "camera", "CAN"]
+---
+
+Start with `dreamscale doctor` (add `so101`, `yam`, or `sim`). Every error the
+CLI prints names the problem, its likely cause, and the fix.
+
+## Sign-in
+
+| Message | Fix |
+| --- | --- |
+| `Dreamscale is not set up on this machine yet` | Run `dreamscale login`. On a machine without a browser, set `DREAMSCALE_API_KEY` |
+| `the API key in DREAMSCALE_API_KEY was rejected` | Set it to a current key from [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys), or `unset DREAMSCALE_API_KEY` to use your login |
+| `your API key was rejected` | Run `dreamscale login` again |
+| `the key belongs to an organization you are no longer in` | Create a key in your current organization, or run `dreamscale login` |
+
+`DREAMSCALE_API_KEY` takes priority over your saved login. `dreamscale doctor`
+shows which one is in use.
+
+## Sessions and billing
+
+| Problem | Fix |
+| --- | --- |
+| Startup takes minutes | Normal for a cold start while the model loads. Keep the command running; don't retry in parallel |
+| Capacity unavailable | No GPU is free in that region. Retry, or use `--region available` (`region="available"` in Python) |
+| Out of credits | Add credits on the [dashboard](https://app.dreamscalelabs.com/dashboard/usage) |
+| A session is still open after a crash | `dreamscale sessions list`, then `dreamscale sessions stop <id>` |
+| Billing continues after a run | `--keep-warm` keeps the GPU reserved after each task. Use `--keep-warm 0`, or `dreamscale sessions stop --all` |
+| `This session ended because its GPU server reached its 24-hour limit.` | Reconnect. A deployment kept on **Always** has a replacement ready |
+
+## Network
+
+`transport=relay` means UDP is blocked by a firewall, VPN, or network policy,
+and Dreamscale fell back to a relay. Runs still work, with a little more
+latency. For the lowest latency, use a wired connection close to `us-west-2`.
+
+If the robot holds often (many underruns), the round trip is too long for the
+model's chunk. Check `obs_to_action_ms` and move to a faster network.
+
+## SO-101
+
+| Problem | Fix |
+| --- | --- |
+| Port not found or busy | Close other apps using the arm. On Linux, `sudo usermod -aG dialout $USER`, then log out and in. Rerun `dreamscale robots so101 setup` |
+| Camera missing, busy, or both roles on one camera | Reconnect the cameras and rerun `dreamscale robots so101 setup` |
+| Framing check fails | Move the side camera so the whole arm and workspace are in frame. See [SO-101](/robots/so101#1-place-the-side-camera) |
+| Calibration missing or wrong | Clear the table and run `dreamscale robots so101 calibrate` |
+| Arm stays stiff after exit | It is holding on purpose. Support it, then `dreamscale robots so101 release` |
+
+## Bimanual YAM
+
+| Problem | Fix |
+| --- | --- |
+| Setup page won't open | Check the robot's LAN address and that port 8765 is open, or use `dreamscale robots yam setup --cli` |
+| No CAN adapters found | Check USB and the adapter driver. Buses must be up at 1 Mbit/s |
+| Left and right are swapped | Rerun `dreamscale robots yam setup`. CAN names like `can0` don't tell you which arm is which; check the physical cables |
+| Arms stay stiff after exit | They are holding on purpose. Support them, then `dreamscale robots yam release` |
+
+## Python
+
+| Problem | Fix |
+| --- | --- |
+| Observation rejected | Check vector length, units, and that frames are H×W×3 `uint8` RGB. See [Models](/python/models) |
+| Unexpected action shape | Print `policy.model`, `len(result.actions[0])`, and `dreamscale.__version__`, and stop before moving the robot |
+
+## Still stuck?
+
+Email [{{supportEmail}}](mailto:{{supportEmail}}) with the model, `dreamscale --version`,
+the session ID, and the exact error. Never send your API key.
