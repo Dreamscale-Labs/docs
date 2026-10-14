@@ -261,10 +261,16 @@ def robot_type_of(model: str | None) -> str:
 @contextlib.contextmanager
 def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
     """Replace dreamscale.connect with a policy that binds each call to the real API."""
+    import typing
+
     import dreamscale
-    from dreamscale.policy.remote import RemotePolicy
 
     real_connect = dreamscale.connect
+    # Bind against the class connect() really returns (RemotePolicy up to a103, Policy after).
+    try:
+        RemotePolicy = typing.get_type_hints(real_connect)["return"]  # noqa: N806
+    except Exception:  # noqa: BLE001 - unresolvable annotation: fall back to the old class
+        from dreamscale.policy.remote import RemotePolicy
 
     class StandInPolicy:
         def __init__(self, model: str) -> None:
