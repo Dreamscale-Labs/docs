@@ -59,7 +59,7 @@ If a context manager is impossible, call `policy.close()` or
 ### Credentials
 
 `connect()` and `aconnect()` use your `dreamscale login` by default. On a
-machine without a browser, pass an API key with `api_key=` (SDK 0.1.0a99 or
+machine without a browser, pass an API key with `api_key=` (SDK 0.1.0a100 or
 later):
 
 ```python
@@ -82,7 +82,7 @@ The SDK uses the first credential it finds: the `api_key=` argument, then the
 ### Your own fine-tune
 
 To run a [deployment](/guides/deployments) of your own weights, pass its ID
-with `deployment=` (SDK 0.1.0a99 or later):
+with `deployment=` (SDK 0.1.0a100 or later):
 
 ```python
 import dreamscale
@@ -338,7 +338,7 @@ Network calibration is off by default, so `connect()` no longer spends about
 7 seconds calibrating before the first prediction. The service decides this,
 so it also applies to older SDKs. Only models with static real-time chunking
 contracts still calibrate automatically. To request calibration anyway, pass
-it explicitly, for example `calibration="default"`. From SDK 0.1.0a99, an
+it explicitly, for example `calibration="default"`. From SDK 0.1.0a100, an
 explicit calibration is reused for 24 hours on the same warm session.
 
 ## Migrating existing SO-101 code
