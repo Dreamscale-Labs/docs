@@ -305,8 +305,8 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
     if model and model in model_map:
         code = code.replace(f'"{model}"', f'"{model_map[model]}"')
         model = model_map[model]
-    if live and (model is None or "ckpt_..." in code):
-        report.skip(snippet.label, "python", "no live session to open")
+    if live and "ckpt_..." in code:
+        report.skip(snippet.label, "python", "needs your own deployment")
         return
     log: list[float] = []
     namespace = fixtures(model, max_actions, log)
