@@ -27,8 +27,7 @@
   Troubleshooting), about 2,000 words in total, plus a short Deployments page.
   `scripts/check_content.py` enforces the budget.
 - Plain Markdown. At most one table per page. The robot safety warning
-  (`<Warning>`) is the only callout, and the SO-101 camera diagram is the only
-  image.
+  (`<Warning>`) is the only callout. No images.
 - Document only the shared launch models. The docs are the spec: the SDK and
   CLI match them, and `scripts/run_snippets.py` runs every snippet.
 - Keep pages short. Prefer a command or a step list over prose.

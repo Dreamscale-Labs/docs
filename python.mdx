@@ -5,8 +5,9 @@ description: "Install the Python SDK, get your first action chunk without a robo
 keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action chunk"]
 ---
 
-Call a model on a cloud GPU from your own robot, simulator or pipeline. No GPU
-or robot needed to try it.
+The Python SDK gives you full control: your own robot, cameras, control loop and
+pipeline. Just want to run a model on an SO-101 or bimanual YAM? The CLI does it
+with one command: see [SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
 
 ## What you need
 
@@ -66,9 +67,17 @@ model for your robot from `uv run dreamscale models`.
 import dreamscale
 
 policy = dreamscale.connect("flux-3-action-so101")
+
+def read_observation():
+    # Your code: read the side and wrist cameras and the 6 joint positions.
+    return dreamscale.so101.observe(side_frame=side, wrist_frame=wrist, joint_positions=joints)
+
+def send_to_robot(action):
+    # Your code: command the 6 joints (LeRobot degrees; gripper 0–100).
+    ...
+
 while True:
-    action = policy.next_action(read_observation(), instruction="pick up the red block")
-    robot.send(action)
+    send_to_robot(policy.next_action(read_observation(), instruction="pick up the red block"))
 ```
 
 Pass a new instruction at any time to switch tasks.

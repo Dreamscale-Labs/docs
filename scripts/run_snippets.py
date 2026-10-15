@@ -193,10 +193,11 @@ def kind_of(path: tuple[str, ...]) -> str:
 
 
 class StopSnippet(Exception):
-    """Raised by the fixture robot to end a `while True` control loop."""
+    """Raised by counted_next_action to end a `while True` control loop."""
 
 
-def fixtures(model: str | None, max_actions: int, log: list[float]) -> dict[str, object]:
+def fixtures() -> dict[str, object]:
+    """Synthetic values for the names a page tells the reader to fill in."""
     import numpy as np
 
     import dreamscale
@@ -206,7 +207,7 @@ def fixtures(model: str | None, max_actions: int, log: list[float]) -> dict[str,
     def frame(height: int = 480, width: int = 640) -> np.ndarray:
         return rng.integers(0, 256, size=(height, width, 3), dtype=np.uint8)
 
-    names: dict[str, object] = {
+    return {
         "dreamscale": dreamscale,
         # SO-101: calibrated LeRobot degrees, gripper 0-100.
         "side": frame(), "wrist": frame(),
@@ -220,42 +221,36 @@ def fixtures(model: str | None, max_actions: int, log: list[float]) -> dict[str,
         "state": [-0.2, 0.0, 1.17, 3.14, 0.0, 0.0, 0.04, -0.04],
     }
 
-    def read_observation():
-        robot_type = robot_type_of(model)
-        if robot_type == "yam":
-            return dreamscale.yam.observe(
-                top_frame=names["top"], left_frame=names["left_wrist"],
-                right_frame=names["right_wrist"], left_joint_positions=names["left_joints"],
-                left_gripper=1.0, right_joint_positions=names["right_joints"], right_gripper=1.0,
-            )
-        if robot_type == "libero":
-            return dreamscale.libero.observe(
-                agent_frame=names["agent_view"], wrist_frame=names["wrist_view"],
-                state=names["state"], model=model,
-            )
-        return dreamscale.so101.observe(
-            side_frame=names["side"], wrist_frame=names["wrist"],
-            joint_positions=names["joints"],
-        )
 
-    class Robot:
-        def send(self, action) -> None:
-            log.append(time.perf_counter())
+@contextlib.contextmanager
+def counted_next_action(log: list[float], max_actions: int):
+    """Time each next_action() and end a snippet's `while True` loop after max_actions."""
+    import dreamscale
+
+    inner = dreamscale.connect
+
+    class Counted:
+        def __init__(self, policy: object) -> None:
+            self._policy = policy
+
+        def __getattr__(self, name: str) -> object:
+            return getattr(self._policy, name)
+
+        def next_action(self, *args, **kwargs):
             if len(log) >= max_actions:
                 raise StopSnippet
+            action = self._policy.next_action(*args, **kwargs)
+            log.append(time.perf_counter())
+            return action
 
-    names["read_observation"] = read_observation
-    names["robot"] = Robot()
-    return names
+    def connect(*args, **kwargs):
+        return Counted(inner(*args, **kwargs))
 
-
-def robot_type_of(model: str | None) -> str:
-    model = model or ""
-    if model.endswith("libero"):
-        return "libero"
-    if "yam" in model:
-        return "yam"
-    return "so101"
+    dreamscale.connect = connect
+    try:
+        yield
+    finally:
+        dreamscale.connect = inner
 
 
 @contextlib.contextmanager
@@ -315,10 +310,11 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
         report.skip(snippet.label, "python", "needs your own deployment")
         return
     log: list[float] = []
-    namespace = fixtures(model, max_actions, log)
+    namespace = fixtures()
     started = time.perf_counter()
     try:
-        exec(compile(code, snippet.label, "exec"), namespace)  # noqa: S102 - our own docs
+        with counted_next_action(log, max_actions):
+            exec(compile(code, snippet.label, "exec"), namespace)  # noqa: S102 - our own docs
     except StopSnippet:
         pass
     except Exception as error:  # noqa: BLE001 - every failure is a docs failure
