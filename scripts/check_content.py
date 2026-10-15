@@ -51,12 +51,11 @@ MODEL_ID_RE = re.compile(
     r"dreamzero|gr00t)-[a-z0-9-]+)"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,
-# at most one table per page, and the SO-101 camera diagram as the only image.
+# at most one table per page, and no images.
 FORBIDDEN_COMPONENTS = re.compile(
     r"<(Note|Tip|Info|Check|Danger|Callout|Card|CardGroup|Frame|Tabs|Tab|CodeGroup|"
     r"Accordion|AccordionGroup|Steps|Step|img)\b|```mermaid"
 )
-ALLOWED_IMAGES = {"/images/so101-camera-reference.svg"}
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\((?P<src>[^)\s]+)")
 TABLE_DIVIDER_RE = re.compile(r"(?m)^\|(?: *:?-{3,}:? *\|)+ *$")
 # The six main pages share a word budget, frontmatter excluded.
@@ -134,8 +133,7 @@ def main() -> int:
         for component in FORBIDDEN_COMPONENTS.finditer(text):
             errors.append(f"{relative}: uses {component.group(0)!r}; the only callout is <Warning>")
         for image in IMAGE_RE.finditer(text):
-            if image.group("src") not in ALLOWED_IMAGES:
-                errors.append(f"{relative}: image {image.group('src')} is not the SO-101 diagram")
+            errors.append(f"{relative}: image {image.group('src')}; the pages use no images")
         if len(TABLE_DIVIDER_RE.findall(text)) > 1:
             errors.append(f"{relative}: more than one table")
         for model in sorted(set(MODEL_ID_RE.findall(lowered))):
