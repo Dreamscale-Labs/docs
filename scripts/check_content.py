@@ -46,6 +46,9 @@ DOCUMENTED_MODELS = {
     "perceptron-isaac05-so101",
     "perceptron-isaac05-yam",
 }
+# The previous pi0.5 ids stay valid as permanent aliases. Only a line that says
+# "previous ids" may name them; anywhere else they fail as undocumented.
+PREVIOUS_IDS = {"pi05-libero", "pi05-so101", "pi05-yam"}
 MODEL_ID_RE = re.compile(
     r"(?<![\w-])((?:molmoact2|pi0\.5|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
     r"dreamzero|gr00t)-[a-z0-9-]+)"
@@ -60,7 +63,7 @@ IMAGE_RE = re.compile(r"!\[[^\]]*\]\((?P<src>[^)\s]+)")
 TABLE_DIVIDER_RE = re.compile(r"(?m)^\|(?: *:?-{3,}:? *\|)+ *$")
 # The six main pages share a word budget, frontmatter excluded.
 MAIN_PAGES = ("index", "robots/so101", "robots/yam", "python", "models", "troubleshooting")
-MAIN_WORD_BUDGET = 2200
+MAIN_WORD_BUDGET = 2250
 
 
 def _navigation_pages(node: object) -> list[str]:
@@ -136,9 +139,15 @@ def main() -> int:
             errors.append(f"{relative}: image {image.group('src')}; the pages use no images")
         if len(TABLE_DIVIDER_RE.findall(text)) > 1:
             errors.append(f"{relative}: more than one table")
-        for model in sorted(set(MODEL_ID_RE.findall(lowered))):
-            if model not in DOCUMENTED_MODELS:
-                errors.append(f"{relative}: mentions {model!r}, which is not a launch model")
+        undocumented = {
+            model
+            for line in lowered.splitlines()
+            for model in MODEL_ID_RE.findall(line)
+            if model not in DOCUMENTED_MODELS
+            and not (model in PREVIOUS_IDS and "previous ids" in line)
+        }
+        for model in sorted(undocumented):
+            errors.append(f"{relative}: mentions {model!r}, which is not a launch model")
         prose = INLINE_CODE_RE.sub("", FENCE_RE.sub("", text))
         if re.search(r"(?<!\\)\$", prose):
             errors.append(f"{relative}: unescaped $ in prose renders as math; write \\$")

@@ -15,6 +15,7 @@ Every error names the problem and the next step.
 | Already running 2 robots | Each organization runs at most 2 robots at a time. Stop another run, or wait a minute for a crashed one to time out |
 | Out of credits | See [Pricing](/index#pricing) to add credits. Your balance is in the account menu on the [dashboard](https://app.dreamscalelabs.com/dashboard) |
 | Upgrade required, or `dreamscale --version` says `Update: ...` | Run `uv tool upgrade dreamscale` for the CLI, or `uv add dreamscale --upgrade-package dreamscale` in your project |
+| `pi0.5-…` returned INVALID_OBSERVATION, or model not found | You are on dreamscale 0.1.0a106 or older: upgrade with `uv tool upgrade dreamscale` (or `uv add dreamscale --upgrade-package dreamscale`), or use the previous ids pi05-libero, pi05-so101, pi05-yam |
 | Warnings on the first `dreamscale sim libero` run | Harmless. Hugging Face and robosuite print them while the simulator loads |
 | Camera not found | Reconnect it, then rerun `dreamscale robots so101 setup` or `dreamscale robots yam setup` |
 | SO-101 serial port not found or busy | Close other apps using the arm. On Linux, run `sudo usermod -aG dialout $USER`, then log out and in. Rerun `dreamscale robots so101 setup` |
