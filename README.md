@@ -71,3 +71,9 @@ Mintlify deploys the default branch of `Dreamscale-Labs/docs`. Review the
 preview deployment before merging. After the docs commit is merged, update the
 `mvp/user-docs` submodule pointer in the parent MVP repository as a separate
 change.
+
+About 5 and 15 minutes after the **Mintlify Deployment** check succeeds, run
+`scripts/verify_live_docs.sh`. It checks that every page serves the `sdkVersion`
+in `docs.json` and every redirect returns 308, requesting each URL several times
+because CDN edges can keep an old copy after a deploy. If a page stays stale, a
+new commit on `main` redeploys the site.
