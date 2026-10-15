@@ -46,5 +46,5 @@ jobs:
       - name: Enforce public content boundaries
         run: python scripts/check_content.py
 
-      - name: Verify SDK and CLI contract
-        run: python scripts/check_sdk_contract.py
+      - name: Check every snippet and command against the SDK and CLI
+        run: python scripts/run_snippets.py

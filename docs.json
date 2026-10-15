@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Dreamscale",
-  "description": "Run robot foundation models in the cloud from a CLI or a small Python SDK.",
+  "description": "Run robot foundation models on cloud GPUs from the CLI or a few lines of Python.",
   "colors": {
     "primary": "#16181A",
     "light": "#F7F8F7",
@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a101",
+    "sdkVersion": "0.1.0a105",
     "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
@@ -29,45 +29,25 @@
   "navigation": {
     "pages": [
       {
-        "group": "Getting started",
+        "group": "CLI",
         "pages": [
           "index",
-          "quickstart"
-        ]
-      },
-      {
-        "group": "Robots",
-        "pages": [
           "robots/so101",
           "robots/yam"
         ]
       },
       {
-        "group": "Build with Python",
+        "group": "Python SDK",
         "pages": [
-          "python/run-a-policy",
-          "python/models"
+          "python",
+          "models"
         ]
       },
       {
-        "group": "Fine-tuning",
+        "group": "Help",
         "pages": [
-          "fine-tuning/deployments"
-        ]
-      },
-      {
-        "group": "Reference",
-        "pages": [
-          "reference/cli",
-          "reference/sdk",
-          "reference/troubleshooting"
-        ]
-      },
-      {
-        "group": "Integrations",
-        "pages": [
-          "integrations/inspect-robots",
-          "integrations/hud"
+          "troubleshooting",
+          "deployments"
         ]
       }
     ]
@@ -97,14 +77,18 @@
   "markdown": {
     "instructions": [
       "Treat the Dreamscale CLI and Python SDK as the supported public integration surfaces.",
-      "Prefer `dreamscale run <robot>` for supported robots and `dreamscale.connect()` with a context manager in Python.",
+      "Prefer `dreamscale run <robot>` for supported robots and `dreamscale.connect(model)` with `predict` or `next_action` in Python.",
       "Do not infer or recommend internal control-plane APIs."
     ]
   },
   "redirects": [
     {
       "source": "/installation",
-      "destination": "/quickstart"
+      "destination": "/"
+    },
+    {
+      "source": "/quickstart",
+      "destination": "/"
     },
     {
       "source": "/guides/so101",
@@ -120,31 +104,59 @@
     },
     {
       "source": "/guides/browser-sim",
-      "destination": "/quickstart"
+      "destination": "/"
     },
     {
       "source": "/guides/franka",
-      "destination": "/python/models"
+      "destination": "/models"
     },
     {
       "source": "/guides/deployments",
-      "destination": "/fine-tuning/deployments"
+      "destination": "/deployments"
+    },
+    {
+      "source": "/fine-tuning/deployments",
+      "destination": "/deployments"
     },
     {
       "source": "/guides/inspect-robots",
-      "destination": "/integrations/inspect-robots"
+      "destination": "/"
+    },
+    {
+      "source": "/integrations/inspect-robots",
+      "destination": "/"
+    },
+    {
+      "source": "/integrations/hud",
+      "destination": "/"
     },
     {
       "source": "/sdk/overview",
-      "destination": "/python/run-a-policy"
+      "destination": "/python"
+    },
+    {
+      "source": "/python/run-a-policy",
+      "destination": "/python"
     },
     {
       "source": "/sdk/model-contracts",
-      "destination": "/python/models"
+      "destination": "/models"
     },
     {
-      "source": "/troubleshooting",
-      "destination": "/reference/troubleshooting"
+      "source": "/python/models",
+      "destination": "/models"
+    },
+    {
+      "source": "/reference/sdk",
+      "destination": "/python"
+    },
+    {
+      "source": "/reference/cli",
+      "destination": "/"
+    },
+    {
+      "source": "/reference/troubleshooting",
+      "destination": "/troubleshooting"
     }
   ]
 }

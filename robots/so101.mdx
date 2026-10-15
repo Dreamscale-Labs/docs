@@ -1,6 +1,7 @@
 ---
-title: "SO-101"
-description: "Set up an SO-101 arm with two cameras, then run a cloud model on it from the CLI."
+title: "SO-101 with the CLI"
+sidebarTitle: "SO-101"
+description: "Set up an SO-101 arm with two cameras and run a cloud model on it from the CLI."
 keywords: ["SO-101", "LeRobot", "dreamscale robots so101 setup", "dreamscale run so101", "calibration"]
 ---
 
@@ -12,20 +13,14 @@ Allow about 20 minutes.
 - Two USB cameras: a **side** camera on a fixed mount and a **wrist** camera on
   the arm.
 - A computer for the arm and both cameras. A Raspberry Pi 5 works.
-- The Dreamscale CLI, signed in. See [Quick start](/quickstart).
+- The Dreamscale CLI, signed in. See [Quick start](/).
 
-## 1. Place the side camera
+## 1. Place the cameras
 
 Put the side camera 60–80 cm from the arm, side-on, with the whole arm and
-workspace in frame. Use even lighting and a plain background. Lock exposure and
-white balance if your camera allows it.
+workspace in frame. Use even lighting and a plain background.
 
-<Frame caption="Side camera placement">
-  <img
-    src="/images/so101-camera-reference.svg"
-    alt="Top and side views showing the side camera 60 to 80 cm from the SO-101, side-on, with the whole arm and workspace in frame"
-  />
-</Frame>
+![Top and side views showing the side camera 60 to 80 cm from the SO-101, side-on, with the whole arm and workspace in frame](/images/so101-camera-reference.svg)
 
 Mount the wrist camera so it sees the gripper. Route its cable so no joint can
 pull it.
@@ -36,13 +31,8 @@ pull it.
 dreamscale robots so101 setup
 ```
 
-The first run installs SO-101 support. Then it finds the arm's serial port and
-shows a preview of each camera so you can pick the side and wrist cameras.
-
-<Tip>
-  On Linux, if the port is not found, add yourself to the `dialout` group:
-  `sudo usermod -aG dialout $USER`, then log out and back in.
-</Tip>
+It finds the arm's port and previews each camera so you can pick the side and
+wrist cameras.
 
 ## 3. Calibrate
 
@@ -58,37 +48,31 @@ Clear the table and follow the prompts to move each joint through its range.
 dreamscale doctor so101
 ```
 
-This checks the port, calibration, and both cameras, and shows your side camera
-next to the reference framing.
-
-<Check>
-  The command ends with a `✓` line.
-</Check>
-
-Optional: pose the arm where each task should start, then save it as home:
-
-```bash
-dreamscale robots so101 home --set
-```
+It prints the model `run` will use, then checks the port, calibration, both
+cameras and your access to that model, and shows your side camera next to the
+reference framing. Every line shows a `✓`.
 
 ## 5. Run a model
 
 <Warning>
-  The arm will move. Clear the workspace, keep people and cables out of reach,
-  and keep the power switch within reach.
+  The arm will move. Clear the workspace, keep people and cables
+  out of reach, and keep the power switch within reach. Cloud inference does
+  not replace your robot's safety limits.
 </Warning>
 
 ```bash
-dreamscale run so101 --model molmoact2-so101
+dreamscale run so101
 ```
 
-1. Press **Enter** to connect the arm.
-2. Type an instruction, for example `pick up the red block and put it in the box`.
-3. The arm moves to home and shows a preview of the first actions. Nothing
-   moves yet.
+It prints `Using molmoact2-so101 (pass --model to choose)`, then:
+
+1. At `Enter to start`, press **Enter** to connect the arm.
+2. At `Instruction`, type a task, for example
+   `pick up the red block and put it in the box`.
+3. The arm shows a preview of the first actions. Nothing moves yet.
 4. Press **Enter** to run. Press **Ctrl+C** to stop.
-5. The arm holds, returns home, and asks for the next instruction. Press
-   **Ctrl+C** again to disconnect.
+5. The arm returns home and asks for the next instruction. Press **Ctrl+C**
+   again to exit.
 
 The arm keeps holding its pose after the command exits. Support it, then
 release the motors:
@@ -99,24 +83,11 @@ dreamscale robots so101 release
 
 ## Models
 
-| Model | Notes |
-| --- | --- |
-| `molmoact2-so101` | MolmoAct2, the default SO-101 policy |
-| `fable`, `opus`, `astra`, `sol`, `argon` | Language models that plan with bounded arm tools. Add `--effort low\|medium\|high` |
-| `perceptron-isaac05-so101` | Your own Isaac 0.5 fine-tune, with `--deployment ckpt_...`. See [Deploy your fine-tune](/fine-tuning/deployments) |
+Choose one with `--model`, for example `dreamscale run so101 --model pi05-so101`:
 
-Run `dreamscale models` to see every model your organization can use.
+- `molmoact2-so101`: MolmoAct2.
+- `flux-3-action-so101`: FLUX 3 Action.
+- `pi05-so101`: π0.5.
 
-## Useful options
-
-| Option | What it does |
-| --- | --- |
-| `--instruction TEXT` | Run one task, then exit |
-| `--max-actions N` | Stop each task after `N` actions |
-| `--max-joint-velocity` | Joint speed cap in degrees per second (default 150) |
-| `--keep-warm SECONDS` | Keep the GPU reserved after each task (default 300, billed). `0` releases it |
-| `--hud` | Record each task on [HUD](/integrations/hud) |
-| `--inspect-robots` | Record the run as an [Inspect Robots](/integrations/inspect-robots) eval log |
-
-See the [CLI reference](/reference/cli#run) for every option. Stuck? See
-[Troubleshooting](/reference/troubleshooting).
+`dreamscale models` shows which ones your organization can run right now.
+Stuck? See [Troubleshooting](/troubleshooting).

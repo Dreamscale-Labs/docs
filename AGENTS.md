@@ -23,15 +23,21 @@
 
 ## Writing standard
 
-- Keep pages short. Prefer a command, a table, or a step list over prose.
+- Six main pages (Quick start, SO-101, Bimanual YAM, Python, Models,
+  Troubleshooting), about 2,000 words in total, plus a short Deployments page.
+  `scripts/check_content.py` enforces the budget.
+- Plain Markdown. At most one table per page. The robot safety warning
+  (`<Warning>`) is the only callout, and the SO-101 camera diagram is the only
+  image.
+- Document only the shared launch models. The docs are the spec: the SDK and
+  CLI match them, and `scripts/run_snippets.py` runs every snippet.
+- Keep pages short. Prefer a command or a step list over prose.
 - Start with the user outcome and prerequisites.
 - Use active voice, second person, and sentence-case headings.
 - Keep one main job per page and one idea per sentence.
 - Prefer tested, copyable commands and complete Python examples.
-- State the expected result after every major procedure.
+- Each step is a command plus how you know it worked.
 - End procedures with the next useful action and a recovery link.
-- Use tables only for exact mappings or comparisons.
-- Use diagrams only when they clarify ownership, ordering, or data flow.
 - Keep details progressively disclosed. Recommend automatic defaults before
   advanced overrides.
 - Design for humans first, while keeping headings, code, and terms easy for
@@ -54,7 +60,7 @@ Do not document:
 - internal worker, admin, billing-reconciliation, or infrastructure workflows;
 - secrets, test credentials, internal tokens, or private operational URLs;
 - models marked coming soon or beta-only as generally available;
-- exact model prices outside the live dashboard.
+- prices, except the one pricing line on the Quick start page.
 
 ## Page requirements
 
@@ -75,5 +81,5 @@ mint validate
 mint broken-links --check-anchors --check-redirects --check-snippets
 mint a11y
 python3 scripts/check_content.py
-python3 scripts/check_sdk_contract.py
+python3 scripts/run_snippets.py
 ```

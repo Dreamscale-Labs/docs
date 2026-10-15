@@ -15,6 +15,7 @@ FENCE_RE = re.compile(
     r"```(?P<language>[A-Za-z0-9_+-]+)(?:[^\n]*)\n(?P<body>.*?)```",
     re.DOTALL,
 )
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 VARIABLE_RE = re.compile(r"\{\{(?P<name>[A-Za-z][A-Za-z0-9]*)\}\}")
 FORBIDDEN_TEXT = {
     "Mintlify Starter Kit": "starter branding",
@@ -33,6 +34,34 @@ STAGED_MODEL_MARKERS = (
     "gr00t",
     "groot",
 )
+# The launch docs cover the shared models only, plus the deployment base model.
+DOCUMENTED_MODELS = {
+    "pi05-libero",
+    "flux-3-action-so101",
+    "molmoact2-so101",
+    "pi05-so101",
+    "molmoact2-bimanual-yam",
+    "pi05-yam",
+    "perceptron-isaac05",
+    "perceptron-isaac05-so101",
+    "perceptron-isaac05-yam",
+}
+MODEL_ID_RE = re.compile(
+    r"(?<![\w-])((?:molmoact2|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
+    r"dreamzero|gr00t)-[a-z0-9-]+)"
+)
+# One way to do each thing: plain Markdown, the safety warning as the only callout,
+# at most one table per page, and the SO-101 camera diagram as the only image.
+FORBIDDEN_COMPONENTS = re.compile(
+    r"<(Note|Tip|Info|Check|Danger|Callout|Card|CardGroup|Frame|Tabs|Tab|CodeGroup|"
+    r"Accordion|AccordionGroup|Steps|Step|img)\b|```mermaid"
+)
+ALLOWED_IMAGES = {"/images/so101-camera-reference.svg"}
+IMAGE_RE = re.compile(r"!\[[^\]]*\]\((?P<src>[^)\s]+)")
+TABLE_DIVIDER_RE = re.compile(r"(?m)^\|(?: *:?-{3,}:? *\|)+ *$")
+# The six main pages share a word budget, frontmatter excluded.
+MAIN_PAGES = ("index", "robots/so101", "robots/yam", "python", "models", "troubleshooting")
+MAIN_WORD_BUDGET = 2200
 
 
 def _navigation_pages(node: object) -> list[str]:
@@ -102,6 +131,19 @@ def main() -> int:
         for marker in STAGED_MODEL_MARKERS:
             if marker in lowered:
                 errors.append(f"{relative}: mentions staged model {marker!r}")
+        for component in FORBIDDEN_COMPONENTS.finditer(text):
+            errors.append(f"{relative}: uses {component.group(0)!r}; the only callout is <Warning>")
+        for image in IMAGE_RE.finditer(text):
+            if image.group("src") not in ALLOWED_IMAGES:
+                errors.append(f"{relative}: image {image.group('src')} is not the SO-101 diagram")
+        if len(TABLE_DIVIDER_RE.findall(text)) > 1:
+            errors.append(f"{relative}: more than one table")
+        for model in sorted(set(MODEL_ID_RE.findall(lowered))):
+            if model not in DOCUMENTED_MODELS:
+                errors.append(f"{relative}: mentions {model!r}, which is not a launch model")
+        prose = INLINE_CODE_RE.sub("", FENCE_RE.sub("", text))
+        if re.search(r"(?<!\\)\$", prose):
+            errors.append(f"{relative}: unescaped $ in prose renders as math; write \\$")
         if GIT_INSTALL_RE.search(text):
             errors.append(f"{relative}: installs one of our packages from a git URL, not PyPI")
 
@@ -127,11 +169,18 @@ def main() -> int:
     # required a9, which would have handed readers an SDK that disagreed with
     # the live control rate. The version is still surfaced in prose, and that
     # reference has to stay for the release check below to mean anything.
-    quickstart = (ROOT / "quickstart.mdx").read_text()
+    words = 0
+    for slug in MAIN_PAGES:
+        text = (ROOT / f"{slug}.mdx").read_text()
+        words += len(text.split("\n---\n", 1)[-1].split())
+    if words > MAIN_WORD_BUDGET:
+        errors.append(f"main pages: {words} words, over the {MAIN_WORD_BUDGET}-word budget")
+
+    quickstart = (ROOT / "index.mdx").read_text()
     if '"dreamscale==' in quickstart or "'dreamscale==" in quickstart:
-        errors.append("quickstart.mdx: install examples must track the latest release, not a pin")
+        errors.append("index.mdx: install examples must track the latest release, not a pin")
     if "{{sdkVersion}}" not in quickstart:
-        errors.append("quickstart.mdx: must state the current release via sdkVersion")
+        errors.append("index.mdx: must state the current release via sdkVersion")
     if "team@dreamscalelabs.com" not in DOCS_CONFIG.read_text():
         errors.append("docs.json: support email is missing")
     if '"docsUrl": "https://docs.dreamscalelabs.com"' not in DOCS_CONFIG.read_text():
@@ -146,7 +195,7 @@ def main() -> int:
     print(
         f"Content guard passed: {len(pages)} pages, "
         f"{sum(len(_python_blocks(path, path.read_text())) for path in content_paths)} "
-        "Python blocks."
+        f"Python blocks, {words} words on the main pages."
     )
     return 0
 

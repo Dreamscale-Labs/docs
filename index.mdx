@@ -1,55 +1,69 @@
 ---
-title: "Overview"
-description: "Run robot foundation models on cloud GPUs from a CLI or a few lines of Python."
-keywords: ["robot inference", "robot policy", "VLA", "physical AI", "Dreamscale"]
+title: "Quick start"
+description: "Watch a cloud robot model work in two minutes, then pick the CLI or the Python SDK."
+keywords: ["quick start", "install Dreamscale", "dreamscale login", "dreamscale sim libero", "pi05-libero"]
 ---
 
-Your robot sends camera frames and joint state, and gets back the next actions
-in real time. You don't need a local GPU or any model setup.
+Dreamscale runs robot models on cloud GPUs. Your robot sends camera frames and
+joint positions, and gets back actions in real time.
 
-```mermaid
-flowchart LR
-  A["Your robot"] -->|cameras and joint state| B["Dreamscale CLI or SDK"]
-  B --> C["Model on a cloud GPU"]
-  C -->|actions| A
-```
+## Try it in your browser
 
-## Start here
+Sign in to the [dashboard](https://app.dreamscalelabs.com/dashboard), then open
+[Sim](https://app.dreamscalelabs.com/dashboard/sim). A π0.5 model drives a
+simulated arm through a LIBERO task. Nothing to install.
 
-<CardGroup cols={2}>
-  <Card title="Quick start" icon="rocket" href="/quickstart">
-    Install, sign in, and watch a model complete a task in simulation. No robot
-    needed.
-  </Card>
-  <Card title="SO-101" icon="robot" href="/robots/so101">
-    Set up a single SO-101 arm and run a model on it.
-  </Card>
-  <Card title="Bimanual YAM" icon="hands" href="/robots/yam">
-    Set up two I2RT YAM arms and run a model on them.
-  </Card>
-  <Card title="Python SDK" icon="code" href="/python/run-a-policy">
-    Call a model from your own robot code.
-  </Card>
-</CardGroup>
+## Choose your path
 
-## How it works
+- **CLI**: one command runs a model on a supported robot or in the simulator.
+  `uv tool install dreamscale`.
+- **Python SDK**: call models from your own robot, simulator or pipeline.
+  `uv add dreamscale`. Start at the [Python SDK quick start](/python).
 
-- **Pick a model.** `dreamscale models` lists the models your organization can
-  run. Each model is trained for a specific robot.
-- **Start a session.** Dreamscale starts a GPU for you. The first connection
-  can take a few minutes while the model loads.
-- **Stream observations, get actions.** The CLI and SDK handle networking,
-  buffering, and timing.
-- **Pay per session.** Sessions bill per second from prepaid credits. Rates
-  and your balance are on the [dashboard](https://app.dreamscalelabs.com/dashboard).
+Both install the same `dreamscale` package. The rest of this page is the CLI.
 
-<Warning>
-  Cloud inference does not replace your robot's safety controller. Keep joint
-  and speed limits, a clear workspace, and a physical e-stop on every robot.
-</Warning>
+## Run the simulator from the CLI
 
-<Tip>
-  Using a coding agent? Point it at
-  [docs.dreamscalelabs.com/llms-full.txt](https://docs.dreamscalelabs.com/llms-full.txt)
-  for these docs as one file.
-</Tip>
+1. Install the CLI. It works on macOS, Linux and Windows (WSL2).
+
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   uv tool install dreamscale
+   ```
+
+   `dreamscale --version` prints `{{sdkVersion}}` or newer.
+
+2. Sign in or create an account in your browser.
+
+   ```bash
+   dreamscale login
+   ```
+
+   It prints `✓ saved login to ...` when you are signed in.
+
+3. Run a model in the LIBERO simulator.
+
+   ```bash
+   dreamscale sim libero
+   ```
+
+   The first run downloads the simulator (several GB on Linux), which can take a
+   few minutes. A GPU connects in seconds, longer if all are busy.
+   It prints `Using pi05-libero (pass --model to choose)`, a window
+   opens and the model drives the arm. The run ends with
+   `result: success condition reached`.
+
+Already have the CLI? Update it with `uv tool upgrade dreamscale`.
+
+## Pricing
+
+Models cost \$5 per robot-hour while connected, billed by the second. Time
+spent waiting for a GPU is free. New accounts start with \$5 of credit.
+
+To add credits, email [{{supportEmail}}](mailto:{{supportEmail}}).
+
+## Next
+
+- [Run a model on an SO-101](/robots/so101)
+- [Run a model on a bimanual YAM](/robots/yam)
+- [Call a model from your own code](/python) with the Python SDK
