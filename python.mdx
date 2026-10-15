@@ -27,7 +27,7 @@ uv add dreamscale
 
 ## Get one action chunk
 
-This runs as-is. It sends blank frames and a zero state to `pi05-libero`, the
+This runs as-is. It sends blank frames and a zero state to `pi0.5-libero`, the
 π0.5 model for the LIBERO simulator:
 
 ```python
@@ -35,7 +35,7 @@ import numpy as np
 
 import dreamscale
 
-policy = dreamscale.connect("pi05-libero")
+policy = dreamscale.connect("pi0.5-libero")
 frame = np.zeros((256, 256, 3), dtype=np.uint8)  # H×W×3 uint8 RGB
 observation = dreamscale.libero.observe(
     agent_frame=frame,

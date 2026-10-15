@@ -144,6 +144,14 @@ class Cli:
         section = text.split("Commands", 1)[1] if "Commands" in text else ""
         return set(re.findall(r"^│ ([a-z0-9][a-z0-9-]*)\s", section, re.M))
 
+    def hidden_subcommand(self, path: tuple[str, ...], token: str) -> bool:
+        """A command its group leaves out of --help (hidden until launch) still has its own."""
+        parent = self.help(path) or ""
+        if "Commands" not in parent or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", token):
+            return False
+        own = self.help((*path, token))
+        return own is not None and own != parent
+
 
 def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | None:
     try:
@@ -155,7 +163,7 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
         return None
     path: tuple[str, ...] = ()
     rest = tokens[1:]
-    while rest and rest[0] in cli.subcommands(path):
+    while rest and (rest[0] in cli.subcommands(path) or cli.hidden_subcommand(path, rest[0])):
         path += (rest.pop(0),)
     text = cli.help(path)
     if text is None:
@@ -345,7 +353,7 @@ def check_models_table(report: Report) -> None:
     from dreamscale.policy.runtime.contract import runtime_contract_for_model
 
     text = (ROOT / "models.mdx").read_text()
-    rows = re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|$", text, re.M)
+    rows = re.findall(r"^\| `([a-z0-9.-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|$", text, re.M)
     if not rows:
         report.fail("models.mdx", "Models table", "no rows found")
     for model, chunk, width, hz in rows:
@@ -362,7 +370,7 @@ def check_models_table(report: Report) -> None:
 def documented_contracts() -> dict[str, tuple[int, int, float]]:
     text = (ROOT / "models.mdx").read_text()
     return {m: (int(c), int(w), float(hz)) for m, c, w, hz in
-            re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|", text, re.M)}
+            re.findall(r"^\| `([a-z0-9.-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|", text, re.M)}
 
 
 # ---------------------------------------------------------------- live CLI
@@ -445,7 +453,7 @@ def main() -> int:
     parser.add_argument("--max-actions", type=int, default=0,
                         help="actions before a control loop stops (static 5, live 150)")
     parser.add_argument("--model", action="append", default=[], metavar="DOCS=RUN",
-                        help="run a snippet's model as another, e.g. pi05-so101=molmoact2-so101")
+                        help="run a snippet's model as another, e.g. pi0.5-so101=molmoact2-so101")
     parser.add_argument("--sim", action="store_true", help="live: also run `dreamscale sim libero`")
     parser.add_argument("--uv", action="store_true", help="also check the install commands")
     parser.add_argument("--skip-cli", action="store_true", help="live: skip account CLI commands")
