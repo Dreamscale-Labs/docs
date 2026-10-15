@@ -47,7 +47,7 @@ carries. Without `--preset`, `create` uses the robot your repo's adapter
 declares. The first build takes about 15 minutes. `dreamscale deployments list`
 then shows it as **Ready** with an ID like `ckpt_...`. You can also create one
 on the [Deployments](https://app.dreamscalelabs.com/dashboard/deployments) page:
-choose **Detect** first, then check the robot and its unit conversion.
+choose **Verify** first: it checks the files and fills in the robot and its unit conversion.
 
 ## 2. Run it
 
@@ -68,12 +68,8 @@ state width shown on the deployment's page; its **Connect** card has the full
 loop. The first action of each new instruction takes a few seconds while the
 task is prepared.
 
-To run a deployment whenever a session names none, make it the default:
-
-```bash
-dreamscale deployments default ckpt_...
-dreamscale deployments default base   # back to the base weights
-```
+A session runs a deployment only when it names it. Without `--deployment`
+(or `checkpoint=`), it runs the base weights.
 
 ## 3. Keep it warm (optional)
 
