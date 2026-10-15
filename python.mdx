@@ -86,8 +86,7 @@ Pass a new instruction at any time to switch tasks.
 
 The SDK checks each observation before sending it and names the field that is
 wrong. It prepares images, streams to the GPU over the fastest path your network
-allows, and blends chunks so motion stays smooth. It spaces requests at least
-0.4 s apart. If the connection drops, it
+allows, and blends chunks so motion stays smooth. If the connection drops, it
 reconnects and holds the robot still until actions arrive. It releases the GPU
 after a minute without calls and reconnects on the next one. Sessions close
 when your program exits, or call `policy.close()`. In async code, use
