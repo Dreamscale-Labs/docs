@@ -36,18 +36,18 @@ STAGED_MODEL_MARKERS = (
 )
 # The launch docs cover the shared models only, plus the deployment base model.
 DOCUMENTED_MODELS = {
-    "pi05-libero",
+    "pi0.5-libero",
     "flux-3-action-so101",
     "molmoact2-so101",
-    "pi05-so101",
+    "pi0.5-so101",
     "molmoact2-bimanual-yam",
-    "pi05-yam",
+    "pi0.5-bimanualyam",
     "perceptron-isaac05",
     "perceptron-isaac05-so101",
     "perceptron-isaac05-yam",
 }
 MODEL_ID_RE = re.compile(
-    r"(?<![\w-])((?:molmoact2|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
+    r"(?<![\w-])((?:molmoact2|pi0\.5|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
     r"dreamzero|gr00t)-[a-z0-9-]+)"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,

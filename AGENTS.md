@@ -15,7 +15,7 @@
 - Use **Dreamscale**, **Python SDK**, **CLI**, **API key**, **session**, **model**,
   **deployment**, **SO-101**, **Bimanual YAM**, and **LIBERO**.
 - Use exact model identifiers in code, for example `molmoact2-so101`,
-  `molmoact2-bimanual-yam`, `pi05-yam`, and `pi05-libero`.
+  `molmoact2-bimanual-yam`, `pi0.5-bimanualyam`, and `pi0.5-libero`.
 - Say **action chunk** for the actions returned by `predict()`.
 - Distinguish model coordinates from robot-controller coordinates.
 - Write for a first-time user: no legacy names, migrations, or version
