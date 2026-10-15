@@ -68,12 +68,8 @@ state width shown on the deployment's page; its **Connect** card has the full
 loop. The first action of each new instruction takes a few seconds while the
 task is prepared.
 
-To run a deployment whenever a session names none, make it the default:
-
-```bash
-dreamscale deployments default ckpt_...
-dreamscale deployments default base   # back to the base weights
-```
+A session runs a deployment only when it names it. Without `--deployment`
+(or `checkpoint=`), it runs the base weights.
 
 ## 3. Keep it warm (optional)
 
