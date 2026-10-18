@@ -50,7 +50,9 @@ ENDPOINTS = {"dev": "https://api-dev.dreamscalelabs.com", "prod": "https://api.d
 HARDWARE_PREFIXES = (("robots",), ("run",), ("doctor", "so101"), ("doctor", "yam"))
 # Commands that need a browser, a Hugging Face repo or a deployment.
 STATIC_ONLY_PREFIXES = (("login",), ("deployments",))
-PLACEHOLDER_RE = re.compile(r"\.\.\.|^<.*>$|^ckpt_|://")
+PLACEHOLDER_RE = re.compile(r"\.\.\.|^<.*>$|^ckpt_|://|^\.{1,2}/")  # also a local folder
+# A deployment named by its slug, where the command takes one (its help says so).
+SLUG_RE = re.compile(r"[a-z0-9][a-z0-9-]{1,46}[a-z0-9]")
 
 
 @dataclass
@@ -180,6 +182,8 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
             continue
         if previous_was_option or PLACEHOLDER_RE.search(token):
             previous_was_option = False
+            continue
+        if "its slug" in text and SLUG_RE.fullmatch(token):
             continue
         # A positional choice, like `so101` in `doctor so101`, must appear in the help.
         if not re.search(rf"(?<![\w-]){re.escape(token)}(?![\w-])", text):
