@@ -1,96 +1,85 @@
 ---
 title: "Deployments"
-description: "Serve your own Isaac 0.5 fine-tune from Hugging Face on your robot."
-keywords: ["deployment", "fine-tune", "Isaac 0.5", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5 or Isaac 0.5 fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "Isaac 0.5", "Hugging Face", "dreamscale deployments"]
 # Hidden until Deployments launch: reachable by URL, out of the sidebar, search and indexing.
 hidden: true
 ---
 
-A deployment serves your own fine-tune from Hugging Face, shaped to your robot.
-Without a deployment, `--model perceptron-isaac05-yam` runs the Isaac 0.5 base
-weights.
+A deployment serves your own fine-tune, shaped to your robot, in one region. A
+GPU starts when a robot connects and stops when it disconnects, unless you keep
+it warm.
 
 ## What you need
 
-- Isaac 0.5 enabled for your organization. Email
-  [{{supportEmail}}](mailto:{{supportEmail}}) to request it.
-- SDK and CLI {{sdkVersion}} or newer: `uv tool upgrade dreamscale`.
-- A Hugging Face repo with your full Isaac 0.5 fine-tune. For a private repo, set
-  `HF_TOKEN`.
-
-The repo holds the full Hugging Face export, F32, BF16 or F16, up to 160 GB.
-LoRA adapters and single-file checkpoints aren't supported.
-
-```text
-your-org/isaac-finetune
-├── config.json                      Isaac 0.5 architecture
-├── model.safetensors.index.json
-├── model-00001-of-00004.safetensors
-├── …
-├── policy_normalization.json        recommended: your normalization statistics
-└── isaac_deployment_adapter.json    optional: your robot's shape
-```
-
-`policy_normalization.json` converts the model's outputs into your robot's
-units. Ship the statistics from your own training data; without them, the
-deployment uses the base model's.
+- The latest CLI: `uv tool upgrade dreamscale`.
+- Credits on your account: each build runs a short GPU check.
+- A π0.5 checkpoint: an openpi checkpoint (`params/` with `assets/<id>/norm_stats.json`)
+  or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
+  up to 24 GB. It can be on Hugging Face or in a local folder.
 
 ## 1. Create it
 
+From Hugging Face (any `huggingface.co` link works, including a checkpoint
+folder's page):
+
 ```bash
-dreamscale deployments inspect hf://your-org/isaac-finetune
-dreamscale deployments create hf://your-org/isaac-finetune --preset bimanual_yam --name my-finetune
+dreamscale deployments inspect hf://your-org/towel-fold --base pi0.5
+dreamscale deployments create hf://your-org/towel-fold --base pi0.5 --preset bimanual_yam --slug towel-fold
 ```
 
-`inspect` checks the repo's files and lists the robot unit conversions it
-carries. Without `--preset`, `create` uses the robot your repo's adapter
-declares. The first build takes about 15 minutes. `dreamscale deployments list`
-then shows it as **Ready** with an ID like `ckpt_...`. You can also create one
-on the [Deployments](https://app.dreamscalelabs.com/dashboard/deployments) page:
-choose **Detect** first, then check the robot and its unit conversion.
+From a local folder:
+
+```bash
+dreamscale deployments create ./checkpoints/6000 --preset bimanual_yam --slug towel-fold
+```
+
+`inspect` shows what the checkpoint declares (format, cameras, widths, horizon,
+rate, RTC) and where each value came from; flags on `create` override any of
+them. A folder's configuration files are read first and only the files the build
+needs are uploaded, never `train_state/` or code. Running the same command again
+uploads nothing new, and an interrupted upload resumes. Uploads are kept for 30
+days.
+
+The build takes a few minutes and ends with **Ready**. For a private repo, run
+`dreamscale integrations hugging-face setup` once to save a read-only token.
 
 ## 2. Run it
 
 After the robot's setup ([Bimanual YAM](/robots/yam) or [SO-101](/robots/so101)):
 
 ```bash
-dreamscale run yam --model perceptron-isaac05-yam --deployment ckpt_... --instruction "pick up the cube"
+dreamscale run yam --deployment towel-fold --instruction "fold the towel"
 ```
 
 From Python:
 
 ```python
-policy = dreamscale.connect("perceptron-isaac05", checkpoint="ckpt_...")
+policy = dreamscale.connect("pi0.5", deployment="towel-fold")
 ```
 
-Build observations with `dreamscale.robot.observe`, using the camera keys and
-state width shown on the deployment's page; its **Connect** card has the full
-loop. The first action of each new instruction takes a few seconds while the
-task is prepared.
-
-To run a deployment whenever a session names none, make it the default:
-
-```bash
-dreamscale deployments default ckpt_...
-dreamscale deployments default base   # back to the base weights
-```
+The slug (`towel-fold`) and the `ckpt_...` ID both work everywhere. The
+deployment's page on the dashboard has the full loop for your robot. The first
+connection starts a GPU, usually in under a minute.
 
 ## 3. Keep it warm (optional)
 
-A cold start takes 2–3 minutes. Keep-warm keeps a GPU ready between runs, and
-is billed like connected time. Off (the default) stops the GPU when the session
-ends.
-
 ```bash
-dreamscale deployments keep-warm ckpt_... 30m
+dreamscale deployments keep-warm towel-fold 30m
+dreamscale deployments restart towel-fold   # a fresh GPU, e.g. after a setting change
 ```
 
-## Replace a fine-tune
+Keep-warm holds a GPU ready between runs (`10m` to `12h`, or `always`) and is
+billed like connected time. Off, the default, stops the GPU when the session
+ends.
 
-A new fine-tune is a new deployment with a new ID. Create it, then move
-Always-on to it and update the ID in your code:
+## Isaac 0.5
+
+Isaac 0.5 deployments come from a Hugging Face repo with the full Isaac 0.5
+export, up to 160 GB. Email [{{supportEmail}}](mailto:{{supportEmail}}) to
+enable Isaac 0.5 for your organization.
 
 ```bash
-dreamscale deployments keep-warm ckpt_new always --take-over-from ckpt_old
-dreamscale deployments rename ckpt_new "<new name>"
+dreamscale deployments create hf://your-org/isaac-finetune --preset bimanual_yam --slug my-finetune
+dreamscale run yam --model perceptron-isaac05-yam --deployment my-finetune --instruction "pick up the cube"
 ```
