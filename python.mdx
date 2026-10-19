@@ -1,13 +1,13 @@
 ---
 title: "Python SDK quick start"
 sidebarTitle: "Quick start"
-description: "Install the Python SDK, get your first action chunk without a robot, then drive your robot with next_action."
-keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action chunk"]
+description: "Install the Python SDK, run a model with no robot (LIBERO), then drive any robot with a shared model or your own deployment."
+keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action chunk", "deployment"]
 ---
 
-The Python SDK gives you full control: your own robot, cameras, control loop and
-pipeline. Just want to run a model on an SO-101 or bimanual YAM? The CLI does it
-with one command: see [SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
+The Python SDK gives you full control of your robot, cameras and control loop.
+To just run a model on an SO-101 or bimanual YAM, the CLI does it in one command:
+see [SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
 
 ## What you need
 
@@ -25,9 +25,19 @@ uv add dreamscale
 `uv run python -c "import dreamscale; print(dreamscale.__version__)"` prints
 `{{sdkVersion}}` or newer.
 
-## Get one action chunk
+## Shared models and your deployments
 
-This runs as-is. It sends blank frames and a zero state to `pi0.5-libero`, the
+- **A shared model** runs one robot type with fixed inputs and outputs, listed
+  on [Models](/models): `dreamscale.connect("pi0.5-bimanualyam")`.
+- **Your deployment** is your fine-tune, shaped to your robot:
+  `dreamscale.connect("pi0.5", deployment="towel-fold")`. See
+  [Deployments](/deployments).
+
+Both return a policy with `predict` and `next_action`.
+
+## LIBERO quick start
+
+This runs as-is, with no robot. It sends blank frames to `pi0.5-libero`, the
 π0.5 model for the LIBERO simulator:
 
 ```python
@@ -37,7 +47,7 @@ import dreamscale
 
 policy = dreamscale.connect("pi0.5-libero")
 frame = np.zeros((256, 256, 3), dtype=np.uint8)  # H×W×3 uint8 RGB
-observation = dreamscale.libero.observe(
+observation = dreamscale.libero.observation(
     agent_frame=frame,
     wrist_frame=frame,
     state=[0.0] * 8,
@@ -46,12 +56,10 @@ chunk = policy.predict(observation, instruction="pick up the black bowl")
 print(len(chunk.actions), "x", len(chunk.actions[0]))
 ```
 
-It prints `20 x 7`: 20 actions of 7 values. `connect` returns when a GPU is
-ready; if every GPU is busy, it waits in a queue and shows your position. Now
-replace the frames and state with your own. See [Models](/models) for each
-robot's observation and actions.
+It prints `20 x 7`: 20 actions of 7 values. If every GPU is busy, `connect`
+waits in a queue and shows your position.
 
-## Drive a robot
+## Working with any robot
 
 <Warning>
   The robot will move. Enforce joint, speed and workspace limits locally, and
@@ -59,35 +67,38 @@ robot's observation and actions.
   robot's safety controller.
 </Warning>
 
-Call `next_action` once per control tick. It returns one action on the model's
-clock, so the loop needs no timing code. This loop drives an SO-101; pick a
-model for your robot from `uv run dreamscale models`.
+Your code reads and commands the robot. The robot's observation helper packages
+what you read, and the SDK checks it before sending. Call `next_action` once per
+control tick. This drives an SO-101:
 
 ```python
 import dreamscale
 
-policy = dreamscale.connect("flux-3-action-so101")
+policy = dreamscale.connect("pi0.5-so101")
 
 def read_observation():
-    # Your code: read the side and wrist cameras and the 6 joint positions.
-    return dreamscale.so101.observe(side_frame=side, wrist_frame=wrist, joint_positions=joints)
+    # Your robot's code: read the frames and state.
+    side, wrist = ..., ...  # H×W×3 uint8 RGB frames
+    joints = ...  # 6 values: LeRobot degrees, gripper 0–100
+    return dreamscale.so101.observation(
+        side_frame=side, wrist_frame=wrist, joint_positions=joints,
+    )
 
 def send_to_robot(action):
-    # Your code: command the 6 joints (LeRobot degrees; gripper 0–100).
+    # Your robot's code: apply the 6 absolute joint targets (same order and units).
     ...
 
 while True:
     send_to_robot(policy.next_action(read_observation(), instruction="pick up the red block"))
 ```
 
-Pass a new instruction at any time to switch tasks.
+Other robots use their helper from [Models](/models); a deployment's dashboard
+page has its loop. Pass a new instruction to switch tasks.
 
 ## What the SDK handles
 
-The SDK checks each observation before sending it and names the field that is
-wrong. It prepares images, streams to the GPU over the fastest path your network
-allows, and blends chunks so motion stays smooth. If the connection drops, it
-reconnects and holds the robot still until actions arrive. It releases the GPU
-after a minute without calls and reconnects on the next one. Sessions close
-when your program exits, or call `policy.close()`. In async code, use
-`await dreamscale.aconnect(...)`.
+The SDK checks each observation and names any wrong field. It prepares images,
+picks the fastest network path, and blends chunks so motion stays smooth. If the
+connection drops, it reconnects and holds the robot still. It frees the GPU after
+a minute idle and reconnects on the next call. Sessions close when your program
+exits, or with `policy.close()`. In async code, use `await dreamscale.aconnect(...)`.

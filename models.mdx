@@ -25,7 +25,7 @@ The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` still work everywher
 ## SO-101
 
 ```python
-observation = dreamscale.so101.observe(
+observation = dreamscale.so101.observation(
     side_frame=side,
     wrist_frame=wrist,
     joint_positions=joints,  # 6 values
@@ -42,7 +42,7 @@ observation = dreamscale.so101.observe(
 ## Bimanual YAM
 
 ```python
-observation = dreamscale.yam.observe(
+observation = dreamscale.yam.observation(
     top_frame=top,
     left_frame=left_wrist,
     right_frame=right_wrist,
@@ -60,7 +60,7 @@ observation = dreamscale.yam.observe(
 ## LIBERO
 
 ```python
-observation = dreamscale.libero.observe(
+observation = dreamscale.libero.observation(
     agent_frame=agent_view,  # agentview_image
     wrist_frame=wrist_view,  # robot0_eye_in_hand_image
     state=state,             # 8 values

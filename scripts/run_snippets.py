@@ -208,6 +208,24 @@ class StopSnippet(Exception):
     """Raised by counted_next_action to end a `while True` control loop."""
 
 
+PLACEHOLDER_LINE_RE = re.compile(
+    r"^(?P<indent>\s*)(?P<names>[A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s*=\s*"
+    r"\.\.\.(?:\s*,\s*\.\.\.)*\s*(?P<comment>#.*)?$",
+    re.M,
+)
+
+
+def fill_placeholders(code: str) -> str:
+    """`side, wrist = ..., ...` is the reader's to fill in: run it with the fixtures' values."""
+
+    def fill(match: re.Match) -> str:
+        names = [n.strip() for n in match["names"].split(",")]
+        values = ", ".join(f"globals()[{n!r}]" for n in names)
+        return f"{match['indent']}{match['names']} = {values}"
+
+    return PLACEHOLDER_LINE_RE.sub(fill, code)
+
+
 def fixtures() -> dict[str, object]:
     """Synthetic values for the names a page tells the reader to fill in."""
     import numpy as np
@@ -326,7 +344,7 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
     started = time.perf_counter()
     try:
         with counted_next_action(log, max_actions):
-            exec(compile(code, snippet.label, "exec"), namespace)  # noqa: S102 - our own docs
+            exec(compile(fill_placeholders(code), snippet.label, "exec"), namespace)  # noqa: S102 - our own docs
     except StopSnippet:
         pass
     except Exception as error:  # noqa: BLE001 - every failure is a docs failure
