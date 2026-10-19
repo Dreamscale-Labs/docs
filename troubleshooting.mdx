@@ -1,6 +1,6 @@
 ---
 title: "Troubleshooting"
-description: "Fix common Dreamscale problems: sign-in, waiting for a GPU, the robot limit, credits, upgrades, cameras and serial ports."
+description: "Fix common Dreamscale problems: sign-in, waiting for a server, the robot limit, credits, upgrades, cameras and serial ports."
 keywords: ["Dreamscale errors", "dreamscale login", "queue", "shared_session_limit", "out of credits", "upgrade", "camera", "serial port"]
 ---
 
@@ -10,7 +10,7 @@ Every error names the problem and the next step.
 | Problem | Fix |
 | --- | --- |
 | Not signed in, or API key rejected | Run `dreamscale login`. If `DREAMSCALE_API_KEY` is set, it wins over your login: set it to a current key from [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys), or `unset DREAMSCALE_API_KEY` |
-| Waiting for a GPU | All GPUs for that model are busy. Keep it running: the CLI and SDK show your place in the queue |
+| Waiting for a server | All servers for that model are busy. Keep it running: the CLI and SDK show your place in the queue |
 | `no SO-101 model is available to your organization` (or YAM) | Run `dreamscale models` to see what you can run, then pass `--model <id>`. To request access, open [Models](https://app.dreamscalelabs.com/dashboard/models) |
 | Already running 2 robots | Each organization runs at most 2 robots at a time. Stop another run, or wait a minute for a crashed one to time out |
 | Out of credits | See [Pricing](/index#pricing) to add credits. Your balance is in the account menu on the [dashboard](https://app.dreamscalelabs.com/dashboard) |
