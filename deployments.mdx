@@ -71,6 +71,15 @@ Keep-warm holds a GPU ready between runs (`10m` to `12h`, or `always`) and is
 billed like connected time. Off, the default, stops the GPU when the session
 ends.
 
+## Delete it
+
+```bash
+dreamscale deployments rm towel-fold
+```
+
+Deleting is permanent and can't be undone: running sessions end and the slug is
+free again. Only organization owners can delete. Usage history stays.
+
 ## Isaac 0.5
 
 Isaac 0.5 deployments come from a Hugging Face repo with the full Isaac 0.5
