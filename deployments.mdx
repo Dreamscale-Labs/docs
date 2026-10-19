@@ -1,7 +1,7 @@
 ---
 title: "Deployments"
-description: "Serve your own π0.5 or Isaac 0.5 fine-tune on your robot, from Hugging Face or a local folder."
-keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "Isaac 0.5", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5 fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "Hugging Face", "dreamscale deployments"]
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
@@ -79,14 +79,3 @@ dreamscale deployments rm towel-fold
 
 Deleting is permanent and can't be undone: running sessions end and the slug is
 free again. Only organization owners can delete. Usage history stays.
-
-## Isaac 0.5
-
-Isaac 0.5 deployments come from a Hugging Face repo with the full Isaac 0.5
-export, up to 160 GB. Email [{{supportEmail}}](mailto:{{supportEmail}}) to
-enable Isaac 0.5 for your organization.
-
-```bash
-dreamscale deployments create hf://your-org/isaac-finetune --preset bimanual_yam --slug my-finetune
-dreamscale run yam --model perceptron-isaac05-yam --deployment my-finetune --instruction "pick up the cube"
-```
