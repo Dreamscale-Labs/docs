@@ -56,6 +56,10 @@ From Python:
 policy = dreamscale.connect("pi0.5", deployment="towel-fold")
 ```
 
+A checkpoint whose actions aren't joint targets (its state and action widths
+differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
+the robot waits for the next action instead of holding still.
+
 The slug (`towel-fold`) and the `ckpt_...` ID both work everywhere. The
 deployment's page on the dashboard has the full loop for your robot. The first
 connection starts a server, usually in under a minute.
