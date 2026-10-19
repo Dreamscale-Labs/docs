@@ -56,7 +56,7 @@ chunk = policy.predict(observation, instruction="pick up the black bowl")
 print(len(chunk.actions), "x", len(chunk.actions[0]))
 ```
 
-It prints `20 x 7`: 20 actions of 7 values. If every GPU is busy, `connect`
+It prints `20 x 7`: 20 actions of 7 values. If every server is busy, `connect`
 waits in a queue and shows your position.
 
 ## Working with any robot
@@ -99,6 +99,6 @@ page has its loop. Pass a new instruction to switch tasks.
 
 The SDK checks each observation and names any wrong field. It prepares images,
 picks the fastest network path, and blends chunks so motion stays smooth. If the
-connection drops, it reconnects and holds the robot still. It frees the GPU after
+connection drops, it reconnects and holds the robot still. It frees the server after
 a minute idle and reconnects on the next call. Sessions close when your program
 exits, or with `policy.close()`. In async code, use `await dreamscale.aconnect(...)`.

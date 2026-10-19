@@ -5,13 +5,13 @@ keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "Hugging Face", "dreamsc
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
-GPU starts when a robot connects and stops when it disconnects, unless you keep
+server starts when a robot connects and stops when it disconnects, unless you keep
 it warm.
 
 ## What you need
 
 - The latest CLI: `uv tool upgrade dreamscale`.
-- Credits on your account: each build runs a short GPU check.
+- Credits on your account: each build runs a short check on a server.
 - A π0.5 checkpoint: an openpi checkpoint (`params/` with `assets/<id>/norm_stats.json`)
   or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
   up to 24 GB. It can be on Hugging Face or in a local folder.
@@ -58,18 +58,19 @@ policy = dreamscale.connect("pi0.5", deployment="towel-fold")
 
 The slug (`towel-fold`) and the `ckpt_...` ID both work everywhere. The
 deployment's page on the dashboard has the full loop for your robot. The first
-connection starts a GPU, usually in under a minute.
+connection starts a server, usually in under a minute.
 
 ## 3. Keep it warm (optional)
 
 ```bash
 dreamscale deployments keep-warm towel-fold 30m
-dreamscale deployments restart towel-fold   # a fresh GPU, e.g. after a setting change
+dreamscale deployments stop towel-fold   # stop its server now
 ```
 
-Keep-warm holds a GPU ready between runs (`10m` to `12h`, or `always`) and is
-billed like connected time. Off, the default, stops the GPU when the session
-ends.
+Keep-warm holds a server ready between runs (`10m` to `12h`, or `always`) and is
+billed like connected time. Off, the default, stops the server when the session
+ends. `stop` ends the server now, and a connected robot reconnects to a new one on
+its next call; with `always`, `restart` does the same and starts a fresh one.
 
 ## Delete it
 
