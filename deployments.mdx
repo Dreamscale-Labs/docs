@@ -47,22 +47,25 @@ The build takes a few minutes and ends with **Ready**. For a private repo, run
 After the robot's setup ([Bimanual YAM](/robots/yam) or [SO-101](/robots/so101)):
 
 ```bash
-dreamscale run yam --deployment towel-fold --instruction "fold the towel"
+dreamscale run yam --model acme-robotics/towel-fold --instruction "fold the towel"
 ```
 
 From Python:
 
 ```python
-policy = dreamscale.connect("pi0.5", deployment="towel-fold")
+policy = dreamscale.connect("acme-robotics/towel-fold")
 ```
 
 A checkpoint whose actions aren't joint targets (its state and action widths
 differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
 the robot waits for the next action instead of holding still.
 
-The slug (`towel-fold`) and the `ckpt_...` ID both work everywhere. The
-deployment's page on the dashboard has the full loop for your robot. The first
-connection starts a server, usually in under a minute.
+A deployment's name is `<account>/<slug>`: your account (shown in Settings) and
+the slug you gave it. Its bare slug (`towel-fold`) and its `ckpt_...` ID work
+everywhere too. To rename it (the old name stops working):
+`dreamscale deployments rename towel-fold folding-v2`. The deployment's page on
+the dashboard has the full loop for your robot. The first connection starts a
+server, usually in under a minute.
 
 ## 3. Keep it warm (optional)
 

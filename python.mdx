@@ -30,7 +30,7 @@ uv add dreamscale
 - **A shared model** runs one robot type with fixed inputs and outputs, listed
   on [Models](/models): `dreamscale.connect("pi0.5-bimanualyam")`.
 - **Your deployment** is your fine-tune, shaped to your robot:
-  `dreamscale.connect("pi0.5", deployment="towel-fold")`. See
+  `dreamscale.connect("acme-robotics/towel-fold")`. See
   [Deployments](/deployments).
 
 Both return a policy with `predict` and `next_action`.
