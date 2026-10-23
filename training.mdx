@@ -1,0 +1,50 @@
+---
+title: "Training"
+description: "Fine-tune π0.5 on your robot's LeRobot dataset, then run it as a deployment."
+keywords: ["training", "fine-tune", "π0.5", "pi0.5", "LeRobot", "dataset", "dreamscale train"]
+---
+
+Training fine-tunes π0.5 on your robot's demos, on our GPUs. One command trains it,
+and one more turns it into a [deployment](/deployments) you can run.
+
+## What you need
+
+- The latest CLI: `uv tool upgrade dreamscale`.
+- Credits on your account: you see the price and approve it before anything starts.
+- A LeRobot dataset (v2.x or v3.0), in a local folder or on Hugging Face.
+
+## 1. Train
+
+```bash
+dreamscale train ./towel-fold
+```
+
+From Hugging Face: `dreamscale train hf://your-org/towel-fold`.
+
+The CLI checks the dataset, drops faulty episodes, and shows the price and time.
+Say yes and it uploads, starts training and shows progress on one line. It ends
+with **Ready**. Ctrl-C stops watching, not training: `dreamscale train show tr_...`
+picks it back up.
+
+The defaults choose the base model and training length for your data. To set a
+budget instead, add `--max-usd 50`. For a private repo, run
+`dreamscale integrations hugging-face setup` once.
+
+## 2. Deploy it
+
+```bash
+dreamscale train deploy tr_...
+```
+
+The build takes a few minutes and prints the command that runs it on your robot.
+To rename it or keep it warm, see [Deployments](/deployments).
+
+## Manage runs
+
+```bash
+dreamscale train list
+dreamscale train cancel tr_...   # you pay only for the steps it finished
+dreamscale train rm tr_...       # permanent; a running one is canceled first
+```
+
+The dashboard's Training page shows the same runs.
