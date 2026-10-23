@@ -21,11 +21,23 @@
 - Write for a first-time user: no legacy names, migrations, or version
   qualifiers such as "from SDK 0.1.0a…".
 
+## Sidebar
+
+- Group pages by what the reader wants to do, never by interface: Get started
+  (Quick start, Models), Run on your robot (one CLI page per supported robot,
+  then Python SDK for any other robot), Improve your model (Training,
+  Deployments), Help.
+- One page per task. Where the CLI and Python both work, show the CLI command
+  first, then the Python line.
+- Models is the one catalog of which model runs on which robot. A new robot is
+  one page under Run on your robot; a new model is one row in Models and one
+  line on its robot page.
+
 ## Writing standard
 
 - Six main pages (Quick start, SO-101, Bimanual YAM, Python, Models,
-  Troubleshooting), about 2,000 words in total, plus a short Deployments page.
-  `scripts/check_content.py` enforces the budget.
+  Troubleshooting), about 2,000 words in total, plus short Training and
+  Deployments pages. `scripts/check_content.py` enforces the budget.
 - Plain Markdown. At most one table per page. The robot safety warning
   (`<Warning>`) is the only callout. No images.
 - Document only the shared launch models. The docs are the spec: the SDK and

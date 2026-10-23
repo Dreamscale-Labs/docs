@@ -29,25 +29,31 @@
   "navigation": {
     "pages": [
       {
-        "group": "CLI",
+        "group": "Get started",
         "pages": [
           "index",
-          "robots/so101",
-          "robots/yam"
+          "models"
         ]
       },
       {
-        "group": "Python SDK",
+        "group": "Run on your robot",
         "pages": [
-          "python",
-          "models"
+          "robots/so101",
+          "robots/yam",
+          "python"
+        ]
+      },
+      {
+        "group": "Improve your model",
+        "pages": [
+          "training",
+          "deployments"
         ]
       },
       {
         "group": "Help",
         "pages": [
-          "troubleshooting",
-          "deployments"
+          "troubleshooting"
         ]
       }
     ]
