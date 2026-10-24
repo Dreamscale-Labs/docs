@@ -487,7 +487,8 @@ dreamscale train DATASET [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. |
-| `--base TEXT` | `auto` | Start from `pi0.5` (π0.5 base), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets) or `flux-3-action-base` (FLUX.3 Action). |
+| `--base TEXT` | `auto` | Start from `pi0.5` (π0.5 base), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets), `flux-3-action-base` (FLUX.3 Action), or one of your runs (`tr_…`): its latest checkpoint. |
+| `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
 | `--no-rtc` | off | Train without real-time chunking (on by default). |
