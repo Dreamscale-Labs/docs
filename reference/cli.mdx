@@ -69,7 +69,7 @@ dreamscale doctor [MODE] [OPTIONS]
 | --- | --- | --- |
 | `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101` or `yam`. |
 | `--config PATH` | saved rig config | YAM only: the rig config to check. |
-| `--model TEXT` | the one `run` picks | With a robot: the model to check access to. |
+| `--model TEXT` | — | With a robot: the model to check access to. Without it, `doctor` checks the robot only. |
 
 ```bash
 dreamscale doctor so101
@@ -121,12 +121,12 @@ for the next instruction. See [SO-101](/robots/so101) or
 Run tasks on an SO-101. Joint limits are in degrees.
 
 ```text
-dreamscale run so101 [OPTIONS]
+dreamscale run so101 --model MODEL [OPTIONS]
 ```
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `--model TEXT` | first SO-101 model you can run | A model from `dreamscale models list`, or a deployment as `<account>/<slug>`. Without it, the first of `molmoact2-so101`, `flux-3-action-so101` and `pi0.5-so101` your organization can run. |
+| `--model TEXT` | required | A model from `dreamscale models list`, such as `molmoact2-so101`, `flux-3-action-so101` or `pi0.5-so101`, or a deployment as `<account>/<slug>`. Optional when `--deployment` names a deployment, which runs its own model. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
@@ -155,12 +155,12 @@ Run tasks on a bimanual YAM. Takes the same options as `run so101`, plus
 `--config`. Joint limits are in radians.
 
 ```text
-dreamscale run yam [OPTIONS]
+dreamscale run yam --model MODEL [OPTIONS]
 ```
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `--model TEXT` | first YAM model you can run | A model from `dreamscale models list`, or a deployment as `<account>/<slug>`. Without it, the first of `molmoact2-bimanual-yam` and `pi0.5-bimanualyam` your organization can run. |
+| `--model TEXT` | required | A model from `dreamscale models list`, such as `molmoact2-bimanual-yam` or `pi0.5-bimanualyam`, or a deployment as `<account>/<slug>`. Optional when `--deployment` names a deployment, which runs its own model. |
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots yam setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
