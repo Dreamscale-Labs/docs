@@ -1,0 +1,461 @@
+---
+title: "Python SDK reference"
+sidebarTitle: "SDK reference"
+description: "Every public function, class and parameter of the dreamscale Python package."
+keywords: ["SDK reference", "Python API", "dreamscale.connect", "aconnect", "Policy", "predict", "next_action", "observation", "trainings", "errors"]
+---
+
+The public API of the `dreamscale` package, version `{{sdkVersion}}`. For a
+walkthrough, start at [Python SDK](/python).
+
+## What you need
+
+- Python 3.11 or newer, and the package: `uv add dreamscale`.
+- An account: sign in once with `uv run dreamscale login`, or set
+  `DREAMSCALE_API_KEY`.
+
+## Overview
+
+| Name | What it is |
+| --- | --- |
+| [`dreamscale.connect()`](#dreamscale-connect) | Connect to a model; returns a `Policy`. |
+| [`dreamscale.aconnect()`](#dreamscale-aconnect) | The same, for async code; returns an `AsyncPolicy`. |
+| [`Policy`](#policy) | `predict()`, `next_action()`, `close()`. |
+| [`AsyncPolicy`](#asyncpolicy) | The same methods, awaited. |
+| [Action chunk](#action-chunk) | What `predict()` returns. |
+| [`dreamscale.so101.observation()`](#dreamscale-so101-observation) | An SO-101 observation. |
+| [`dreamscale.yam.observation()`](#dreamscale-yam-observation) | A bimanual YAM observation. |
+| [`dreamscale.libero.observation()`](#dreamscale-libero-observation) | A LIBERO simulator observation. |
+| [`dreamscale.robot.observation()`](#dreamscale-robot-observation) | Any robot: named cameras and one state vector, for deployments. |
+| [`dreamscale.trainings`](#dreamscale-trainings) | Start and manage training runs. |
+| [Errors](#errors) | `Error` and the subclasses to catch. |
+| `dreamscale.__version__` | The installed version, as a string. |
+
+## dreamscale.connect()
+
+Connect to a model and return a [`Policy`](#policy). It returns once a server is
+ready. If every server is busy, it waits in a queue and shows your position.
+
+```python dreamscale.connect
+def connect(
+    model: str,
+    *,
+    deployment: str | None = None,
+    api_key: str | None = None,
+    on_progress: Callable[[str], None] | None = ...,
+    region: str = "nearest",
+    speed: str | None = None,
+    rtc: str | None = "auto",
+    provider: str | None = None,
+    transport: str = "auto",
+    startup_timeout: float | None = None,
+) -> Policy: ...
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `model` | required | A model from [Models](/models) (or `dreamscale models list`), or one of your deployments as `<account>/<slug>` or its bare slug. |
+| `deployment` | `None` | Run this deployment (its name or `ckpt_…` ID) on `model`, its base model. Usually you pass the deployment as `model` instead. |
+| `api_key` | `None` | API key to use. Without it: `DREAMSCALE_API_KEY`, then your `dreamscale login`. |
+| `on_progress` | stderr or logger | Called with each progress line (queue position, startup). The default prints to stderr on a terminal, otherwise logs to the `dreamscale` logger. `None` silences it. |
+| `region` | `"nearest"` | `"nearest"` (lowest latency from you), `"available"` (any region with a warm server first), or an exact region such as `"us-west-2"`. |
+| `speed` | `None` (standard) | `"standard"` or `"fast"`, where the model supports it. |
+| `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. |
+| `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
+| `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
+| `startup_timeout` | `None` | Most seconds to wait for a server. `None` uses the server's own budget. |
+
+Raises [`AuthError`](#errors), [`CreditsError`](#errors) or
+[`NoCapacityError`](#errors) when it can't connect.
+
+```python
+import dreamscale
+
+policy = dreamscale.connect("pi0.5-so101")
+side, wrist = ..., ...  # H×W×3 uint8 RGB frames
+joints = ...  # 6 values: LeRobot degrees, gripper 0–100
+observation = dreamscale.so101.observation(
+    side_frame=side, wrist_frame=wrist, joint_positions=joints,
+)
+chunk = policy.predict(observation, instruction="pick up the red block")
+print(len(chunk.actions), "x", len(chunk.actions[0]))
+policy.close()
+```
+
+It prints `30 x 6`.
+
+## dreamscale.aconnect()
+
+The same as [`connect()`](#dreamscale-connect), awaited, for async code. It
+takes the same parameters and returns an [`AsyncPolicy`](#asyncpolicy).
+
+```python dreamscale.aconnect
+async def aconnect(
+    model: str,
+    *,
+    deployment: str | None = None,
+    api_key: str | None = None,
+    on_progress: Callable[[str], None] | None = ...,
+) -> AsyncPolicy: ...
+```
+
+```python
+import asyncio
+
+import numpy as np
+
+import dreamscale
+
+
+async def main():
+    policy = await dreamscale.aconnect("pi0.5-libero")
+    async with policy:
+        frame = np.zeros((256, 256, 3), dtype=np.uint8)
+        observation = dreamscale.libero.observation(
+            agent_frame=frame, wrist_frame=frame, state=[0.0] * 8,
+        )
+        chunk = await policy.predict(observation, instruction="pick up the black bowl")
+        print(len(chunk.actions), "x", len(chunk.actions[0]))
+
+
+asyncio.run(main())
+```
+
+## Policy
+
+What `connect()` returns: one connection to a model. If the connection drops,
+the next call reconnects. After a minute with nothing in flight, it frees the
+server, and the next call reconnects. It closes when your program exits.
+
+Use it as a context manager to close it when the block ends:
+
+```python
+import dreamscale
+
+with dreamscale.connect("pi0.5-libero") as policy:
+    print(policy.model, policy.state)
+```
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `model` | `str` | The model's name, as you passed it to `connect()`. |
+| `state` | `str` | `"opening"`, `"queued"`, `"ready"`, `"released"` (server freed; the next call reconnects), `"reconnecting"` or `"closed"`. |
+
+### Policy.predict()
+
+Send one observation and get back one [action chunk](#action-chunk): the model's
+next actions. It doesn't move the robot.
+
+```python dreamscale.Policy.predict
+def predict(
+    observation,
+    instruction: str | None = None,
+    *,
+    timeout_s: float = 60.0,
+    action_history: Sequence[Sequence[float]] | None = None,
+) -> ActionChunk: ...
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `observation` | required | An observation from the robot's helper, for example [`dreamscale.so101.observation()`](#dreamscale-so101-observation). |
+| `instruction` | required | The task in plain words, for example `"pick up the red block"`. It must not be empty. |
+| `timeout_s` | `60.0` | Most seconds to wait for the chunk. Raises `Error` with code `action_timeout` after it. |
+| `action_history` | `None` | The actions you already executed, oldest first. Required by `flux-3-action-so101`, which builds on them; `next_action()` keeps it for you. |
+
+Raises [`ObservationError`](#errors) before sending if the observation doesn't
+match the model.
+
+### Policy.next_action()
+
+Get one action to execute now. Call it once per control tick: it returns on the
+model's clock, within one tick. It blends chunks so motion stays smooth, and
+while no model action is ready (the first chunk, or a reconnect), an arm gets
+its measured position back so it holds still.
+
+```python dreamscale.Policy.next_action
+def next_action(
+    observation,
+    instruction: str | None = None,
+    *,
+    pace: bool = True,
+    timeout_s: float | None = None,
+) -> tuple[float, ...]: ...
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `observation` | required | This tick's observation from the robot's helper. |
+| `instruction` | required | The task in plain words. Pass a new one to switch tasks. |
+| `pace` | `True` | Return at the model's control rate. A late call gets the next action at once, and the actions it missed are skipped. `False` returns as soon as an action is ready. |
+| `timeout_s` | `None` (60 s) | For the LIBERO simulator, which waits for a real action instead of holding: most seconds to wait. |
+
+Returns one action: absolute joint targets for a robot arm, in the same order
+and units as its observation (see [Models](/models)).
+
+```python
+import dreamscale
+
+policy = dreamscale.connect("pi0.5-so101")
+side, wrist = ..., ...  # H×W×3 uint8 RGB frames
+joints = ...  # 6 values: LeRobot degrees, gripper 0–100
+observation = dreamscale.so101.observation(
+    side_frame=side, wrist_frame=wrist, joint_positions=joints,
+)
+action = policy.next_action(observation, instruction="pick up the red block")
+print(len(action))
+policy.close()
+```
+
+### Policy.close()
+
+Close the session now. Optional: an idle policy frees its server after a minute,
+and every policy closes when your program exits.
+
+```python dreamscale.Policy.close
+def close() -> None: ...
+```
+
+## AsyncPolicy
+
+What `aconnect()` returns. It has the same properties as [`Policy`](#policy),
+and the same methods, awaited: `await policy.predict(...)`,
+`await policy.next_action(...)` and `await policy.close()`. Use
+`async with policy:` to close it when the block ends.
+
+```python dreamscale.AsyncPolicy.predict
+async def predict(
+    observation,
+    instruction: str | None = None,
+    *,
+    timeout_s: float = 60.0,
+    action_history: Sequence[Sequence[float]] | None = None,
+) -> ActionChunk: ...
+```
+
+```python dreamscale.AsyncPolicy.next_action
+async def next_action(
+    observation,
+    instruction: str | None = None,
+    *,
+    pace: bool = True,
+    timeout_s: float | None = None,
+) -> tuple[float, ...]: ...
+```
+
+## Action chunk
+
+What `predict()` returns.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `actions` | `tuple[tuple[float, ...], ...]` | The chunk: one row per action, in order. Its size is on [Models](/models), for example 30 × 6 for `pi0.5-so101`. |
+| `observation_id` | `int` | Which observation this chunk answers. |
+| `chunk_id` | `int` or `None` | The server's ID for this chunk. |
+| `timing.obs_to_action_ms` | `float` | Milliseconds from sending the observation to receiving the chunk. |
+| `transport_mode` | `str` or `None` | How it arrived: `"quic"`, `"relay"` or `"wss_tunnel"`. |
+
+## Observation helpers
+
+Each robot type has one helper, shared by every model on that robot. It checks
+the values before anything is sent and raises [`ObservationError`](#errors)
+naming any wrong field. Frames are H×W×3 `uint8` RGB at any size: the SDK
+resizes them for the model.
+
+### dreamscale.so101.observation()
+
+```python dreamscale.so101.observation
+def observation(
+    *,
+    side_frame: np.ndarray,
+    wrist_frame: np.ndarray,
+    joint_positions: Sequence[float],
+) -> So101Observation: ...
+```
+
+| Parameter | Description |
+| --- | --- |
+| `side_frame` | The fixed side camera. |
+| `wrist_frame` | The wrist camera. |
+| `joint_positions` | 6 values in calibrated LeRobot degrees: `shoulder_pan`, `shoulder_lift`, `elbow_flex`, `wrist_flex`, `wrist_roll`, then `gripper` (0–100). |
+
+### dreamscale.yam.observation()
+
+```python dreamscale.yam.observation
+def observation(
+    *,
+    top_frame: np.ndarray,
+    left_frame: np.ndarray,
+    right_frame: np.ndarray,
+    left_joint_positions: Sequence[float],
+    left_gripper: float,
+    right_joint_positions: Sequence[float],
+    right_gripper: float,
+    left_joint_velocities: Sequence[float] | None = None,
+    right_joint_velocities: Sequence[float] | None = None,
+) -> YamObservation: ...
+```
+
+| Parameter | Description |
+| --- | --- |
+| `top_frame` | The top camera. |
+| `left_frame`, `right_frame` | The left and right wrist cameras. |
+| `left_joint_positions`, `right_joint_positions` | 6 values per arm, in radians. |
+| `left_gripper`, `right_gripper` | 0 closed to 1 open. Continuous: don't threshold it. |
+| `left_joint_velocities`, `right_joint_velocities` | Optional: 6 values per arm, in radians per second. |
+
+### dreamscale.libero.observation()
+
+```python dreamscale.libero.observation
+def observation(
+    *,
+    agent_frame: np.ndarray,
+    wrist_frame: np.ndarray,
+    state: Sequence[float],
+) -> LiberoObservation: ...
+```
+
+| Parameter | Description |
+| --- | --- |
+| `agent_frame` | `agentview_image`, as LIBERO renders it. The SDK flips it upright. |
+| `wrist_frame` | `robot0_eye_in_hand_image`, as LIBERO renders it. |
+| `state` | 8 values: end-effector position (3), end-effector rotation as an axis-angle vector (3), then the two gripper joint positions. |
+
+### dreamscale.robot.observation()
+
+Any robot: named cameras and one state vector, for a deployment shaped to your
+robot. The deployment sets the camera keys, their order and the state width.
+Send values in the units the checkpoint was trained on; actions come back the
+same way. The deployment's dashboard page shows its keys and loop.
+
+```python dreamscale.robot.observation
+def observation(
+    *,
+    cameras: Mapping[str, np.ndarray],
+    state: Sequence[float],
+) -> RobotObservation: ...
+```
+
+| Parameter | Description |
+| --- | --- |
+| `cameras` | Frames keyed by the deployment's camera keys, in its order. |
+| `state` | The state vector: joint positions and grippers, in the checkpoint's units. |
+
+```python
+import dreamscale
+
+top, left_wrist = ..., ...  # H×W×3 uint8 RGB frames
+left_joints, left_gripper = ..., ...  # in the checkpoint's units
+observation = dreamscale.robot.observation(
+    cameras={"base": top, "left_wrist": left_wrist},
+    state=[*left_joints, left_gripper],
+)
+```
+
+## dreamscale.trainings
+
+Fine-tune a base model on your LeRobot dataset, on Dreamscale's GPUs, from
+Python. It is `dreamscale train` without the prompt: the price is quoted
+first, and `max_usd` is the most a run may cost. See [Training](/training).
+
+```python
+import dreamscale
+
+run = dreamscale.trainings.create("./towel-fold", max_usd=50)
+run.wait()  # a live status line until it finishes
+deployment = run.deploy()
+policy = dreamscale.connect(deployment["model"], deployment=deployment["id"])
+```
+
+### dreamscale.trainings.create()
+
+Start a training run without a prompt. It refuses to start if the quote is
+above `max_usd`. Starting the same dataset with the same settings while that run
+is still going returns that run instead of a new one.
+
+```python dreamscale.trainings.create
+def create(
+    dataset: str | os.PathLike,
+    *,
+    max_usd: float | str | Decimal,
+    steps: int | None = None,
+    base: str | None = None,
+    rtc: bool = True,
+    name: str | None = None,
+    hf_token: str | None = None,
+    eval_fraction: float | None = None,
+) -> Training: ...
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `dataset` | required | A LeRobot dataset (v2.1 or v3.0): a local folder, or a Hugging Face repo as `hf://owner/name` (optionally `@revision`). A folder uploads only what Dreamscale doesn't already have. |
+| `max_usd` | required | The most this run may cost, in US dollars. |
+| `steps` | `None` (auto) | Training length in steps. |
+| `base` | `None` (auto) | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
+| `rtc` | `True` | Train with real-time chunking. |
+| `name` | `None` (the dataset) | Display name. |
+| `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
+| `eval_fraction` | `None` (off) | Hold out this share of the episodes (0.05–0.3) and report a held-out loss during training. |
+
+### dreamscale.trainings.get()
+
+```python dreamscale.trainings.get
+def get(run_id: str) -> Training: ...
+```
+
+Get a training run by its `tr_…` ID.
+
+### Training
+
+A training run.
+
+| Member | Description |
+| --- | --- |
+| `id` | Its `tr_…` ID. |
+| `status` | `"queued"`, `"preparing"`, `"training"`, `"ready"`, `"failed"` or `"canceled"`. |
+| `checkpoints` | Its saved checkpoints, as a list of dicts with their `step`. |
+| `data` | The run as a dict, as of the last refresh. |
+| `refresh()` | Fetch the latest state; returns the run. |
+| `wait(quiet=False)` | Follow it until it finishes, with a live status line unless `quiet`. Raises its error if it failed. Ctrl+C stops waiting, not training. |
+| `cancel()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps. |
+| `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |
+| `deploy(step=None, region="us-west")` | Deploy a checkpoint (default the latest) in `"us-west"` or `"us-east"`. Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
+
+## Errors
+
+Every SDK error is a `dreamscale.Error`. Each names the problem and the next
+step, so printing it is usually enough.
+
+| Class | Raised when |
+| --- | --- |
+| `dreamscale.Error` | The base of every SDK error. |
+| `dreamscale.AuthError` | Not signed in, or the API key was rejected. |
+| `dreamscale.CreditsError` | Your organization is out of credits. |
+| `dreamscale.NoCapacityError` | No server is free right now, or your organization already runs its robot limit (code `shared_session_limit`). |
+| `dreamscale.ObservationError` | An observation or instruction doesn't match the model. Raised before anything is sent. Also a `ValueError` and a `TypeError`. |
+
+| Member | Description |
+| --- | --- |
+| `code` | The problem as a short ID, for example `action_timeout` or `history_required`. |
+| `fix` | The next step, in words. |
+| `render()` | The problem, its cause and the fix, as printed by the CLI. |
+
+```python
+import dreamscale
+
+try:
+    policy = dreamscale.connect("pi0.5-libero")
+except dreamscale.NoCapacityError as error:
+    print(error.code, error.fix)
+```
+
+## Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `DREAMSCALE_API_KEY` | API key to use. It wins over your `dreamscale login`. |
+| `HF_TOKEN` | Hugging Face token for private repos in `dreamscale.trainings`. |
+
+Stuck? See [Troubleshooting](/troubleshooting) or email
+[{{supportEmail}}](mailto:{{supportEmail}}).

@@ -1,0 +1,594 @@
+---
+title: "CLI reference"
+sidebarTitle: "CLI reference"
+description: "Every dreamscale command, argument and option, with defaults."
+keywords: ["CLI reference", "dreamscale command", "options", "dreamscale run", "dreamscale sim", "dreamscale deployments", "dreamscale train"]
+---
+
+Every public `dreamscale` command, generated from `--help` of version
+`{{sdkVersion}}`. Add `--help` (or `-h`) to any command to see the same list in
+your terminal. For step-by-step guides, start at [Quick start](/).
+
+## What you need
+
+- The CLI: `uv tool install dreamscale`, or `uv tool upgrade dreamscale` to update.
+- An account for commands that reach the cloud: `dreamscale login`.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| [`login`](#dreamscale-login) | Sign in on this machine. |
+| [`doctor`](#dreamscale-doctor) | Check your setup. |
+| [`sim`](#dreamscale-sim) | Run a task on a simulated benchmark. |
+| [`run so101`, `run yam`](#dreamscale-run) | Run tasks on a physical robot. |
+| [`robots so101 …`, `robots yam …`](#dreamscale-robots) | Set up and maintain a robot: setup, calibrate, home, release. |
+| [`models list`](#dreamscale-models-list) | List the models your organization can run. |
+| [`sessions list`, `sessions stop`](#dreamscale-sessions) | See and stop your open sessions. |
+| [`deployments …`](#dreamscale-deployments) | Deploy and manage your fine-tuned models. |
+| [`train …`](#dreamscale-train) | Fine-tune a base model on your dataset, and manage runs. |
+
+## Global options
+
+| Option | Description |
+| --- | --- |
+| `--version` | Print the installed version and exit. It also says when a newer release is out. |
+| `--install-completion` | Install shell completion for your shell. |
+| `--help`, `-h` | Show help for any command and exit. |
+
+## Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `DREAMSCALE_API_KEY` | API key to use instead of your saved login. When set, it wins over `dreamscale login`. |
+| `HF_TOKEN` | Hugging Face token for private repos, used by `deployments` and `train` when `--hf-token` is not given. |
+
+## dreamscale login
+
+Sign in on this machine. Opens your browser to sign in or create an account,
+then saves the login.
+
+```text
+dreamscale login [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--api-key TEXT` | — | Save this API key instead of signing in with a browser. Create one in [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys). |
+
+## dreamscale doctor
+
+Check your setup: the CLI, your account and, for a robot, its hardware and your
+access to the model `run` would use. Every check prints a `✓` or a fix.
+
+```text
+dreamscale doctor [MODE] [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101` or `yam`. |
+| `--config PATH` | saved rig config | YAM only: the rig config to check. |
+| `--model TEXT` | the one `run` picks | With a robot: the model to check access to. |
+
+```bash
+dreamscale doctor so101
+```
+
+## dreamscale sim
+
+Run a task on a simulated benchmark. The simulator runs on your computer and the
+model runs in the cloud. The first run of a benchmark downloads it.
+
+```text
+dreamscale sim BENCHMARK [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces` or `roboeval`. |
+| `--model TEXT` | `pi0.5-libero` for `libero` | Model to run. `dreamscale models list` lists yours. |
+| `--task-suite TEXT` | per benchmark | `libero`: `libero_spatial` (default), `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark or `all` (default). `roboeval`: a task (default `lift_pot`). |
+| `--task-id TEXT` | `0` | Task within the suite. `molmospaces` also takes `all`. |
+| `--task-seed INTEGER` | `0` | Seed for the task's initial state. |
+| `--max-steps INTEGER` | the task's horizon | Action-step limit, at least 1. |
+| `--max-duration FLOAT` | — | Time limit in seconds (at least 0.1), instead of `--max-steps`. |
+| `--non-interactive` | off | No viewer window; print a JSON summary at the end. |
+| `--transport` | `auto` | `auto` (QUIC, then relay), `quic` or `relay`. |
+| `--region TEXT` | — | Where to serve: `nearest`, `available` or `us-west-2`. |
+| `--output-root PATH` | — | Save the run's artifacts (video, timing) to this directory. |
+| `--verbose`, `-v` | off | Show diagnostic details. |
+
+```bash
+dreamscale sim libero --task-suite libero_object --task-id 3
+```
+
+## dreamscale run
+
+Run tasks on a physical robot. Each task homes the arm, previews the first plan
+without moving, runs on **Enter** until **Ctrl+C**, then returns home and asks
+for the next instruction. See [SO-101](/robots/so101) or
+[Bimanual YAM](/robots/yam) for the full walkthrough.
+
+<Warning>
+  `dreamscale run` moves the robot. Enforce joint, speed and workspace limits
+  locally, and keep a physical e-stop within reach. Cloud inference does not
+  replace your robot's safety controller.
+</Warning>
+
+### dreamscale run so101
+
+Run tasks on an SO-101. Joint limits are in degrees.
+
+```text
+dreamscale run so101 [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--model TEXT` | first SO-101 model you can run | A model from `dreamscale models list`, or a deployment as `<account>/<slug>`. Without it, the first of `molmoact2-so101`, `flux-3-action-so101` and `pi0.5-so101` your organization can run. |
+| `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
+| `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
+| `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
+| `--region TEXT` | `available` | Where to serve: `nearest`, `available` or `us-west-2`. |
+| `--provider TEXT` | — | Advanced: `aws` or `modal`. |
+| `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
+| `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
+| `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
+| `--context TEXT` | `auto` | Frame history, for deployments that use it: `auto` (the deployment's own), `on` (last 3 frames) or `off` (1 frame). |
+| `--effort TEXT` | `medium` | Reasoning effort, for models that take one: `low`, `medium`, `high`, `xhigh` or `max`. |
+| `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
+| `--max-joint-step FLOAT` | `45` | Most degrees a command may lead the measured joint position. |
+| `--max-joint-velocity FLOAT` | `150` | Joint speed cap in degrees per second, homing included. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--trace-dir PATH` | — | Save a recording of each task under this directory. |
+| `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
+| `--verbose` | off | Show diagnostic details. |
+
+```bash
+dreamscale run so101 --model pi0.5-so101 --instruction "pick up the red block"
+```
+
+### dreamscale run yam
+
+Run tasks on a bimanual YAM. Takes the same options as `run so101`, plus
+`--config`. Joint limits are in radians.
+
+```text
+dreamscale run yam [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--model TEXT` | first YAM model you can run | A model from `dreamscale models list`, or a deployment as `<account>/<slug>`. Without it, the first of `molmoact2-bimanual-yam` and `pi0.5-bimanualyam` your organization can run. |
+| `--config PATH` | saved rig config | The rig config from `dreamscale robots yam setup`. |
+| `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
+| `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
+| `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
+| `--region TEXT` | `available` | Where to serve: `nearest`, `available` or `us-west-2`. |
+| `--provider TEXT` | — | Advanced: `aws` or `modal`. |
+| `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
+| `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
+| `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
+| `--context TEXT` | `auto` | Frame history, for deployments that use it: `auto` (the deployment's own), `on` (last 3 frames) or `off` (1 frame). |
+| `--effort TEXT` | `medium` | Reasoning effort, for models that take one: `low`, `medium`, `high`, `xhigh` or `max`. |
+| `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
+| `--max-joint-step FLOAT` | `0.15` | Most radians a command may lead the measured joint position. |
+| `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--trace-dir PATH` | — | Save a recording of each task under this directory. |
+| `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
+| `--verbose` | off | Show diagnostic details. |
+
+```bash
+dreamscale run yam --model acme-robotics/towel-fold --instruction "fold the towel"
+```
+
+## dreamscale robots
+
+Set up and maintain robots. Setup installs the robot's support the first time it
+runs.
+
+### dreamscale robots so101 setup
+
+Install SO-101 support, then choose its cameras and serial port on a setup page
+in your browser.
+
+```text
+dreamscale robots so101 setup [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--cli` | off | Answer terminal prompts instead of using the setup page. |
+| `--host TEXT` | `0.0.0.0` | Setup page server host. |
+| `--port INTEGER` | `8765` | Setup page server port, 1–65535. |
+
+### dreamscale robots so101 calibrate
+
+Calibrate the arm, step by step. Takes no options.
+
+```text
+dreamscale robots so101 calibrate
+```
+
+### dreamscale robots so101 home
+
+Move to the home pose, then release motor torque. `run so101` starts and ends
+each task at this pose.
+
+```text
+dreamscale robots so101 home [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--set` | off | Save the current pose as home. The motors go limp so you can pose the arm. |
+
+### dreamscale robots so101 release
+
+Release motor torque. Support the arm first. Takes no options.
+
+```text
+dreamscale robots so101 release
+```
+
+### dreamscale robots yam setup
+
+Install YAM support and assign cameras and CAN ports, with live camera previews
+over your LAN.
+
+```text
+dreamscale robots yam setup [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--cli` | off | Pick from numbered terminal prompts instead of LAN camera previews. |
+| `--config PATH` | saved rig config | Rig config path to write. |
+| `--host TEXT` | `0.0.0.0` | Camera preview server host. |
+| `--port INTEGER` | `8765` | Camera preview server port, 1–65535. |
+
+### dreamscale robots yam home
+
+Move to the home pose, then release motor torque.
+
+```text
+dreamscale robots yam home [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--config PATH` | saved rig config | Rig config path. |
+
+### dreamscale robots yam release
+
+Release motor torque. Support the arms first.
+
+```text
+dreamscale robots yam release [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--config PATH` | saved rig config | Rig config path. |
+
+## dreamscale models
+
+### dreamscale models list
+
+List the models your organization can run, with the robot each runs on and its
+state (Ready, Busy, Starting or Cold start).
+
+```text
+dreamscale models list [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--json` | off | Print raw JSON. |
+| `--verbose`, `-v` | off | Show where each model serves and its live state. |
+
+## dreamscale sessions
+
+A session is one connection to a model. Billing runs while it is open.
+
+### dreamscale sessions list
+
+List your open sessions.
+
+```text
+dreamscale sessions list [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--json` | off | Print raw JSON. |
+
+### dreamscale sessions stop
+
+Stop a session, or all of them, to end billing.
+
+```text
+dreamscale sessions stop [SESSION_ID] [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `SESSION_ID` | — | The session to stop, from `dreamscale sessions list`. |
+| `--all` | off | Stop all your open sessions. |
+
+## dreamscale deployments
+
+Deploy and manage your fine-tuned models. Wherever a command takes a
+`DEPLOYMENT`, give its `<account>/<slug>` name, its bare slug or its `ckpt_…` ID.
+See [Deployments](/deployments) for the walkthrough.
+
+### dreamscale deployments create
+
+Deploy π0.5 fine-tuned weights from Hugging Face (any `huggingface.co` link
+works, including a checkpoint folder's page) or from a local folder. From a
+folder, only the files the build reads are uploaded, and a re-run sends nothing
+new. Values not given are detected from the checkpoint; run `inspect` to see
+them.
+
+```text
+dreamscale deployments create REPO [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder (`./folder`). |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5` or `flux-3-action-base`. |
+| `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
+| `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
+| `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
+| `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
+| `--horizon INTEGER` | `50` | π0.5: actions the model predicts per chunk. |
+| `--executed INTEGER` | the horizon | π0.5: actions executed per chunk. |
+| `--token-length INTEGER` | `200` | π0.5: prompt length in tokens. |
+| `--no-state-in-prompt` | off | π0.5: the checkpoint was trained without the state in its prompt. |
+| `--delta-mask TEXT` | detected | π0.5: `1` or `0` per action, comma separated (`1` = relative to the state), or `none`. |
+| `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. |
+| `--rtc-max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. |
+| `--revision TEXT` | default branch | Branch, tag or commit. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. Pick the one nearest your robot. |
+| `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
+| `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
+| `--no-wait` | off | Return once the build starts. |
+
+```bash
+dreamscale deployments create hf://your-org/towel-fold --preset bimanual_yam --slug towel-fold
+```
+
+### dreamscale deployments inspect
+
+Show a repo's (or a local folder's) robot shape, what was detected and where
+from. Nothing is uploaded.
+
+```text
+dreamscale deployments inspect REPO [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder. |
+| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base` or `auto`. |
+| `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
+| `--revision TEXT` | default branch | Branch, tag or commit. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--json` | off | Print raw JSON. |
+
+### dreamscale deployments list
+
+List your organization's deployments.
+
+```text
+dreamscale deployments list [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--model TEXT` | all | Only deployments of this base model. |
+| `--json` | off | Print raw JSON. |
+
+### dreamscale deployments show
+
+Show a deployment's status, build progress or error.
+
+```text
+dreamscale deployments show DEPLOYMENT
+```
+
+### dreamscale deployments keep-warm
+
+Keep a deployment's server warm between runs. Warm time is billed as server
+time.
+
+```text
+dreamscale deployments keep-warm DEPLOYMENT VALUE [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `VALUE` | — | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. |
+| `--take-over-from TEXT` | — | Move always-on from this deployment once this one is warm. |
+| `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. |
+
+```bash
+dreamscale deployments keep-warm towel-fold 30m
+```
+
+### dreamscale deployments rtc
+
+Set a π0.5 deployment's real-time chunking for its new sessions. No rebuild.
+
+```text
+dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `METHOD` | — | `off`, `test-time` or `trained`. |
+| `--max-delay INTEGER` | — | The delay trained RTC was trained with, 1–15. |
+
+### dreamscale deployments rename
+
+Rename a deployment. Its name is its slug. The old name keeps working until
+another of your deployments takes it.
+
+```text
+dreamscale deployments rename DEPLOYMENT [SLUG]
+```
+
+| Argument | Default | Description |
+| --- | --- | --- |
+| `SLUG` | — | Its new slug: the `<model>` part of `<account>/<model>`. |
+
+### dreamscale deployments restart
+
+Stop the deployment's server now. With Always on, a fresh one starts at once. A
+connected robot loses its connection and reconnects to a new server on its next
+request; the SDK holds it still meanwhile.
+
+```text
+dreamscale deployments restart DEPLOYMENT
+```
+
+### dreamscale deployments stop
+
+Stop the deployment's server now and keep none warm (turns Always on off). The
+next robot starts a fresh server; a connected robot loses its connection.
+
+```text
+dreamscale deployments stop DEPLOYMENT
+```
+
+### dreamscale deployments rm
+
+Permanently delete a deployment. Only organization owners can delete, and it
+cannot be undone.
+
+```text
+dreamscale deployments rm DEPLOYMENT
+```
+
+## dreamscale train
+
+Fine-tune a base model on your LeRobot dataset, on Dreamscale's GPUs. Give a
+dataset to start a run: the CLI checks it, quotes the price and time, and starts
+once you confirm. See [Training](/training) for the walkthrough.
+
+```text
+dreamscale train DATASET [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. |
+| `--base TEXT` | `auto` | Start from `pi0.5` (π0.5 base), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets) or `flux-3-action-base` (FLUX.3 Action). |
+| `--steps INTEGER` | auto | Training length in steps, 10–60000. |
+| `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
+| `--no-rtc` | off | Train without real-time chunking (on by default). |
+| `--name TEXT` | the dataset | Display name. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--yes`, `-y` | off | Accept the quote without asking. |
+| `--no-wait` | off | Return once the run starts. |
+| `--json` | off | Print the run as JSON. |
+| `--no-clean` | off | Train every episode as recorded. By default, auto-clean cuts out faulty stretches, trims idle starts and ends, and drops episodes that can't be trained on. |
+| `--state TEXT` | `observation.state` | The state's columns, joined in order (`a+b`). |
+| `--action TEXT` | `action` | The action's columns, joined in order (`a+b`). |
+| `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
+| `--eval-fraction FLOAT` | off | Hold out this share of the episodes (0.05–0.3) and report a held-out loss during training. It catches overfitting and ranks checkpoints, but doesn't measure task success on a robot. |
+
+```bash
+dreamscale train ./towel-fold --max-usd 50
+```
+
+### dreamscale train list
+
+List your organization's training runs.
+
+```text
+dreamscale train list [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--json` | off | Print raw JSON. |
+
+### dreamscale train show
+
+Show a training run. While it runs, it follows it live; Ctrl+C stops watching,
+not training.
+
+```text
+dreamscale train show RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--json` | off | Print raw JSON. |
+
+### dreamscale train cancel
+
+Stop a training run. You pay for the steps it completed.
+
+```text
+dreamscale train cancel RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--yes`, `-y` | off | Cancel without asking. |
+
+### dreamscale train rm
+
+Permanently delete a training run. One still going is canceled first.
+Deployments made from its checkpoints keep running.
+
+```text
+dreamscale train rm RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--yes`, `-y` | off | Delete without asking. |
+
+### dreamscale train download
+
+Download a checkpoint and its training contract as a tar archive.
+
+```text
+dreamscale train download RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--step INTEGER` | the latest | Checkpoint step. |
+| `--output`, `-o TEXT` | here | File or folder to save it in. |
+| `--link` | off | Print a signed link, valid for an hour, instead of downloading. |
+
+### dreamscale train deploy
+
+Deploy a checkpoint of a training run. No robot details are needed: the dataset
+defined the robot. It prints the command that runs it.
+
+```text
+dreamscale train deploy RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--step INTEGER` | the latest | Checkpoint step. |
+| `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. |
+| `--no-wait` | off | Return once the build starts. |
+
+Stuck? See [Troubleshooting](/troubleshooting) or email
+[{{supportEmail}}](mailto:{{supportEmail}}).

@@ -46,6 +46,8 @@ DOCUMENTED_MODELS = {
     "perceptron-isaac05-so101",
     "perceptron-isaac05-yam",
 }
+# Base models that `dreamscale train --base` and `deployments create --base` name in --help.
+BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam"}
 # The previous pi0.5 ids stay valid as permanent aliases. Only a line that says
 # "previous ids" may name them; anywhere else they fail as undocumented.
 PREVIOUS_IDS = {"pi05-libero", "pi05-so101", "pi05-yam"}
@@ -54,13 +56,14 @@ MODEL_ID_RE = re.compile(
     r"dreamzero|gr00t)-[a-z0-9-]+)"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,
-# at most one table per page, and no images.
+# at most one table per page (reference pages: one per command or function), and no images.
 FORBIDDEN_COMPONENTS = re.compile(
     r"<(Note|Tip|Info|Check|Danger|Callout|Card|CardGroup|Frame|Tabs|Tab|CodeGroup|"
     r"Accordion|AccordionGroup|Steps|Step|img)\b|```mermaid"
 )
 IMAGE_RE = re.compile(r"!\[[^\]]*\]\((?P<src>[^)\s]+)")
 TABLE_DIVIDER_RE = re.compile(r"(?m)^\|(?: *:?-{3,}:? *\|)+ *$")
+REFERENCE_DIR = "reference/"
 # The six main pages share a word budget, frontmatter excluded.
 MAIN_PAGES = ("index", "robots/so101", "robots/yam", "python", "models", "troubleshooting")
 MAIN_WORD_BUDGET = 2300
@@ -137,13 +140,14 @@ def main() -> int:
             errors.append(f"{relative}: uses {component.group(0)!r}; the only callout is <Warning>")
         for image in IMAGE_RE.finditer(text):
             errors.append(f"{relative}: image {image.group('src')}; the pages use no images")
-        if len(TABLE_DIVIDER_RE.findall(text)) > 1:
+        is_reference = relative.as_posix().startswith(REFERENCE_DIR)
+        if len(TABLE_DIVIDER_RE.findall(text)) > 1 and not is_reference:
             errors.append(f"{relative}: more than one table")
         undocumented = {
             model
             for line in lowered.splitlines()
             for model in MODEL_ID_RE.findall(line)
-            if model not in DOCUMENTED_MODELS
+            if model not in DOCUMENTED_MODELS | BASE_MODELS
             and not (model in PREVIOUS_IDS and "previous ids" in line)
         }
         for model in sorted(undocumented):
