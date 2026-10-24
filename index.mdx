@@ -50,13 +50,12 @@ is the CLI.
 3. Run a model in the LIBERO simulator.
 
    ```bash
-   dreamscale sim libero
+   dreamscale sim libero --model pi0.5-libero
    ```
 
    The first run downloads the simulator (several GB on Linux), which can take a
    few minutes. A server connects in seconds, longer if all are busy.
-   It prints `Using pi0.5-libero (pass --model to choose)`, a window
-   opens and the model drives the arm. The run ends with
+   A window opens and the model drives the arm. The run ends with
    `result: success condition reached`.
 
 Already have the CLI? Update it with `uv tool upgrade dreamscale`.
