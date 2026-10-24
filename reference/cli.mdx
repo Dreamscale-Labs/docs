@@ -351,6 +351,9 @@ dreamscale deployments create REPO [OPTIONS]
 | `--delta-mask TEXT` | detected | π0.5: `1` or `0` per action, comma separated (`1` = relative to the state), or `none`. |
 | `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. |
 | `--rtc-max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. |
+| `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
+| `--steps INTEGER` | `10` | Denoising steps, for bases that set them per deployment. |
+| `--joint-unit TEXT` | model-defined | The unit of a custom robot's joint positions, e.g. `rad`, for bases whose actions are joint positions. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
 | `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. Pick the one nearest your robot. |
@@ -533,18 +536,35 @@ dreamscale train show RUN_ID [OPTIONS]
 | `RUN_ID` | — | Training run ID (`tr_…`). |
 | `--json` | off | Print raw JSON. |
 
-### dreamscale train cancel
+### dreamscale train stop
 
-Stop a training run. You pay for the steps it completed.
+Stop a training run. You pay for the steps it completed, and it saves a checkpoint you can
+deploy. Resume it within 30 days.
 
 ```text
-dreamscale train cancel RUN_ID [OPTIONS]
+dreamscale train stop RUN_ID [OPTIONS]
 ```
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `RUN_ID` | — | Training run ID (`tr_…`). |
-| `--yes`, `-y` | off | Cancel without asking. |
+| `--yes`, `-y` | off | Stop without asking. |
+
+### dreamscale train resume
+
+Continue a stopped training run for its remaining steps, at the same rate. It shows the price
+first.
+
+```text
+dreamscale train resume RUN_ID [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+| `--yes`, `-y` | off | Accept the price without asking. |
+| `--no-wait` | off | Return once it resumes. |
+| `--json` | off | Print the run as JSON. |
 
 ### dreamscale train rm
 
