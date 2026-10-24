@@ -413,12 +413,13 @@ A training run.
 | Member | Description |
 | --- | --- |
 | `id` | Its `tr_…` ID. |
-| `status` | `"queued"`, `"preparing"`, `"training"`, `"ready"`, `"failed"` or `"canceled"`. |
+| `status` | `"queued"`, `"preparing"`, `"training"`, `"stopped"`, `"ready"`, `"failed"` or `"canceled"`. |
 | `checkpoints` | Its saved checkpoints, as a list of dicts with their `step`. |
 | `data` | The run as a dict, as of the last refresh. |
 | `refresh()` | Fetch the latest state; returns the run. |
 | `wait(quiet=False)` | Follow it until it finishes, with a live status line unless `quiet`. Raises its error if it failed. Ctrl+C stops waiting, not training. |
-| `cancel()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps. |
+| `stop()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps, and it saves a checkpoint. |
+| `resume(max_usd)` | Continue a stopped run within 30 days for its remaining steps. Refuses a price above `max_usd`. |
 | `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |
 | `deploy(step=None, region="us-west")` | Deploy a checkpoint (default the latest) in `"us-west"` or `"us-east"`. Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
 

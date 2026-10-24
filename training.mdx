@@ -39,11 +39,21 @@ dreamscale train deploy tr_...
 The build takes a few minutes and prints the command that runs it on your robot.
 To rename it or keep it warm, see [Deployments](/deployments).
 
+## Keep training a model
+
+```bash
+dreamscale train ./more-towels --base tr_...
+```
+
+It starts from that run's latest checkpoint (`--base-step 4500` for another one).
+The new dataset needs the same state and action widths.
+
 ## Manage runs
 
 ```bash
 dreamscale train list
-dreamscale train cancel tr_...   # you pay only for the steps it finished
+dreamscale train stop tr_...     # you pay only for the steps it finished
+dreamscale train resume tr_...   # within 30 days: the remaining steps, at the same rate
 dreamscale train rm tr_...       # permanent; a running one is canceled first
 ```
 
