@@ -81,13 +81,13 @@ Run a task on a simulated benchmark. The simulator runs on your computer and the
 model runs in the cloud. The first run of a benchmark downloads it.
 
 ```text
-dreamscale sim BENCHMARK [OPTIONS]
+dreamscale sim BENCHMARK --model MODEL [OPTIONS]
 ```
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces` or `roboeval`. |
-| `--model TEXT` | `pi0.5-libero` for `libero` | Model to run. `dreamscale models list` lists yours. |
+| `--model TEXT` | required | Model to run, such as `pi0.5-libero` for `libero`. `dreamscale models list` lists yours. |
 | `--task-suite TEXT` | per benchmark | `libero`: `libero_spatial` (default), `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark or `all` (default). `roboeval`: a task (default `lift_pot`). |
 | `--task-id TEXT` | `0` | Task within the suite. `molmospaces` also takes `all`. |
 | `--task-seed INTEGER` | `0` | Seed for the task's initial state. |
@@ -100,7 +100,7 @@ dreamscale sim BENCHMARK [OPTIONS]
 | `--verbose`, `-v` | off | Show diagnostic details. |
 
 ```bash
-dreamscale sim libero --task-suite libero_object --task-id 3
+dreamscale sim libero --model pi0.5-libero --task-suite libero_object --task-id 3
 ```
 
 ## dreamscale run
