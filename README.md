@@ -10,6 +10,8 @@ The documentation is organized around user jobs, one page each:
 - run a model on an SO-101 or a bimanual YAM;
 - call a model from your own Python code;
 - know what each model takes in and returns (Models);
+- look up any command, option, function or parameter (CLI reference, SDK
+  reference);
 - fix what just failed (Troubleshooting).
 
 A short Deployments page, outside the main path, covers serving your own
@@ -52,7 +54,10 @@ python3 scripts/run_snippets.py
 be installed in the active Python environment. It checks every `dreamscale`
 command against the CLI's `--help`, runs every Python block against the SDK with
 synthetic observations and a stand-in `connect`, and checks the Models table
-against the SDK's model contracts.
+against the SDK's model contracts. It also checks every signature on the SDK
+reference against the SDK, and that the CLI reference has a section for every
+public command listing each public option. After a CLI or SDK release, update
+the reference pages until it passes.
 
 Before publishing, run the snippets live, one session at a time, first on dev
 and then on prod:

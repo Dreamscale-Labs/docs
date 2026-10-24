@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a145",
+    "sdkVersion": "0.1.0a170",
     "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
@@ -38,8 +38,8 @@
       {
         "group": "Run on your robot",
         "pages": [
-          "robots/so101",
           "robots/yam",
+          "robots/so101",
           "python"
         ]
       },
@@ -48,6 +48,13 @@
         "pages": [
           "training",
           "deployments"
+        ]
+      },
+      {
+        "group": "References",
+        "pages": [
+          "reference/cli",
+          "reference/sdk"
         ]
       },
       {
@@ -151,14 +158,6 @@
     {
       "source": "/python/models",
       "destination": "/models"
-    },
-    {
-      "source": "/reference/sdk",
-      "destination": "/python"
-    },
-    {
-      "source": "/reference/cli",
-      "destination": "/"
     },
     {
       "source": "/reference/troubleshooting",

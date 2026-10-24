@@ -9,7 +9,11 @@ Static mode (default, runs in CI, no network):
   * every Python block runs against the installed SDK with synthetic observations,
     the real observation helpers and a stand-in `connect` that binds each call to
     the real signatures;
-  * the Models table matches the SDK's model contracts.
+  * the Models table matches the SDK's model contracts;
+  * every Python block titled with an SDK name (```python dreamscale.connect) is a
+    signature that matches the real one;
+  * the CLI reference has a section for every public command, listing each public option
+    and no other.
 
 Live mode (`--live dev|prod`, run by hand, needs DREAMSCALE_API_KEY):
   * every Python block that connects runs for real, one session at a time, and
@@ -41,7 +45,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / "docs.json").read_text())
 FENCE_RE = re.compile(
-    r"^(?P<indent>[ \t]*)```(?P<lang>[A-Za-z0-9_+-]*)[^\n]*\n(?P<body>.*?)^[ \t]*```", re.M | re.S
+    r"^(?P<indent>[ \t]*)```(?P<lang>[A-Za-z0-9_+-]*)(?P<title>[^\n]*)\n(?P<body>.*?)^[ \t]*```",
+    re.M | re.S,
 )
 INLINE_RE = re.compile(r"(?<!`)`(?P<code>(?:dreamscale|uv) [^`]+)`(?!`)")
 CONNECT_RE = re.compile(r"""dreamscale\.a?connect\(\s*["'](?P<model>[^"']+)["']""")
@@ -49,7 +54,15 @@ ENDPOINTS = {"dev": "https://api-dev.dreamscalelabs.com", "prod": "https://api.d
 # Commands that need a robot on the bench. Checked against --help, never run here.
 HARDWARE_PREFIXES = (("robots",), ("run",), ("doctor", "so101"), ("doctor", "yam"))
 # Commands that need a browser, a Hugging Face repo, a deployment or a dataset to train on.
-STATIC_ONLY_PREFIXES = (("login",), ("deployments",), ("train",))
+STATIC_ONLY_PREFIXES = (("login",), ("deployments",), ("train",), ("sessions", "stop"))
+# Benchmarks other than LIBERO download tens of GB on first run: checked against --help only.
+LIVE_SIM_BENCHMARKS = ("libero",)
+# `dreamscale train DATASET` runs the hidden `train create`, which holds its options.
+DATASET_FIRST = {("train",): "create"}
+# Python blocks that start paid work: checked for syntax and signatures, never run.
+PAID_CALLS = ("dreamscale.trainings.create(",)
+CLI_REFERENCE = "reference/cli.mdx"
+SIGNATURE_TITLE_RE = re.compile(r"^dreamscale(?:\.\w+)+$")
 PLACEHOLDER_RE = re.compile(r"\.\.\.|^<.*>$|^ckpt_|://|^\.{1,2}/")  # also a local folder
 # A deployment named by its slug, where the command takes one (its help says so).
 SLUG_RE = re.compile(r"[a-z0-9][a-z0-9-]{1,46}[a-z0-9]")
@@ -61,6 +74,7 @@ class Snippet:
     line: int
     lang: str
     code: str
+    title: str = ""
 
     @property
     def label(self) -> str:
@@ -107,7 +121,7 @@ def extract(pages: list[str]) -> tuple[list[Snippet], list[Snippet]]:
             lang = match.group("lang").lower()
             body = textwrap.dedent(match.group("body"))
             if lang in {"python", "py"}:
-                python.append(Snippet(page, line, "python", body))
+                python.append(Snippet(page, line, "python", body, match.group("title").strip()))
             elif lang in {"bash", "sh", "shell"}:
                 for offset, raw in enumerate(body.splitlines()):
                     command = raw.split(" #", 1)[0].strip()
@@ -167,6 +181,8 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
     rest = tokens[1:]
     while rest and (rest[0] in cli.subcommands(path) or cli.hidden_subcommand(path, rest[0])):
         path += (rest.pop(0),)
+    if path in DATASET_FIRST and rest and not rest[0].startswith("-"):
+        path += (DATASET_FIRST[path],)
     text = cli.help(path)
     if text is None:
         report.fail(snippet.label, snippet.code, f"`dreamscale {' '.join(path)} --help` failed")
@@ -196,6 +212,8 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
 def kind_of(path: tuple[str, ...]) -> str:
     if any(path[: len(prefix)] == prefix for prefix in HARDWARE_PREFIXES):
         return "hardware"
+    if path[:1] == ("sim",) and path[1:2] not in [(name,) for name in LIVE_SIM_BENCHMARKS]:
+        return "static"
     if any(path[: len(prefix)] == prefix for prefix in STATIC_ONLY_PREFIXES):
         return "static"
     return "live"
@@ -266,6 +284,12 @@ def counted_next_action(log: list[float], max_actions: int):
         def __getattr__(self, name: str) -> object:
             return getattr(self._policy, name)
 
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            self._policy.__exit__(*exc)
+
         def next_action(self, *args, **kwargs):
             if len(log) >= max_actions:
                 raise StopSnippet
@@ -317,15 +341,49 @@ def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
         def close(self) -> None:
             inspect.signature(RemotePolicy.close).bind(self)
 
+        @property
+        def state(self) -> str:
+            return "ready"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            self.close()
+
+    class AsyncStandInPolicy(StandInPolicy):
+        """What the stand-in aconnect returns: the same calls, awaited."""
+
+        async def predict(self, *args, **kwargs):
+            return StandInPolicy.predict(self, *args, **kwargs)
+
+        async def next_action(self, *args, **kwargs):
+            return StandInPolicy.next_action(self, *args, **kwargs)
+
+        async def close(self) -> None:
+            StandInPolicy.close(self)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc: object) -> None:
+            await self.close()
+
+    real_aconnect = dreamscale.aconnect
+
     def connect(*args, **kwargs):
         inspect.signature(real_connect).bind(*args, **kwargs)
         return StandInPolicy(args[0] if args else kwargs["model"])
 
-    dreamscale.connect = connect
+    async def aconnect(*args, **kwargs):
+        inspect.signature(real_aconnect).bind(*args, **kwargs)
+        return AsyncStandInPolicy(args[0] if args else kwargs["model"])
+
+    dreamscale.connect, dreamscale.aconnect = connect, aconnect
     try:
         yield
     finally:
-        dreamscale.connect = real_connect
+        dreamscale.connect, dreamscale.aconnect = real_connect, real_aconnect
 
 
 def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report,
@@ -393,6 +451,145 @@ def documented_contracts() -> dict[str, tuple[int, int, float]]:
     text = (ROOT / "models.mdx").read_text()
     return {m: (int(c), int(w), float(hz)) for m, c, w, hz in
             re.findall(r"^\| `([a-z0-9.-]+)` \| [^|]+ \| (\d+) × (\d+) \| (\d+) Hz \|", text, re.M)}
+
+
+# ---------------------------------------------------------------- reference pages
+
+
+def is_signature(snippet: Snippet) -> bool:
+    return bool(SIGNATURE_TITLE_RE.fullmatch(snippet.title))
+
+
+def check_signature(snippet: Snippet, report: Report) -> None:
+    """A ```python dreamscale.X block declares X: its parameters must be X's real ones."""
+    import ast
+
+    import dreamscale
+
+    what = f"signature {snippet.title}"
+    target: object = dreamscale
+    for name in snippet.title.split(".")[1:]:
+        target = getattr(target, name, None)
+        if target is None:
+            report.fail(snippet.label, what, f"{snippet.title} does not exist")
+            return
+    defs = [node for node in ast.parse(snippet.code).body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    if len(defs) != 1 or defs[0].name != snippet.title.rsplit(".", 1)[-1]:
+        report.fail(snippet.label, what, "the block must hold exactly one def of that name")
+        return
+    node = defs[0]
+    if isinstance(node, ast.AsyncFunctionDef) != inspect.iscoroutinefunction(target):
+        report.fail(snippet.label, what, "async in the docs and the SDK must agree")
+    real = inspect.signature(target).parameters
+    real = {name: p for name, p in real.items() if name != "self"}
+    takes_any_keyword = any(p.kind is p.VAR_KEYWORD for p in real.values())
+    documented: dict[str, tuple[bool, object]] = {}
+    positional = [*node.args.posonlyargs, *node.args.args]
+    defaults = [None] * (len(positional) - len(node.args.defaults)) + list(node.args.defaults)
+    for arg, default in zip(positional, defaults):
+        documented[arg.arg] = (False, default)
+    for arg, default in zip(node.args.kwonlyargs, node.args.kw_defaults):
+        documented[arg.arg] = (True, default)
+    for name, (keyword_only, default) in documented.items():
+        param = real.get(name)
+        if param is None:
+            if not takes_any_keyword or not keyword_only:
+                report.fail(snippet.label, what, f"`{name}` is not a parameter")
+            continue
+        if keyword_only != (param.kind is param.KEYWORD_ONLY):
+            report.fail(snippet.label, what, f"`{name}` keyword-only in one but not the other")
+        if default is None:
+            # Shown as required; a None default the SDK checks at call time is fine.
+            if param.default not in (param.empty, None):
+                report.fail(snippet.label, what, f"`{name}` has a default in the SDK")
+            continue
+        try:
+            value = ast.literal_eval(default)
+        except ValueError:
+            continue  # `...` or an expression: shown, not compared
+        if value is not Ellipsis and value != param.default:
+            report.fail(snippet.label, what,
+                        f"`{name}` defaults to {param.default!r}, not {value!r}")
+    for name, param in real.items():
+        required = param.default is param.empty and param.kind not in (
+            param.VAR_POSITIONAL, param.VAR_KEYWORD)
+        if required and name not in documented:
+            report.fail(snippet.label, what, f"required parameter `{name}` is missing")
+    if not any(row[0] == "FAIL" and row[1] == snippet.label for row in report.rows):
+        report.ok(snippet.label, what, f"({len(documented)} parameters)")
+
+
+def public_commands() -> list[tuple[tuple[str, ...], object]]:
+    """Every command `--help` lists, with the click command that holds its options."""
+    import click
+    import typer
+
+    from dreamscale.cli import app
+
+    found: list[tuple[tuple[str, ...], object]] = []
+
+    def walk(command: object, path: tuple[str, ...]) -> None:
+        if isinstance(command, click.Group):
+            if path in DATASET_FIRST:
+                found.append((path, command.commands[DATASET_FIRST[path]]))
+            for name, sub in command.commands.items():
+                if not sub.hidden:
+                    walk(sub, (*path, name))
+        elif path:
+            found.append((path, command))
+
+    walk(typer.main.get_command(app), ())
+    return found
+
+
+def check_cli_reference(report: Report) -> None:
+    """Each public command has a `dreamscale ...` heading; its section names every public
+    option, and every option its tables list is a real one."""
+    import click
+
+    text = (ROOT / CLI_REFERENCE).read_text()
+    headings = list(re.finditer(r"^#{2,3} dreamscale (?P<path>[a-z0-9 -]+?)\s*$", text, re.M))
+    sections = {
+        tuple(match["path"].split()): text[match.end(): headings[index + 1].start()
+                                           if index + 1 < len(headings) else len(text)]
+        for index, match in enumerate(headings)
+    }
+    for path, command in public_commands():
+        label = f"{CLI_REFERENCE} dreamscale {' '.join(path)}"
+        section = sections.get(path)
+        if section is None:
+            report.fail(CLI_REFERENCE, f"dreamscale {' '.join(path)}", "has no section")
+            continue
+        options = {  # each public option by its first long name; aliases may be left out
+            next(opt for opt in param.opts if opt.startswith("--")) for param in command.params
+            if isinstance(param, click.Option) and not param.hidden
+        }
+        all_options = {
+            opt for param in command.params if isinstance(param, click.Option)
+            for opt in [*param.opts, *param.secondary_opts]
+        }
+        rows = re.findall(r"^\| `(--[a-z0-9-]+)", section, re.M)
+        missing = sorted(options - set(rows))
+        unknown = sorted(set(rows) - all_options)
+        public_names = {
+            opt for param in command.params
+            if isinstance(param, click.Option) and not param.hidden
+            for opt in [*param.opts, *param.secondary_opts]
+        }
+        hidden = sorted(set(rows) & (all_options - public_names))
+        for option in missing:
+            report.fail(label, option, "is a public option the section doesn't list")
+        for option in unknown:
+            report.fail(label, option, "is not an option of this command")
+        for option in hidden:
+            report.fail(label, option, "is hidden from --help; the reference lists public ones")
+        if not (missing or unknown or hidden):
+            report.ok(label, "section", f"({len(options)} options)")
+    public = {path for path, _ in public_commands()}
+    for path in sections:
+        if path not in public and not any(p[: len(path)] == path for p in public):
+            report.fail(CLI_REFERENCE, f"dreamscale {' '.join(path)}", "is not a public command")
 
 
 # ---------------------------------------------------------------- live CLI
@@ -511,6 +708,13 @@ def main() -> int:
         report.ok(snippet.label, snippet.code, f"(--help; {kind})")
 
     check_models_table(report)
+    check_cli_reference(report)
+    for snippet in [s for s in python if is_signature(s)]:
+        check_signature(snippet, report)
+    for snippet in [s for s in python if not is_signature(s) and any(c in s.code for c in PAID_CALLS)]:
+        report.skip(snippet.label, "python", "starts paid work; never run")
+    python = [s for s in python
+              if not is_signature(s) and not any(c in s.code for c in PAID_CALLS)]
 
     if args.live:
         if not os.environ.get("DREAMSCALE_API_KEY"):
