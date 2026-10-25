@@ -516,7 +516,6 @@ def create(
     rtc: bool = True,
     name: str | None = None,
     hf_token: str | None = None,
-    eval_fraction: float | None = None,
 ) -> Training: ...
 ```
 
@@ -529,7 +528,6 @@ def create(
 | `rtc` | `True` | Train with real-time chunking. Leave it on: it costs the same, and the model also runs without committed actions. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
-| `eval_fraction` | `None` (off) | Hold out this share of the episodes (0.05–0.3) and report a held-out loss during training. |
 
 ### dreamscale.trainings.get()
 

@@ -535,7 +535,6 @@ dreamscale train DATASET [OPTIONS]
 | `--state TEXT` | `observation.state` | The state's columns, joined in order (`a+b`). |
 | `--action TEXT` | `action` | The action's columns, joined in order (`a+b`). |
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
-| `--eval-fraction FLOAT` | off | Hold out this share of the episodes (0.05–0.3) and report a held-out loss during training. It catches overfitting and ranks checkpoints, but doesn't measure task success on a robot. |
 
 ```bash
 dreamscale train ./towel-fold --max-usd 50
