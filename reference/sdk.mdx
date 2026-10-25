@@ -2,7 +2,7 @@
 title: "Python SDK reference"
 sidebarTitle: "SDK reference"
 description: "Every public function, class and parameter of the dreamscale Python package."
-keywords: ["SDK reference", "Python API", "dreamscale.connect", "aconnect", "Policy", "predict", "next_action", "observation", "trainings", "errors"]
+keywords: ["SDK reference", "Python API", "dreamscale.connect", "aconnect", "Policy", "predict", "next_action", "committed_actions", "real-time chunking", "capture_time_ns", "contract", "observation", "trainings", "errors"]
 ---
 
 The public API of the `dreamscale` package, version `{{sdkVersion}}`. For a
@@ -20,7 +20,7 @@ walkthrough, start at [Python SDK](/python).
 | --- | --- |
 | [`dreamscale.connect()`](#dreamscale-connect) | Connect to a model; returns a `Policy`. |
 | [`dreamscale.aconnect()`](#dreamscale-aconnect) | The same, for async code; returns an `AsyncPolicy`. |
-| [`Policy`](#policy) | `predict()`, `next_action()`, `close()`. |
+| [`Policy`](#policy) | `predict()`, `next_action()`, `close()`, `contract`. |
 | [`AsyncPolicy`](#asyncpolicy) | The same methods, awaited. |
 | [Action chunk](#action-chunk) | What `predict()` returns. |
 | [`dreamscale.so101.observation()`](#dreamscale-so101-observation) | An SO-101 observation. |
@@ -60,7 +60,7 @@ def connect(
 | `on_progress` | stderr or logger | Called with each progress line (queue position, startup). The default prints to stderr on a terminal, otherwise logs to the `dreamscale` logger. `None` silences it. |
 | `region` | `"nearest"` | `"nearest"` (lowest latency from you), `"available"` (any region with a warm server first), or an exact region such as `"us-west-2"`. |
 | `speed` | `None` (standard) | `"standard"` or `"fast"`, where the model supports it. |
-| `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. |
+| `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. A deployment keeps its own setting ([`dreamscale deployments rtc`](/reference/cli#dreamscale-deployments-rtc)). |
 | `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
 | `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
 | `startup_timeout` | `None` | Most seconds to wait for a server. `None` uses the server's own budget. |
@@ -140,6 +140,7 @@ with dreamscale.connect("pi0.5-libero") as policy:
 | --- | --- | --- |
 | `model` | `str` | The model's name, as you passed it to `connect()`. |
 | `state` | `str` | `"opening"`, `"queued"`, `"ready"`, `"released"` (server freed; the next call reconnects), `"reconnecting"` or `"closed"`. |
+| `contract` | `PolicyContract` | What the model returns and accepts. See [`Policy.contract`](#policy-contract). |
 
 ### Policy.predict()
 
@@ -153,6 +154,7 @@ def predict(
     *,
     timeout_s: float = 60.0,
     action_history: Sequence[Sequence[float]] | None = None,
+    committed_actions: Sequence[Sequence[float]] | None = None,
 ) -> ActionChunk: ...
 ```
 
@@ -162,9 +164,114 @@ def predict(
 | `instruction` | required | The task in plain words, for example `"pick up the red block"`. It must not be empty. |
 | `timeout_s` | `60.0` | Most seconds to wait for the chunk. Raises `Error` with code `action_timeout` after it. |
 | `action_history` | `None` | The actions you already executed, oldest first. Required by `flux-3-action-so101`, which builds on them; `next_action()` keeps it for you. |
+| `committed_actions` | `None` | The actions your robot will still execute after this observation, in order, in the same units as `actions`. The new chunk starts with as many as the server expects to play before it arrives. Needs `policy.contract.rtc == "train_time"`. See [Running chunks on your own clock](#running-chunks-on-your-own-clock). |
 
-Raises [`ObservationError`](#errors) before sending if the observation doesn't
-match the model.
+Raises [`ObservationError`](#errors) before sending if the observation or the
+committed actions don't match the model.
+
+#### Running chunks on your own clock
+
+`predict()` returns one chunk and leaves running it to you.
+([`next_action()`](#policy-next_action) does it for you: buffering, early
+requests, blending.)
+
+**What the server does.** With `committed_actions` and `policy.contract.rtc`
+`"train_time"`, the server estimates how many of them your robot will execute
+before the new chunk reaches this computer. It counts from `capture_time_ns`
+through upload, queueing, inference and the trip back, measured on your
+session's recent requests. It pins that many (`prefix_rows`: at most
+`policy.contract.max_prefix_rows`, and at most the rows you sent), returns them
+exactly as you sent them, and generates the rest to follow on. Without
+`committed_actions`, each chunk starts fresh.
+
+**What you do.**
+
+- **Rows and time.** Row 0 is the first action to execute after
+  `chunk.capture_time_ns`; row `i` follows `i / policy.contract.action_hz`
+  seconds later. Times are this computer's `time.time_ns()`: convert them if
+  your robot stamps frames on another clock.
+- **Request early.** Send the next request while the current chunk still has at
+  least `ceil(latency × action_hz) + 1` actions left, where latency is capture
+  to receipt, measured on your own chunks.
+- **Commit what will run.** Pass the actions your robot will execute after the
+  new observation, after any limits your controller applies. Rows past what the
+  server can pin are ignored. After a reconnect, keep passing them.
+- **Switch.** When the chunk arrives, switch at the row due now:
+  `floor((now − capture_time_ns) × action_hz)`.
+
+**Checking it works.** Compare the row you switch at with `prefix_rows`:
+
+- **At or below `prefix_rows`:** smooth. The pinned rows match what was playing.
+- **Above `prefix_rows`:** the chunk arrived later than estimated, and the robot
+  jumps at the switch. The estimate ends when the chunk reaches this computer,
+  so a delay before your controller switches isn't in it. Switch sooner after
+  arrival, or request earlier.
+- **Equal to the rows you sent:** you capped it. Send more.
+- **Equal to `max_prefix_rows` on most chunks:** latency takes most of each
+  chunk, leaving few new actions. Request earlier, or cut latency.
+- **0:** you sent no rows, because the chunk ran out first. Request earlier.
+
+<Warning>
+  The robot will move. Enforce joint, speed and workspace limits locally, and
+  keep a physical e-stop within reach. Cloud inference does not replace your
+  robot's safety controller.
+</Warning>
+
+```python
+import math
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+import dreamscale
+
+policy = dreamscale.connect("ckpt_...")  # trained with RTC
+hz = policy.contract.action_hz
+pool = ThreadPoolExecutor(1)
+task = "fold the towel"
+
+
+def observe():
+    # Your robot's code: read the frames and state.
+    top, left_wrist = ..., ...  # H×W×3 uint8 RGB frames
+    left_joints, left_gripper = ..., ...  # checkpoint units
+    return dreamscale.robot.observation(
+        cameras={"base": top, "left_wrist": left_wrist},
+        state=[*left_joints, left_gripper],
+        capture_time_ns=time.time_ns(),
+    )
+
+
+def send_to_robot(action):
+    # Your robot's code: apply one action.
+    ...
+
+
+def age_s(chunk):  # seconds since its observation's capture
+    return (time.time_ns() - chunk.capture_time_ns) / 1e9
+
+
+chunk = policy.predict(observe(), task)
+latency_s = age_s(chunk)
+pending = None
+while True:
+    row = int(age_s(chunk) * hz)
+    lead = math.ceil(latency_s * hz) + 1
+    if pending is None and len(chunk.actions) - row <= lead:
+        rest = chunk.actions[row:]
+        pending = pool.submit(
+            policy.predict, observe(), task,
+            committed_actions=rest,
+        )
+    if pending is not None and pending.done():
+        chunk, pending = pending.result(), None
+        latency_s = age_s(chunk)
+        row = int(age_s(chunk) * hz)
+        print(f"switch at {row}, pinned {chunk.prefix_rows}")
+    if row < len(chunk.actions):
+        send_to_robot(chunk.actions[row])
+    # Else the chunk ran out: hold still (your robot's code).
+    time.sleep(1 / hz)
+```
 
 ### Policy.next_action()
 
@@ -216,6 +323,20 @@ and every policy closes when your program exits.
 def close() -> None: ...
 ```
 
+### Policy.contract
+
+What the connected model returns and accepts. Read-only.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `action_hz` | `float` | The rate a chunk's actions are spaced at. |
+| `chunk_size` | `int` | Actions per chunk. |
+| `action_dim` | `int` or `None` | Values per action. |
+| `state_dim` | `int` or `None` | Values in a deployment's state. |
+| `camera_keys` | `tuple[str, ...]` | A deployment's camera keys, in order. Empty where the robot's helper names the cameras. |
+| `rtc` | `str` | Real-time chunking: `"train_time"`, `"inference_time"` or `"off"`. `committed_actions` needs `"train_time"`. |
+| `max_prefix_rows` | `int` or `None` | The most committed actions a chunk can start with: 0 unless `rtc` is `"train_time"`, `None` when the server doesn't report it. |
+
 ## AsyncPolicy
 
 What `aconnect()` returns. It has the same properties as [`Policy`](#policy),
@@ -230,6 +351,7 @@ async def predict(
     *,
     timeout_s: float = 60.0,
     action_history: Sequence[Sequence[float]] | None = None,
+    committed_actions: Sequence[Sequence[float]] | None = None,
 ) -> ActionChunk: ...
 ```
 
@@ -250,9 +372,12 @@ What `predict()` returns.
 | Field | Type | Description |
 | --- | --- | --- |
 | `actions` | `tuple[tuple[float, ...], ...]` | The chunk: one row per action, in order. Its size is on [Models](/models), for example 30 × 6 for `pi0.5-so101`. |
+| `capture_time_ns` | `int` | When the observation was captured (`time.time_ns()`). Row 0 is the first action to execute after it; row `i` follows `i / policy.contract.action_hz` seconds later. |
+| `prefix_rows` | `int` | How many of your `committed_actions` start this chunk, exactly as you sent them. 0 without them. |
 | `observation_id` | `int` | Which observation this chunk answers. |
 | `chunk_id` | `int` or `None` | The server's ID for this chunk. |
 | `timing.obs_to_action_ms` | `float` | Milliseconds from sending the observation to receiving the chunk. |
+| `timing.server_total_ms` | `float` or `None` | Milliseconds the server spent on the request. |
 | `transport_mode` | `str` or `None` | How it arrived: `"quic"`, `"relay"` or `"wss_tunnel"`. |
 
 ## Observation helpers
@@ -270,6 +395,7 @@ def observation(
     side_frame: np.ndarray,
     wrist_frame: np.ndarray,
     joint_positions: Sequence[float],
+    capture_time_ns: int | None = None,
 ) -> So101Observation: ...
 ```
 
@@ -278,6 +404,7 @@ def observation(
 | `side_frame` | The fixed side camera. |
 | `wrist_frame` | The wrist camera. |
 | `joint_positions` | 6 values in calibrated LeRobot degrees: `shoulder_pan`, `shoulder_lift`, `elbow_flex`, `wrist_flex`, `wrist_roll`, then `gripper` (0–100). |
+| `capture_time_ns` | When the frames and state were captured, as this computer's `time.time_ns()`. Default: when the request is built. Pass it when the frames are older than the call. |
 
 ### dreamscale.yam.observation()
 
@@ -293,6 +420,7 @@ def observation(
     right_gripper: float,
     left_joint_velocities: Sequence[float] | None = None,
     right_joint_velocities: Sequence[float] | None = None,
+    capture_time_ns: int | None = None,
 ) -> YamObservation: ...
 ```
 
@@ -303,6 +431,7 @@ def observation(
 | `left_joint_positions`, `right_joint_positions` | 6 values per arm, in radians. |
 | `left_gripper`, `right_gripper` | 0 closed to 1 open. Continuous: don't threshold it. |
 | `left_joint_velocities`, `right_joint_velocities` | Optional: 6 values per arm, in radians per second. |
+| `capture_time_ns` | When the frames and state were captured, as this computer's `time.time_ns()`. Default: when the request is built. Pass it when the frames are older than the call. |
 
 ### dreamscale.libero.observation()
 
@@ -312,6 +441,7 @@ def observation(
     agent_frame: np.ndarray,
     wrist_frame: np.ndarray,
     state: Sequence[float],
+    capture_time_ns: int | None = None,
 ) -> LiberoObservation: ...
 ```
 
@@ -320,6 +450,7 @@ def observation(
 | `agent_frame` | `agentview_image`, as LIBERO renders it. The SDK flips it upright. |
 | `wrist_frame` | `robot0_eye_in_hand_image`, as LIBERO renders it. |
 | `state` | 8 values: end-effector position (3), end-effector rotation as an axis-angle vector (3), then the two gripper joint positions. |
+| `capture_time_ns` | When the frames and state were captured, as this computer's `time.time_ns()`. Default: when the request is built. Pass it when the frames are older than the call. |
 
 ### dreamscale.robot.observation()
 
@@ -333,6 +464,7 @@ def observation(
     *,
     cameras: Mapping[str, np.ndarray],
     state: Sequence[float],
+    capture_time_ns: int | None = None,
 ) -> RobotObservation: ...
 ```
 
@@ -340,6 +472,7 @@ def observation(
 | --- | --- |
 | `cameras` | Frames keyed by the deployment's camera keys, in its order. |
 | `state` | The state vector: joint positions and grippers, in the checkpoint's units. |
+| `capture_time_ns` | When the frames and state were captured, as this computer's `time.time_ns()`. Default: when the request is built. Pass it when the frames are older than the call. |
 
 ```python
 import dreamscale
@@ -393,7 +526,7 @@ def create(
 | `max_usd` | required | The most this run may cost, in US dollars. |
 | `steps` | `None` (auto) | Training length in steps. |
 | `base` | `None` (auto) | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
-| `rtc` | `True` | Train with real-time chunking. |
+| `rtc` | `True` | Train with real-time chunking. Leave it on: it costs the same, and the model also runs without committed actions. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
 | `eval_fraction` | `None` (off) | Hold out this share of the episodes (0.05–0.3) and report a held-out loss during training. |
