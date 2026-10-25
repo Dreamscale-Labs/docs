@@ -352,6 +352,7 @@ def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
                 "actions": self._actions(args[0]),
                 "capture_time_ns": getattr(args[0], "capture_time_ns", None) or time.time_ns(),
                 "prefix_rows": 0 if committed is None else min(len(committed), 15),
+                "history_padded": 0,
             })()
 
         @property
@@ -361,6 +362,7 @@ def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
             return PolicyContract(
                 action_hz=self.action_hz, chunk_size=self.chunk, action_dim=self.width,
                 state_dim=None, camera_keys=(), rtc="train_time", max_prefix_rows=15,
+                past_observations=2, action_history=3,
             )
 
         def next_action(self, *args, **kwargs):
