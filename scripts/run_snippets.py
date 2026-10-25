@@ -53,8 +53,11 @@ CONNECT_RE = re.compile(r"""dreamscale\.a?connect\(\s*["'](?P<model>[^"']+)["']"
 ENDPOINTS = {"dev": "https://api-dev.dreamscalelabs.com", "prod": "https://api.dreamscalelabs.com"}
 # Commands that need a robot on the bench. Checked against --help, never run here.
 HARDWARE_PREFIXES = (("robots",), ("run",), ("doctor", "so101"), ("doctor", "yam"))
-# Commands that need a browser, a Hugging Face repo, a deployment or a dataset to train on.
-STATIC_ONLY_PREFIXES = (("login",), ("deployments",), ("train",), ("sessions", "stop"))
+# Commands that need a browser, a Hugging Face repo, a deployment or a dataset to train on,
+# or that sign the machine out.
+STATIC_ONLY_PREFIXES = (
+    ("login",), ("auth", "logout"), ("deployments",), ("train",), ("sessions", "stop"),
+)
 # Benchmarks other than LIBERO download tens of GB on first run: checked against --help only.
 LIVE_SIM_BENCHMARKS = ("libero",)
 # `dreamscale train DATASET` runs the hidden `train create`, which holds its options.

@@ -2,7 +2,7 @@
 title: "CLI reference"
 sidebarTitle: "CLI reference"
 description: "Every dreamscale command, argument and option, with defaults."
-keywords: ["CLI reference", "dreamscale command", "options", "dreamscale run", "dreamscale sim", "dreamscale deployments", "dreamscale train"]
+keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale deployments", "dreamscale train"]
 ---
 
 Every public `dreamscale` command, generated from `--help` of version
@@ -19,6 +19,7 @@ your terminal. For step-by-step guides, start at [Quick start](/).
 | Command | What it does |
 | --- | --- |
 | [`login`](#dreamscale-login) | Sign in on this machine. |
+| [`auth whoami`, `auth logout`](#dreamscale-auth) | See and end this machine's sign-in. |
 | [`doctor`](#dreamscale-doctor) | Check your setup. |
 | [`sim`](#dreamscale-sim) | Run a task on a simulated benchmark. |
 | [`run so101`, `run yam`](#dreamscale-run) | Run tasks on a physical robot. |
@@ -46,7 +47,11 @@ your terminal. For step-by-step guides, start at [Quick start](/).
 ## dreamscale login
 
 Sign in on this machine. Opens your browser to sign in or create an account,
-then saves the login.
+then saves the login key to `~/.dreamscale/config.toml`.
+
+Each machine holds one login key: logging in again revokes the key the last
+login saved. Login keys don't appear on the API keys page, and a login never
+revokes a key you made there.
 
 ```text
 dreamscale login [OPTIONS]
@@ -55,6 +60,32 @@ dreamscale login [OPTIONS]
 | Option | Default | Description |
 | --- | --- | --- |
 | `--api-key TEXT` | — | Save this API key instead of signing in with a browser. Create one in [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys). |
+
+## dreamscale auth
+
+See and end this machine's sign-in.
+
+### dreamscale auth whoami
+
+Show the account and organization this machine is signed in as, and where the
+key came from: `DREAMSCALE_API_KEY` or your saved login.
+
+```text
+dreamscale auth whoami
+```
+
+### dreamscale auth logout
+
+Sign out on this machine: revoke its login key and remove it from
+`~/.dreamscale/config.toml`. A key you saved with `dreamscale login --api-key`
+is only removed from this machine. It keeps working until you revoke it in
+[Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys).
+Logout leaves `DREAMSCALE_API_KEY` alone; `unset DREAMSCALE_API_KEY` to stop
+using it.
+
+```text
+dreamscale auth logout
+```
 
 ## dreamscale doctor
 
