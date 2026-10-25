@@ -224,15 +224,16 @@ from concurrent.futures import ThreadPoolExecutor
 
 import dreamscale
 
-policy = dreamscale.connect("ckpt_...")  # your deployment, trained with RTC
-contract = policy.contract
+policy = dreamscale.connect("ckpt_...")  # trained with RTC
+hz = policy.contract.action_hz
 pool = ThreadPoolExecutor(1)
+task = "fold the towel"
 
 
 def observe():
-    # Your robot's code: read the frames and state, and note when.
+    # Your robot's code: read the frames and state.
     top, left_wrist = ..., ...  # H×W×3 uint8 RGB frames
-    left_joints, left_gripper = ..., ...  # in the checkpoint's units
+    left_joints, left_gripper = ..., ...  # checkpoint units
     return dreamscale.robot.observation(
         cameras={"base": top, "left_wrist": left_wrist},
         state=[*left_joints, left_gripper],
@@ -241,33 +242,35 @@ def observe():
 
 
 def send_to_robot(action):
-    # Your robot's code: apply one action (same order and units).
+    # Your robot's code: apply one action.
     ...
 
 
-def row_due(chunk):
-    return int((time.time_ns() - chunk.capture_time_ns) * contract.action_hz // 1e9)
+def age_s(chunk):  # seconds since its observation's capture
+    return (time.time_ns() - chunk.capture_time_ns) / 1e9
 
 
-chunk = policy.predict(observe(), "fold the towel")
-latency_s = (time.time_ns() - chunk.capture_time_ns) / 1e9
+chunk = policy.predict(observe(), task)
+latency_s = age_s(chunk)
 pending = None
 while True:
-    row = row_due(chunk)
-    lead = math.ceil(latency_s * contract.action_hz) + 1
+    row = int(age_s(chunk) * hz)
+    lead = math.ceil(latency_s * hz) + 1
     if pending is None and len(chunk.actions) - row <= lead:
+        rest = chunk.actions[row:]
         pending = pool.submit(
-            policy.predict, observe(), "fold the towel", committed_actions=chunk.actions[row:]
+            policy.predict, observe(), task,
+            committed_actions=rest,
         )
     if pending is not None and pending.done():
         chunk, pending = pending.result(), None
-        latency_s = (time.time_ns() - chunk.capture_time_ns) / 1e9
-        row = row_due(chunk)
-        print(f"switched at row {row}; {chunk.prefix_rows} pinned")
+        latency_s = age_s(chunk)
+        row = int(age_s(chunk) * hz)
+        print(f"switch at {row}, pinned {chunk.prefix_rows}")
     if row < len(chunk.actions):
         send_to_robot(chunk.actions[row])
-    # Otherwise the chunk ran out: hold still (your robot's code).
-    time.sleep(1 / contract.action_hz)
+    # Else the chunk ran out: hold still (your robot's code).
+    time.sleep(1 / hz)
 ```
 
 ### Policy.next_action()
