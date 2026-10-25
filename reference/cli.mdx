@@ -494,7 +494,7 @@ dreamscale train DATASET [OPTIONS]
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
-| `--no-rtc` | off | Train without real-time chunking (on by default). |
+| `--no-rtc` | off | Train without real-time chunking (on by default). Leave it on: it costs the same, and the model also runs without committed actions. |
 | `--name TEXT` | the dataset | Display name. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
 | `--yes`, `-y` | off | Accept the quote without asking. |

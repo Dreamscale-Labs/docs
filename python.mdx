@@ -101,3 +101,5 @@ picks the fastest network path, and blends chunks so motion stays smooth. If the
 connection drops, it reconnects and holds the robot still. It frees the server after
 a minute idle and reconnects on the next call. Sessions close when your program
 exits, or with `policy.close()`. In async code, use `await dreamscale.aconnect(...)`.
+`predict()` does none of this: it returns one action chunk for
+[your own executor](/reference/sdk#running-chunks-on-your-own-clock).
