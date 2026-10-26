@@ -426,7 +426,7 @@ What `predict()` returns.
 | `chunk_id` | `int` or `None` | The server's ID for this chunk. |
 | `timing.obs_to_action_ms` | `float` | Milliseconds from sending the observation to receiving the chunk. |
 | `timing.server_total_ms` | `float` or `None` | Milliseconds the server spent on the request. |
-| `transport_mode` | `str` or `None` | How it arrived: `"quic"`, `"relay"` or `"wss_tunnel"`. |
+| `transport_mode` | `str` or `None` | How it arrived: `"quic"`, `"relay"`, `"quic_punch"` (direct QUIC to a Modal worker) or `"wss_tunnel"` (its WebSocket). A Modal session moves between the last two on its own: if the direct path drops, it continues on the WebSocket within about a second and returns to QUIC when the path is back (SDK 0.1.0a205+). |
 
 ## Observation helpers
 
