@@ -550,7 +550,7 @@ dreamscale train DATASET [OPTIONS]
 | `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. |
 | `--eval-fraction FLOAT` | off | Hold out this share of episodes (0.05–0.3) and report a held-out loss per checkpoint. Held-out loss is a poor proxy for task success in diffusion and flow-matching policies: try checkpoints on the robot. |
 | `--quote` | off | Show the quote and stop: nothing is uploaded or started, even with `--yes`. |
-| `--no-rtc` | off | Train without real-time chunking (on by default). Leave it on: it costs the same, and the model also runs without committed actions. |
+| `--rtc`, `--no-rtc` | the base's | Train with or without real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action, where it is experimental. With it, the model also runs without committed actions. |
 | `--name TEXT` | the dataset | Display name. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
 | `--yes`, `-y` | off | Accept the quote without asking. |
