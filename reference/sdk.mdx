@@ -623,7 +623,7 @@ def create(
     max_usd: float | str | Decimal,
     steps: int | None = None,
     base: str | None = None,
-    rtc: bool = True,
+    rtc: bool | None = None,
     name: str | None = None,
     hf_token: str | None = None,
 ) -> Training: ...
@@ -635,7 +635,7 @@ def create(
 | `max_usd` | required | The most this run may cost, in US dollars. |
 | `steps` | `None` (auto) | Training length in steps. |
 | `base` | `None` (auto) | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
-| `rtc` | `True` | Train with real-time chunking. Leave it on: it costs the same, and the model also runs without committed actions. |
+| `rtc` | `None` (the base's) | Train with (`True`) or without (`False`) real-time chunking. `None` trains what the base does: on for π0.5, off for FLUX.3 Action, where it is experimental. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
 
