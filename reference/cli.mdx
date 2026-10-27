@@ -461,9 +461,11 @@ dreamscale deployments keep-warm DEPLOYMENT VALUE [OPTIONS]
 | `VALUE` | — | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. |
 | `--take-over-from TEXT` | — | Move always-on from this deployment once this one is warm. |
 | `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. |
+| `--now` | off | Start it now rather than at the first robot, kept for `VALUE` from now, and wait until it is ready. Ctrl-C stops waiting, not the server. |
+| `--email` | off | With `--now`: email you when it is ready. |
 
 ```bash
-dreamscale deployments keep-warm towel-fold 30m
+dreamscale deployments keep-warm towel-fold 30m --now
 ```
 
 ### dreamscale deployments rtc

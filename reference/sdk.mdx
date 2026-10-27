@@ -422,7 +422,7 @@ place.close()
 ### Policy.close()
 
 Close the session now. Optional: an idle policy frees its server after a minute
-(on a deployment kept warm, it stays connected until you close it), and every
+(on a deployment kept warm, after its keep-warm; with `always`, never), and every
 policy closes when your program exits.
 
 ```python dreamscale.Policy.close
