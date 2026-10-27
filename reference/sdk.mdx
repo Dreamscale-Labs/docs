@@ -367,7 +367,9 @@ def next_action(
 | `timeout_s` | `None` (60 s) | For the LIBERO simulator, which waits for a real action instead of holding: most seconds to wait. |
 
 Returns one action: absolute joint targets for a robot arm, in the same order
-and units as its observation (see [Models](/models)).
+and units as its observation (see [Models](/models)). With real-time chunking
+(`policy.contract.rtc` is `"train_time"`), each request carries the actions still
+to execute, so chunks join without a jump; there is nothing to pass.
 
 ```python
 import dreamscale
