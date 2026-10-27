@@ -68,6 +68,12 @@ The old name keeps working until another of your deployments takes it. The
 deployment's page on the dashboard has the full loop for your robot. The first
 connection starts a server, usually in under a minute.
 
+If your region is full, we start your server in the next-closest region (US West
+and US East are about 60–70 ms apart), and the CLI and SDK say so while it starts.
+It's on by default. To keep a deployment in its own region, so a robot waits there
+instead, turn it off: `dreamscale deployments fallback towel-fold off`, or
+`--no-region-fallback` on `create` and `train deploy`, or the Region card on its page.
+
 ## 3. Keep it warm (optional)
 
 ```bash

@@ -11,6 +11,7 @@ Every error names the problem and the next step.
 | --- | --- |
 | Not signed in, API key rejected, or wrong account | `dreamscale auth whoami` shows who you are; `dreamscale login` switches. If `DREAMSCALE_API_KEY` is set, it wins over your login: set it to a current key from [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys), or `unset DREAMSCALE_API_KEY` |
 | Waiting for a server or GPU | No server or GPU is free yet. Keep it running: the CLI and SDK show your place in the queue |
+| Stuck on Starting | Your region may have no GPU free. With region fallback on (the default), a server also starts in the next-closest region after about a minute, and the CLI says so. If your deployment has it off, turn it on: `dreamscale deployments fallback <deployment> on` |
 | `no SO-101 model is available to your organization` (or YAM) | Run `dreamscale models list` to see what you can run, then pass `--model <id>`. To request access, open [Models](https://app.dreamscalelabs.com/dashboard/models) |
 | Already running 2 robots | Each organization runs at most 2 robots at a time. Stop another run, or wait a minute for a crashed one to time out |
 | Out of credits | See [Pricing](/index#pricing) to add credits. Your balance is in the account menu on the [dashboard](https://app.dreamscalelabs.com/dashboard) |
