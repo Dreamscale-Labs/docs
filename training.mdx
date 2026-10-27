@@ -1,10 +1,10 @@
 ---
 title: "Training"
-description: "Fine-tune π0.5 or FLUX.3 Action on your robot's LeRobot dataset, then run it as a deployment."
-keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "LeRobot", "dataset", "dreamscale train"]
+description: "Fine-tune π0.5 or FLUX 3 Action on your robot's LeRobot dataset, then run it as a deployment."
+keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX 3 Action", "LeRobot", "dataset", "dreamscale train"]
 ---
 
-Training fine-tunes π0.5 or FLUX.3 Action on your robot's demos, on our GPUs. One command trains it,
+Training fine-tunes π0.5 or FLUX 3 Action on your robot's demos, on our GPUs. One command trains it,
 and one more turns it into a [deployment](/deployments) you can run.
 
 ## What you need
@@ -27,7 +27,7 @@ with **Ready**. Ctrl-C stops watching, not training: `dreamscale train show tr_.
 picks it back up.
 
 The defaults choose the base model and training length for your data. To set a
-budget instead, add `--max-usd 50`. To fine-tune FLUX.3 Action from Black Forest
+budget instead, add `--max-usd 50`. To fine-tune FLUX 3 Action from Black Forest
 Labs, add `--base flux-3-action-base`. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
@@ -38,8 +38,8 @@ dreamscale train deploy tr_...
 ```
 
 The build takes a few minutes and prints the command that runs it on your robot.
-A FLUX.3 Action run on SO-101 demos runs with
-`dreamscale run so101 --deployment <name>`; other FLUX.3 Action deployments run from
+A FLUX 3 Action run on SO-101 demos runs with
+`dreamscale run so101 --deployment <name>`; other FLUX 3 Action deployments run from
 Python with `dreamscale.connect("flux-3-action-base", deployment="<name>")`.
 To rename it or keep it warm, see [Deployments](/deployments).
 
