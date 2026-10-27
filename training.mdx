@@ -19,7 +19,10 @@ and one more turns it into a [deployment](/deployments) you can run.
 dreamscale train ./towel-fold
 ```
 
-From Hugging Face: `dreamscale train hf://your-org/towel-fold`.
+From Hugging Face: `dreamscale train hf://your-org/towel-fold`. Name several
+Hugging Face datasets to train on them together:
+`dreamscale train hf://your-org/towels-a hf://your-org/towels-b`. They must match: the
+same fps, state, action and cameras.
 
 The CLI checks the dataset, drops faulty episodes, and shows the price and time.
 Say yes and it uploads, starts training and shows progress on one line. It ends
@@ -29,7 +32,9 @@ picks it back up.
 The defaults choose the base model and training length for your data. To set a
 budget instead, add `--max-usd 50`. To see the price without starting anything,
 add `--quote`. `dreamscale train DATASET --help` lists what else you can set:
-batch size, learning rate, warm-up, checkpoint spacing and held-out evaluation. To fine-tune FLUX.3 Action from Black Forest
+batch size, learning rate, warm-up, checkpoint spacing and held-out evaluation. To weight
+episodes, or keep some frames' actions out of the loss, name a column with
+`--sample-weight` or `--loss-mask`. To fine-tune FLUX.3 Action from Black Forest
 Labs, add `--base flux-3-action-base`. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
@@ -40,8 +45,9 @@ dreamscale train deploy tr_...
 ```
 
 The build takes a few minutes and prints the command that runs it on your robot.
-A FLUX.3 Action run on SO-101 demos runs with
-`dreamscale run so101 --deployment <name>`; other FLUX.3 Action deployments run from
+A FLUX.3 Action run on SO-101 or Bimanual YAM demos runs with
+`dreamscale run so101 --deployment <name>` or `dreamscale run yam --deployment <name>`;
+other FLUX.3 Action deployments run from
 Python with `dreamscale.connect("flux-3-action-base", deployment="<name>")`.
 To rename it or keep it warm, see [Deployments](/deployments).
 

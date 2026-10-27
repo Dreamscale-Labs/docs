@@ -533,13 +533,13 @@ dataset to start a run: the CLI checks it, quotes the price and time, and starts
 once you confirm. See [Training](/training) for the walkthrough.
 
 ```text
-dreamscale train DATASET [OPTIONS]
+dreamscale train DATASET... [OPTIONS]
 ```
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. |
-| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets, where your organization has it), or one of your runs (`tr_…`): its latest checkpoint. |
+| `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. Name several Hugging Face datasets to train on them together: they must match after the column mapping. |
+| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), or one of your runs (`tr_…`): its latest checkpoint. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
@@ -560,6 +560,8 @@ dreamscale train DATASET [OPTIONS]
 | `--no-clean` | off | Train every episode as recorded. By default, auto-clean cuts out faulty stretches, trims idle starts and ends, and drops episodes that can't be trained on. |
 | `--state TEXT` | `observation.state` | The state's columns, joined in order (`a+b`). |
 | `--action TEXT` | `action` | The action's columns, joined in order (`a+b`). |
+| `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
+| `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
 
 ```bash

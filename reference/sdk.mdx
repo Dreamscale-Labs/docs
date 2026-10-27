@@ -166,7 +166,7 @@ def predict(
 | `timeout_s` | `60.0` | Most seconds to wait for the chunk. Raises `Error` with code `action_timeout` after it. |
 | `past_observations` | `None` | The observations of the control ticks just before this one, oldest first, from the same helper: as many as `policy.contract.past_observations`. Models that read recent frames and states need them, FLUX.3 Action deployments among them. See [History the model reads](#history-the-model-reads). |
 | `action_history` | `None` | The actions your robot executed on those ticks, oldest first: as many as `policy.contract.action_history`. `next_action()` keeps both for you. |
-| `committed_actions` | `None` | The actions your robot will still execute after this observation, in order, in the same units as `actions`. The new chunk starts with as many as the server expects to play before it arrives. Needs `policy.contract.rtc == "train_time"`. See [Running chunks on your own clock](#running-chunks-on-your-own-clock). |
+| `committed_actions` | `None` | The actions your robot will still execute after this observation, in order, in the same units as `actions`. The new chunk starts with as many as the server expects to play before it arrives. Needs `policy.contract.rtc == "train_time"`, or `"inference_time"` on a deployment. See [Running chunks on your own clock](#running-chunks-on-your-own-clock). |
 
 Raises [`ObservationError`](#errors) before sending if the observation, its
 history or the committed actions don't match the model, and `Error` with code
@@ -184,7 +184,9 @@ before the new chunk reaches this computer. It counts from `capture_time_ns`
 through upload, queueing, inference and the trip back, measured on your
 session's recent requests. It pins that many (`prefix_rows`: at most
 `policy.contract.max_prefix_rows`, and at most the rows you sent), returns them
-exactly as you sent them, and generates the rest to follow on. Without
+exactly as you sent them, and generates the rest to follow on. On a deployment
+with `"inference_time"`, it guides the start of the new chunk toward them over
+the same count instead: close to what you sent, not exact. Without
 `committed_actions`, each chunk starts fresh.
 
 **What you do.**
@@ -440,7 +442,7 @@ What the connected model returns and accepts. Read-only.
 | `action_dim` | `int` or `None` | Values per action. |
 | `state_dim` | `int` or `None` | Values in a deployment's state. |
 | `camera_keys` | `tuple[str, ...]` | A deployment's camera keys, in order. Empty where the robot's helper names the cameras. |
-| `rtc` | `str` | Real-time chunking: `"train_time"`, `"inference_time"` or `"off"`. `committed_actions` needs `"train_time"`. |
+| `rtc` | `str` | Real-time chunking: `"train_time"`, `"inference_time"` or `"off"`. `committed_actions` needs `"train_time"`, or `"inference_time"` on a deployment. |
 | `max_prefix_rows` | `int` or `None` | The most committed actions a chunk can start with: 0 unless `rtc` is `"train_time"`, `None` when the server doesn't report it. |
 | `past_observations` | `int` | How many `past_observations` `predict()` takes: the ticks just before the observation. 0 for models that don't read them. |
 | `action_history` | `int` | How many executed actions `predict()` takes as `action_history`. 0 for models that don't read them. |
@@ -482,7 +484,7 @@ What `predict()` returns.
 | --- | --- | --- |
 | `actions` | `tuple[tuple[float, ...], ...]` | The chunk: one row per action, in order. Its size is on [Models](/models), for example 30 × 6 for `pi0.5-so101`. |
 | `capture_time_ns` | `int` | When the observation was captured (`time.time_ns()`). Row 0 is the first action to execute after it; row `i` follows `i / policy.contract.action_hz` seconds later. |
-| `prefix_rows` | `int` | How many of your `committed_actions` start this chunk, exactly as you sent them. 0 without them. |
+| `prefix_rows` | `int` | How many of your `committed_actions` start this chunk: exactly as you sent them, or guided toward them on a deployment with `"inference_time"`. 0 without them. |
 | `history_padded` | `int` | How many ticks of history the SDK filled in (an episode's start, or history you didn't pass). 0 for a complete history, and for models that don't read one. |
 | `observation_id` | `int` | Which observation this chunk answers. |
 | `chunk_id` | `int` or `None` | The server's ID for this chunk. |
