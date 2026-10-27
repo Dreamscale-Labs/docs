@@ -369,6 +369,9 @@ def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
             inspect.signature(RemotePolicy.next_action).bind(self, *args, **kwargs)
             return self._actions(args[0])[0]
 
+        def prefetch(self, *args, **kwargs) -> None:
+            inspect.signature(RemotePolicy.prefetch).bind(self, *args, **kwargs)
+
         def close(self) -> None:
             inspect.signature(RemotePolicy.close).bind(self)
 
@@ -390,6 +393,9 @@ def stand_in_connect(contracts: dict[str, tuple[int, int, float]]):
 
         async def next_action(self, *args, **kwargs):
             return StandInPolicy.next_action(self, *args, **kwargs)
+
+        async def prefetch(self, *args, **kwargs) -> None:
+            StandInPolicy.prefetch(self, *args, **kwargs)
 
         async def close(self) -> None:
             StandInPolicy.close(self)

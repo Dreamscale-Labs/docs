@@ -202,6 +202,7 @@ exactly as you sent them, and generates the rest to follow on. Without
 - **Switch.** When the chunk arrives, switch at the row due now:
   `floor((now − capture_time_ns) × action_hz)`.
 
+
 **Checking it works.** Compare the row you switch at with `prefix_rows`:
 
 - **At or below `prefix_rows`:** smooth. The pinned rows match what was playing.
@@ -213,6 +214,28 @@ exactly as you sent them, and generates the rest to follow on. Without
 - **Equal to `max_prefix_rows` on most chunks:** latency takes most of each
   chunk, leaving few new actions. Request earlier, or cut latency.
 - **0:** you sent no rows, because the chunk ran out first. Request earlier.
+
+**Handing over to another deployment.** Request its first chunk the same way, early,
+while the current chunk still has the latency's worth of actions left, then switch
+at the row due now:
+
+```python
+import dreamscale
+
+pick = dreamscale.connect("pi0.5-so101")
+place = dreamscale.connect("pi0.5-so101")
+side, wrist = ..., ...  # H×W×3 uint8 RGB frames
+joints = ...  # 6 values: LeRobot degrees, gripper 0–100
+observation = dreamscale.so101.observation(
+    side_frame=side, wrist_frame=wrist, joint_positions=joints,
+)
+chunk = pick.predict(observation, "pick up the red block")
+# ... execute chunk; with the latency's worth of actions left, ask the next one:
+handover = place.predict(observation, "put it in the bowl")
+print(len(chunk.actions), len(handover.actions))
+pick.close()
+place.close()
+```
 
 #### History the model reads
 
@@ -337,7 +360,7 @@ def next_action(
 | Parameter | Default | Description |
 | --- | --- | --- |
 | `observation` | required | This tick's observation from the robot's helper. |
-| `instruction` | required | The task in plain words. Pass a new one to switch tasks. |
+| `instruction` | required | The task in plain words. Pass a new one to switch tasks: the robot keeps moving, and the new task takes over within about two round trips (the chunk already on its way may play first). |
 | `pace` | `True` | Return at the model's control rate. A late call gets the next action at once, and the actions it missed are skipped. `False` returns as soon as an action is ready. |
 | `timeout_s` | `None` (60 s) | For the LIBERO simulator, which waits for a real action instead of holding: most seconds to wait. |
 
@@ -358,10 +381,49 @@ print(len(action))
 policy.close()
 ```
 
+### Policy.prefetch()
+
+Request a policy's first chunk ahead of handing the robot over to it, so its first
+`next_action()` doesn't hold. Call it about one round trip before the switch, with
+the same instruction; it returns without waiting for the chunk.
+
+```python dreamscale.Policy.prefetch
+def prefetch(
+    observation,
+    instruction: str | None = None,
+    *,
+    timeout_s: float = 60.0,
+) -> None: ...
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `observation` | required | This tick's observation from the robot's helper. |
+| `instruction` | required | The task the next policy runs. |
+| `timeout_s` | `60.0` | Most seconds to wait for its session to open. |
+
+```python
+import dreamscale
+
+pick = dreamscale.connect("pi0.5-so101")
+place = dreamscale.connect("pi0.5-so101")
+side, wrist = ..., ...  # H×W×3 uint8 RGB frames
+joints = ...  # 6 values: LeRobot degrees, gripper 0–100
+observation = dreamscale.so101.observation(
+    side_frame=side, wrist_frame=wrist, joint_positions=joints,
+)
+pick.next_action(observation, instruction="pick up the red block")
+place.prefetch(observation, instruction="put it in the bowl")
+action = place.next_action(observation, instruction="put it in the bowl")
+pick.close()
+place.close()
+```
+
 ### Policy.close()
 
-Close the session now. Optional: an idle policy frees its server after a minute,
-and every policy closes when your program exits.
+Close the session now. Optional: an idle policy frees its server after a minute
+(on a deployment kept warm, after its keep-warm; with `always`, never), and every
+policy closes when your program exits.
 
 ```python dreamscale.Policy.close
 def close() -> None: ...
