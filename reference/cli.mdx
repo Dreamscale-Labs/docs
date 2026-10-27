@@ -444,8 +444,13 @@ dreamscale deployments list [OPTIONS]
 Show a deployment's status, build progress or error.
 
 ```text
-dreamscale deployments show DEPLOYMENT
+dreamscale deployments show DEPLOYMENT [OPTIONS]
 ```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DEPLOYMENT` | — | The deployment's name or ID. |
+| `--json` | off | Print the deployment as JSON. Its `status` is `ready` once it can run. |
 
 ### dreamscale deployments keep-warm
 
@@ -534,16 +539,24 @@ dreamscale train DATASET [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. |
-| `--base TEXT` | `auto` | Start from `pi0.5` (π0.5 base), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets), `flux-3-action-base` (FLUX.3 Action), or one of your runs (`tr_…`): its latest checkpoint. |
+| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, for bimanual YAM datasets, where your organization has it), or one of your runs (`tr_…`): its latest checkpoint. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
-| `--no-rtc` | off | Train without real-time chunking (on by default). Leave it on: it costs the same, and the model also runs without committed actions. |
+| `--batch-size INTEGER` | from the data | Global batch: π0.5 64, 128, 256 or 512; FLUX.3 Action 32, 64, 128 or 256. |
+| `--learning-rate FLOAT` | the recipe's | Peak learning rate, at most 0.01. Continuing from one of your runs, the default is half the recipe's, at most that run's. |
+| `--warmup-steps INTEGER` | the recipe's | Steps rising to the peak learning rate. |
+| `--schedule TEXT` | the recipe's | π0.5 only: `cosine` (decays over the run) or `constant` after the warm-up. |
+| `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. |
+| `--eval-fraction FLOAT` | off | Hold out this share of episodes (0.05–0.3) and report a held-out loss per checkpoint. Held-out loss is a poor proxy for task success in diffusion and flow-matching policies: try checkpoints on the robot. |
+| `--quote` | off | Show the quote and stop: nothing is uploaded or started, even with `--yes`. |
+| `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action, where it is experimental. The model also runs without committed actions. |
+| `--no-rtc` | the base's | Train without real-time chunking. |
 | `--name TEXT` | the dataset | Display name. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
 | `--yes`, `-y` | off | Accept the quote without asking. |
 | `--no-wait` | off | Return once the run starts. |
-| `--json` | off | Print the run as JSON. |
+| `--json` | off | Print the run (with `--quote`, the quote) as JSON. |
 | `--no-clean` | off | Train every episode as recorded. By default, auto-clean cuts out faulty stretches, trims idle starts and ends, and drops episodes that can't be trained on. |
 | `--state TEXT` | `observation.state` | The state's columns, joined in order (`a+b`). |
 | `--action TEXT` | `action` | The action's columns, joined in order (`a+b`). |
