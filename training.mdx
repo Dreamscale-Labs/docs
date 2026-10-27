@@ -35,7 +35,9 @@ add `--quote`. `dreamscale train DATASET --help` lists what else you can set:
 batch size, learning rate, warm-up, checkpoint spacing and held-out evaluation. To weight
 episodes, or keep some frames' actions out of the loss, name a column with
 `--sample-weight` or `--loss-mask`. To fine-tune FLUX.3 Action from Black Forest
-Labs, add `--base flux-3-action-base`. For a private repo, run
+Labs, add `--base flux-3-action-base`. Add `--rtc` too for real-time chunking
+(experimental): its deployment then continues each chunk from the actions the robot
+is still executing, so the arm doesn't jump where one chunk hands over to the next. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
 ## 2. Deploy it

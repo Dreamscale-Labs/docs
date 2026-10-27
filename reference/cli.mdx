@@ -474,7 +474,8 @@ dreamscale deployments keep-warm towel-fold 30m --now
 
 ### dreamscale deployments rtc
 
-Set a π0.5 deployment's real-time chunking for its new sessions. No rebuild.
+Set a π0.5 or FLUX.3 Action deployment's real-time chunking for its new sessions. No
+rebuild. A FLUX.3 Action deployment of a run trained with `--rtc` runs it by default.
 
 ```text
 dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
@@ -482,8 +483,8 @@ dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `METHOD` | — | `off`, `test-time` or `trained`. |
-| `--max-delay INTEGER` | — | The delay trained RTC was trained with, 1–15. |
+| `METHOD` | — | `off`, `test-time` or `trained`. FLUX.3 Action: `off` or `trained`. |
+| `--max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. FLUX.3 Action: the most committed actions kept per request; by default all its run trained. |
 
 ### dreamscale deployments rename
 
