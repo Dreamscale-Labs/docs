@@ -80,11 +80,10 @@ ends. `stop` ends the server now, and a connected robot reconnects to a new one 
 its next call; with `always`, `restart` does the same and starts a fresh one.
 
 To warm it up before your robot needs it, add `--now`: it starts the server and
-waits until it is ready (`--email` also emails you then). `dreamscale deployments
-show towel-fold` and the deployment's page say what it is doing: **Ready**,
-**Starting**, or **Waiting for a GPU** while the cloud allocates one. An idle policy
-on a deployment kept warm stays connected for the keep-warm (with `always`, until
-you close it).
+waits until it is ready. `dreamscale deployments show towel-fold` and the
+deployment's page say what it is doing: **Ready**, **Starting**, or **Waiting for a
+GPU** while the cloud allocates one. An idle policy on a deployment kept warm stays
+connected for the keep-warm (with `always`, until you close it).
 
 ## Delete it
 
