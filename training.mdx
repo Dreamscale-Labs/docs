@@ -27,7 +27,9 @@ with **Ready**. Ctrl-C stops watching, not training: `dreamscale train show tr_.
 picks it back up.
 
 The defaults choose the base model and training length for your data. To set a
-budget instead, add `--max-usd 50`. To fine-tune FLUX.3 Action from Black Forest
+budget instead, add `--max-usd 50`. To see the price without starting anything,
+add `--quote`. `dreamscale train DATASET --help` lists what else you can set:
+batch size, learning rate, warm-up, checkpoint spacing and held-out evaluation. To fine-tune FLUX.3 Action from Black Forest
 Labs, add `--base flux-3-action-base`. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
@@ -49,8 +51,9 @@ To rename it or keep it warm, see [Deployments](/deployments).
 dreamscale train ./more-towels --base tr_...
 ```
 
-It starts from that run's latest checkpoint (`--base-step 4500` for another one).
-The new dataset needs the same state and action widths.
+It starts from that run's latest checkpoint (`--base-step 4500` for another one),
+at a lower learning rate than a fresh run. The new dataset needs the same state
+and action widths.
 
 ## Manage runs
 

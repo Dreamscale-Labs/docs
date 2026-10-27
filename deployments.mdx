@@ -39,7 +39,8 @@ needs are uploaded, never `train_state/` or code. Running the same command again
 uploads nothing new, and an interrupted upload resumes. Uploads are kept for 30
 days.
 
-The build takes a few minutes and ends with **Ready**. For a private repo, run
+The build takes a few minutes and ends with **Ready**. A script can wait for it:
+`dreamscale deployments show towel-fold --json` reports `"status": "ready"`. For a private repo, run
 `dreamscale integrations hugging-face setup` once to save a read-only token.
 
 ## 2. Run it

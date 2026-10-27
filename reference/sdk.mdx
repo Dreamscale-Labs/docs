@@ -164,7 +164,7 @@ def predict(
 | `observation` | required | An observation from the robot's helper, for example [`dreamscale.so101.observation()`](#dreamscale-so101-observation). |
 | `instruction` | required | The task in plain words, for example `"pick up the red block"`. It must not be empty. |
 | `timeout_s` | `60.0` | Most seconds to wait for the chunk. Raises `Error` with code `action_timeout` after it. |
-| `past_observations` | `None` | The observations of the control ticks just before this one, oldest first, from the same helper: as many as `policy.contract.past_observations`. Models that read recent frames and states need them. See [History the model reads](#history-the-model-reads). |
+| `past_observations` | `None` | The observations of the control ticks just before this one, oldest first, from the same helper: as many as `policy.contract.past_observations`. Models that read recent frames and states need them, FLUX.3 Action deployments among them. See [History the model reads](#history-the-model-reads). |
 | `action_history` | `None` | The actions your robot executed on those ticks, oldest first: as many as `policy.contract.action_history`. `next_action()` keeps both for you. |
 | `committed_actions` | `None` | The actions your robot will still execute after this observation, in order, in the same units as `actions`. The new chunk starts with as many as the server expects to play before it arrives. Needs `policy.contract.rtc == "train_time"`. See [Running chunks on your own clock](#running-chunks-on-your-own-clock). |
 
