@@ -75,11 +75,20 @@ dreamscale run yam --model molmoact2-bimanual-yam
    again to exit.
 
 The arms keep holding their pose after the command exits. This is powered
-holding, not a brake. Support the arms, then release the motors:
+holding, not a brake. After 2 minutes with nothing driving them, they move slowly
+to their folded rest, the pose they power up in, and release the motors there. If a
+motor ran hot during the run, they move at once. A run that starts in the meantime
+takes them over. A run left waiting at a prompt for that long disconnects, and the
+arms rest. Keep the space between the arms and their rest clear. If an arm can't
+reach rest (something in the way), it stops and keeps holding, and the next run says
+so. To release now, support the arms, then run:
 
 ```bash
 dreamscale robots yam release
 ```
+
+Set the hold time in `~/.config/dreamscale/yam.json`, from 30 to 3600 seconds:
+`"hold_limit_s": 300`.
 
 ## Models
 
