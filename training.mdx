@@ -63,6 +63,20 @@ It starts from that run's latest checkpoint (`--base-step 4500` for another one)
 at a lower learning rate than a fresh run. The new dataset needs the same state
 and action widths.
 
+To continue a checkpoint you deployed, name the deployment:
+
+```bash
+dreamscale train ./more-towels --base towel-fold
+```
+
+A deployment made from a run starts from the checkpoint it serves. A checkpoint you
+imported trains on its model's recipe: a π0.5 checkpoint (openpi or LeRobot), a FLUX.3
+Action export, or an ABC-VLA checkpoint. Import one from Hugging Face or a folder with
+`dreamscale deployments create` first. The quote checks the state and action widths,
+and the run checks the rest (for FLUX.3 Action, the cameras and timing) before any GPU
+time. Normalization is kept where your data agrees with the checkpoint's, and the
+quote says which.
+
 ## Manage runs
 
 ```bash
