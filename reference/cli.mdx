@@ -403,6 +403,7 @@ dreamscale deployments create REPO [OPTIONS]
 | `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. Pick the one nearest your robot. |
 | `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
+| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (about 60–70 ms farther). |
 | `--no-wait` | off | Return once the build starts. |
 
 ```bash
@@ -486,6 +487,21 @@ dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
 | --- | --- | --- |
 | `METHOD` | — | `off`, `test-time` or `trained`. FLUX.3 Action: `off` or `trained`. |
 | `--max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. FLUX.3 Action: the most committed actions kept per request; by default all its run trained. |
+
+### dreamscale deployments fallback
+
+Turn region fallback on or off for a deployment's next server. No rebuild. On (the
+default), if its region is full, its server starts in the next-closest region
+(US West and US East are about 60–70 ms apart). Off, a robot waits for its own region.
+
+```text
+dreamscale deployments fallback DEPLOYMENT SETTING
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DEPLOYMENT` | — | The deployment's name or ID. |
+| `SETTING` | — | `on` or `off`. |
 
 ### dreamscale deployments rename
 
@@ -677,6 +693,7 @@ dreamscale train deploy RUN_ID [OPTIONS]
 | `--step INTEGER` | the latest | Checkpoint step. |
 | `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. |
 | `--no-wait` | off | Return once the build starts. |
+| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (about 60–70 ms farther). |
 
 Stuck? See [Troubleshooting](/troubleshooting) or email
 [{{supportEmail}}](mailto:{{supportEmail}}).
