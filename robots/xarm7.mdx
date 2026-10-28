@@ -31,16 +31,51 @@ dreamscale robots xarm7 setup
 
 Enter each arm's control box address and gripper, then assign the three cameras. Setup
 saves a preview from each camera so you can tell them apart, and sets them to 640x360.
-It only reads the arms and grippers; nothing moves.
+It only reads the arms and grippers; nothing moves. A camera another program holds (a
+recorder, a teleop stack) is listed without a preview and can still be assigned.
+
+Setup writes `~/.config/dreamscale/xarm7.json`. You can also write it yourself, for example
+from a coding agent:
+
+```json
+{
+  "version": 1,
+  "arms": {
+    "aft": {"host": "192.168.1.236", "gripper": "g2", "gripper_control": "position"},
+    "fore": {"host": "192.168.1.201", "gripper": "g2", "gripper_control": "position"}
+  },
+  "cameras": [
+    {"id": "realsense:262422074177", "backend": "realsense", "physical_id": "usb:8086:262422074177", "device": "262422074177", "width": 640, "height": 360},
+    {"id": "realsense:262422071971", "backend": "realsense", "physical_id": "usb:8086:262422071971", "device": "262422071971", "width": 640, "height": 360},
+    {"id": "realsense:262322074905", "backend": "realsense", "physical_id": "usb:8086:262322074905", "device": "262322074905", "width": 640, "height": 360}
+  ],
+  "roles": {
+    "top": "realsense:262422074177",
+    "left": "realsense:262422071971",
+    "right": "realsense:262322074905"
+  },
+  "home_pose": null
+}
+```
+
+- `gripper`: `g2`, `g1` or `none`.
+- `gripper_control`: `position` moves the jaw to the commanded fraction of its travel;
+  `threshold` shuts it at 0.5 or more and opens it below.
+- `roles`: `top` is the scene camera, `left` the fore arm's wrist, `right` the aft arm's
+  wrist, each naming a camera's `id`.
+- `cameras`: a RealSense is `realsense:<serial>` with `physical_id` `usb:8086:<serial>`; a
+  USB camera is its `/dev/v4l/by-id/…` path, as both `id` and `device`, with `physical_id`
+  `usb:<vendor>:<serial>`. When in doubt, run setup once and copy what it saved.
 
 ## 2. Check everything
 
 ```bash
-dreamscale doctor xarm7
+dreamscale doctor xarm7 --model your-org/your-deployment
 ```
 
-It reads both arms, both grippers and the three cameras without moving anything. Every
-line shows a `✓`. Clear any controller error in UFACTORY Studio first.
+It reads both arms, both grippers and the three cameras without moving anything, and checks
+that your deployment is ready to run here. Every line shows a `✓`. Clear any controller
+error in UFACTORY Studio first.
 
 ## 3. Save a home pose
 
@@ -84,8 +119,9 @@ dreamscale run xarm7 --model your-org/your-deployment
    pose, and you're asked for the next instruction.
 
 Joints move at most 0.5 rad/s, and a command may lead the measured position by at most
-0.2 rad. A gripper closes when its command reaches 0.5 and opens below it. A held gripper
-keeps its last command, so a gripper closed on an object stays closed.
+0.2 rad. Each gripper moves to the commanded fraction of its travel (or, with
+`gripper_control` set to `threshold`, shuts at 0.5). A held gripper keeps its last command,
+so a gripper closed on an object stays closed.
 
 ## Your own control loop
 
@@ -97,5 +133,8 @@ instructions, Enter for the next, and holds the arm each instruction doesn't mov
 python -m dreamscale.examples.xarm7_labels your-org/your-deployment
 ```
 
-Its source is a starting point for your own runner. Stuck? See
-[Troubleshooting](/troubleshooting).
+Its source is a starting point for your own runner. It calls `policy.next_action()`, which
+handles real-time chunking for you; a loop that plays whole chunks from `policy.predict()`
+passes the actions still to play as `committed_actions` (see
+[Running chunks on your own clock](/reference/sdk#running-chunks-on-your-own-clock)). Stuck?
+See [Troubleshooting](/troubleshooting).
