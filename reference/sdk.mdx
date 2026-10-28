@@ -63,7 +63,7 @@ def connect(
 | `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. A deployment keeps its own setting ([`dreamscale deployments rtc`](/reference/cli#dreamscale-deployments-rtc)). |
 | `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
 | `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
-| `startup_timeout` | `None` | Most seconds to wait for a server. `None` uses the server's own budget. |
+| `startup_timeout` | `None` | Most seconds to wait for a server. `None` follows the server's budget, which grows while a training run makes room for your robot. |
 
 Raises [`AuthError`](#errors), [`CreditsError`](#errors) or
 [`NoCapacityError`](#errors) when it can't connect.
