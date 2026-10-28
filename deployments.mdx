@@ -66,7 +66,8 @@ the slug you gave it. Its bare slug (`towel-fold`) and its `ckpt_...` ID work
 everywhere too. To rename it: `dreamscale deployments rename towel-fold folding-v2`.
 The old name keeps working until another of your deployments takes it. The
 deployment's page on the dashboard has the full loop for your robot. The first
-connection starts a server, usually in under a minute.
+connection starts a server, usually in under a minute. Connect as many robots as
+you need.
 
 If your region is full, we start your server in the next-closest region (US West
 and US East are about 60–70 ms apart), and the CLI and SDK say so while it starts.
@@ -95,7 +96,7 @@ connected for the keep-warm (with `always`, until you close it).
 
 If the server stops under a running robot (rare), the robot holds still while a
 new one starts, usually under a minute. To cut that pause to a few seconds, keep a
-spare ready on a deployment that autoscales:
+spare ready:
 
 ```bash
 dreamscale deployments keep-warm towel-fold 1h --robots 2

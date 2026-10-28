@@ -678,7 +678,7 @@ step, so printing it is usually enough.
 | `dreamscale.Error` | The base of every SDK error. |
 | `dreamscale.AuthError` | Not signed in, or the API key was rejected. |
 | `dreamscale.CreditsError` | Your organization is out of credits. |
-| `dreamscale.NoCapacityError` | No server is free right now, or your organization already runs its robot limit (code `shared_session_limit`). |
+| `dreamscale.NoCapacityError` | Your organization already runs 2 robots on shared models (code `shared_session_limit`), or the line for a server is full. While servers are only busy, a robot waits in line and is told its position instead. |
 | `dreamscale.ObservationError` | An observation or instruction doesn't match the model. Raised before anything is sent. Also a `ValueError` and a `TypeError`. |
 
 | Member | Description |
