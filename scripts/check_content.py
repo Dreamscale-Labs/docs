@@ -45,6 +45,11 @@ DOCUMENTED_MODELS = {
     "perceptron-isaac05",
     "perceptron-isaac05-so101",
     "perceptron-isaac05-yam",
+    # Franka / DROID (experimental page): beta models, named as beta there.
+    "molmoact2-droid",
+    "cosmos3-edge-policy-droid",
+    "cosmos3-nano-policy-droid",
+    "flux-3-action-droid",
 }
 # Base models that `dreamscale train --base` and `deployments create --base` name in --help.
 BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam"}
