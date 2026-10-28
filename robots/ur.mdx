@@ -1,0 +1,119 @@
+---
+title: "Universal Robots (experimental)"
+sidebarTitle: "Universal Robots (experimental)"
+description: "Experimental: run your own fine-tuned π0.5 deployment on a Universal Robots e-Series or UR Series arm with a Robotiq gripper."
+keywords: ["Universal Robots", "UR", "UR5e", "UR7e", "UR10e", "PolyScope X", "Robotiq", "dreamscale robots ur setup", "dreamscale run ur", "experimental"]
+---
+
+**Experimental.** Universal Robots support has run on one UR7e with a Robotiq 2F-85 on
+PolyScope X, and nowhere else yet. Other arms, grippers and PolyScope 5 are expected to
+work but haven't been tried, and commands and setup may change without notice. Expect
+rough edges, stay at the e-stop, and tell us how it goes at
+[team@dreamscalelabs.com](mailto:team@dreamscalelabs.com).
+
+There is no shared model for UR arms: you record demos, [train](/training) π0.5 on them,
+and run the result.
+
+## What you need
+
+- A UR e-Series or UR Series arm: UR3e, UR5e, UR7e, UR10e, UR12e, UR16e, UR8 Long, UR15,
+  UR18, UR20 or UR30, on PolyScope X or PolyScope 5.
+- A Robotiq 2F-85, 2F-140 or Hand-E on the wrist, or no gripper.
+- Two RGB cameras: **scene**, looking over the arm at the table, and **wrist**, on the
+  gripper. USB (UVC), ZED and RealSense cameras work.
+- A Linux computer on the arm's Ethernet network, wired to the cameras.
+- The pendant's e-stop within reach.
+
+## 1. Prepare the pendant
+
+On PolyScope X:
+
+1. Under **Settings › Security › Services**, enable **RTDE**, the **Primary Client
+   Interface** and the **Real-Time Client Interface**.
+2. Install UR's **External Control** and **Tool Communication Forwarder** URCapXs. Remove
+   Robotiq's URCapX if it is installed: it holds the wrist port. Open the forwarder's
+   Application screen and press **Start**.
+3. Make a program named `dreamscale` with two nodes. First a **Script** node:
+
+   ```text
+   set_tool_voltage(24)
+   set_tool_communication(True, 115200, 0, 1, 1.5, 3.5)
+   set_target_payload(1.1, [0, 0, 0.07])
+   ```
+
+   Use your gripper and camera's mass in kg and centre of gravity in metres. Then an
+   **External Control** node with this computer's IP address.
+4. To start runs from the computer, switch the pendant to **Remote control** (PolyScope X
+   10.11 or later). In Local control you press **Play** on the program when the CLI asks.
+
+On PolyScope 5, use the External Control URCap and Robotiq's own URCap instead.
+
+## 2. Install and set up the rig
+
+```bash
+uv tool install dreamscale
+dreamscale login
+dreamscale robots ur setup
+```
+
+Open the URL it prints, then choose your arm model, enter the control box address, pick
+the gripper and assign the scene and wrist cameras. Setup only reads the arm and gripper;
+nothing moves. No browser? Use `dreamscale robots ur setup --cli`.
+
+## 3. Check everything
+
+```bash
+dreamscale doctor ur
+```
+
+It checks RTDE, the arm's state, the gripper and both cameras without moving anything.
+Every line shows a `✓`.
+
+## 4. Save a home pose
+
+Freedrive the arm on the pendant to where every run should start, gripper clear of the
+table and the wrist camera on the work area. Then:
+
+```bash
+dreamscale robots ur home --set
+```
+
+`dreamscale robots ur home` moves back there slowly and opens the gripper.
+
+## 5. Record and train
+
+Record demos on this rig as a LeRobot dataset with:
+
+- `observation.images.scene` and `observation.images.wrist`, in that order;
+- `observation.state` and `action`: 7 values each, the six joint positions in radians
+  from base to wrist 3, then the gripper from 0 (open) to 1 (closed).
+
+Then train and deploy it as on [Training](/training). `train deploy` prints the command
+that runs your deployment.
+
+```bash
+dreamscale train ./my-ur-demos
+dreamscale train deploy tr_...
+```
+
+## 6. Run it
+
+<Warning>
+  The arm will move. Clear the workspace and keep the e-stop within reach. Software
+  limits do not prevent collisions, and cloud inference does not replace your robot's
+  safety configuration.
+</Warning>
+
+```bash
+dreamscale run ur --model your-org/my-ur-demos
+```
+
+1. At `Instruction`, type a task, for example `put the cup on the plate`.
+2. At `Enter to start`, press **Enter**. The first time, this connects: in Remote control
+   the `dreamscale` program starts by itself; in Local control press **Play** when asked.
+3. The arm runs the task. Press **Ctrl+C** to stop; it returns to its home pose if you
+   saved one, and asks for the next instruction.
+
+Joints move at most 1 rad/s, and slower on arms longer than a UR7e. The arm holds its pose
+after the command exits; stop the program on the pendant when you're done.
+Stuck? See [Troubleshooting](/troubleshooting).

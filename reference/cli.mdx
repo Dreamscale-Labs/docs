@@ -22,8 +22,8 @@ your terminal. For step-by-step guides, start at [Quick start](/).
 | [`auth whoami`, `auth logout`](#dreamscale-auth) | See and end this machine's sign-in. |
 | [`doctor`](#dreamscale-doctor) | Check your setup. |
 | [`sim`](#dreamscale-sim) | Run a task on a simulated benchmark. |
-| [`run so101`, `run yam`, `run franka`](#dreamscale-run) | Run tasks on a physical robot. Franka is experimental. |
-| [`robots so101 …`, `robots yam …`, `robots franka …`](#dreamscale-robots) | Set up and maintain a robot: setup, calibrate, home, release, recover. |
+| [`run so101`, `run yam`, `run franka`, `run ur`](#dreamscale-run) | Run tasks on a physical robot. Franka and Universal Robots are experimental. |
+| [`robots so101 …`, `robots yam …`, `robots franka …`, `robots ur …`](#dreamscale-robots) | Set up and maintain a robot: setup, calibrate, home, release, recover. |
 | [`models list`](#dreamscale-models-list) | List the models your organization can run. |
 | [`sessions list`, `sessions stop`](#dreamscale-sessions) | See and stop your open sessions. |
 | [`deployments …`](#dreamscale-deployments) | Deploy and manage your fine-tuned models. |
@@ -110,8 +110,8 @@ dreamscale doctor [MODE] [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101`, `yam` or `franka` (experimental). |
-| `--config PATH` | saved rig config | YAM and Franka only: the rig config to check. |
+| `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101`, `yam`, or `franka` or `ur` (experimental). |
+| `--config PATH` | saved rig config | YAM, Franka and UR only: the rig config to check. |
 | `--model TEXT` | — | With a robot: the model to check access to. Without it, `doctor` checks the robot only. |
 
 ```bash
@@ -265,6 +265,42 @@ dreamscale run franka --model MODEL [OPTIONS]
 dreamscale run franka --model molmoact2-droid --instruction "pick up the marker"
 ```
 
+### dreamscale run ur
+
+Run your own π0.5 deployment on a Universal Robots arm. **Experimental**: see
+[Universal Robots](/robots/ur). Takes the same options as `run yam`. Joint limits are in
+radians; on arms longer than a UR7e the speed and step caps shrink with reach.
+
+```text
+dreamscale run ur --model DEPLOYMENT [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--model TEXT` | required | Your π0.5 deployment for this rig, as `<account>/<slug>`. |
+| `--config PATH` | saved rig config | The rig config from `dreamscale robots ur setup`. |
+| `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
+| `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
+| `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
+| `--region TEXT` | `available` | Where to serve: `nearest`, `available` or `us-west-2`. |
+| `--provider TEXT` | — | Advanced: `aws` or `modal`. |
+| `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
+| `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
+| `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
+| `--context TEXT` | `auto` | Frame history, for deployments that use it: `auto` (the deployment's own), `on` (last 3 frames) or `off` (1 frame). |
+| `--effort TEXT` | `medium` | Reasoning effort, for models that take one: `low`, `medium`, `high`, `xhigh` or `max`. |
+| `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
+| `--max-joint-step FLOAT` | `0.3` | Most radians a command may lead the measured joint position. |
+| `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--trace-dir PATH` | — | Save a recording of each task under this directory. |
+| `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
+| `--verbose` | off | Show diagnostic details. |
+
+```bash
+dreamscale run ur --model acme-robotics/cup-to-plate --instruction "put the cup on the plate"
+```
+
 ## dreamscale robots
 
 Set up and maintain robots. Setup installs the robot's support the first time it
@@ -381,6 +417,35 @@ dreamscale robots franka recover [OPTIONS]
 
 | Option | Default | Description |
 | --- | --- | --- |
+| `--config PATH` | saved rig config | Rig config path. |
+
+### dreamscale robots ur setup
+
+**Experimental.** Install Universal Robots support, then choose the arm model, control box
+address, gripper and cameras on a setup page in your browser. Nothing moves.
+
+```text
+dreamscale robots ur setup [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--cli` | off | Answer terminal prompts instead of using the setup page. |
+| `--config PATH` | saved rig config | Rig config path to write. |
+| `--host TEXT` | `0.0.0.0` | Setup page server host. |
+| `--port INTEGER` | `8765` | Setup page server port, 1–65535. |
+
+### dreamscale robots ur home
+
+**Experimental.** Move slowly to the home pose and open the gripper; the arm then holds.
+
+```text
+dreamscale robots ur home [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--set` | off | Save where the arm is now as home. Move it there with freedrive first. |
 | `--config PATH` | saved rig config | Rig config path. |
 
 ## dreamscale models
