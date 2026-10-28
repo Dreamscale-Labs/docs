@@ -522,11 +522,17 @@ dreamscale deployments stop DEPLOYMENT
 ### dreamscale deployments rm
 
 Permanently delete a deployment. Only organization owners can delete, and it
-cannot be undone.
+cannot be undone. It asks first; robots running it are disconnected. With no
+terminal to ask in (a script or CI), pass `--yes`.
 
 ```text
-dreamscale deployments rm DEPLOYMENT
+dreamscale deployments rm DEPLOYMENT [OPTIONS]
 ```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DEPLOYMENT` | — | The deployment's name or ID. |
+| `--yes`, `-y` | off | Delete without asking. |
 
 ## dreamscale train
 
@@ -613,7 +619,8 @@ dreamscale train stop RUN_ID [OPTIONS]
 ### dreamscale train resume
 
 Continue a stopped training run for its remaining steps, at the same rate. It shows the price
-first.
+first. The run restores its saved state before it trains again, usually within minutes; while
+it waits for the cloud to start a worker for that, the run says how long it has waited.
 
 ```text
 dreamscale train resume RUN_ID [OPTIONS]
