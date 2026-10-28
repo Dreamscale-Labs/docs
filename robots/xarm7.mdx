@@ -1,0 +1,101 @@
+---
+title: "Two xArm 7s (experimental)"
+sidebarTitle: "Two xArm 7s (experimental)"
+description: "Experimental: run your own fine-tuned deployment on a pair of UFACTORY xArm 7 arms with xArm Grippers and three cameras."
+keywords: ["UFACTORY", "xArm", "xArm 7", "xarm7", "bimanual", "RealSense", "D435", "dreamscale robots xarm7 setup", "dreamscale run xarm7", "experimental"]
+---
+
+**Experimental.** xArm 7 support is new and has not run on many benches yet. Commands and
+setup may change without notice. Expect rough edges, stay at the e-stop, and tell us how it
+goes at [team@dreamscalelabs.com](mailto:team@dreamscalelabs.com).
+
+There is no shared model for xArm 7s: you run your own deployment, fine-tuned on demos
+recorded on your bench.
+
+## What you need
+
+- Two UFACTORY xArm 7 arms, called **aft** and **fore**, each with an xArm Gripper (G2 or
+  G1) or no gripper.
+- Three RGB cameras: **top**, looking down at the bench, **left** on the fore arm's wrist
+  and **right** on the aft arm's wrist. RealSense D435s work, as do USB (UVC) cameras.
+- A Linux computer on both control boxes' Ethernet network, wired to the cameras.
+- The e-stop within reach.
+
+## 1. Install and set up the rig
+
+```bash
+uv tool install "dreamscale[xarm7]"
+dreamscale login
+dreamscale robots xarm7 setup
+```
+
+Enter each arm's control box address and gripper, then assign the three cameras. Setup
+saves a preview from each camera so you can tell them apart, and sets them to 640x360.
+It only reads the arms and grippers; nothing moves.
+
+## 2. Check everything
+
+```bash
+dreamscale doctor xarm7
+```
+
+It reads both arms, both grippers and the three cameras without moving anything. Every
+line shows a `✓`. Clear any controller error in UFACTORY Studio first.
+
+## 3. Save a home pose
+
+Move both arms in UFACTORY Studio's manual mode to where every run should start, grippers
+clear of the bench and the wrist cameras on the work area. Then:
+
+```bash
+dreamscale robots xarm7 home --set
+```
+
+`dreamscale robots xarm7 home` moves both arms back there slowly and opens the grippers.
+
+## 4. Your deployment
+
+Your demos need, in this order:
+
+- `observation.images.top`, `observation.images.left` and `observation.images.right`;
+- `observation.state`: 16 values, the aft arm first. Each arm has seven joint positions in
+  radians, then its gripper's angle from 0 (open) to 0.85 radians (closed);
+- `action`: the same 16 values, with each gripper as a close command from 0 (open) to 1
+  (closed).
+
+Deploy the fine-tuned model as on [Deployments](/deployments). The deployment's cameras
+must be those three keys in that order, with 16 state and action values.
+
+## 5. Run it
+
+<Warning>
+  The arms will move. Clear the bench and keep the e-stop within reach. Software limits do
+  not prevent collisions, and cloud inference does not replace your robot's safety
+  configuration.
+</Warning>
+
+```bash
+dreamscale run xarm7 --model your-org/your-deployment
+```
+
+1. At `Instruction`, type a task.
+2. At `Enter to start`, press **Enter**. Both arms enable at their current pose.
+3. The arms run the task. Press **Ctrl+C** to stop; they return home if you saved a home
+   pose, and you're asked for the next instruction.
+
+Joints move at most 0.5 rad/s, and a command may lead the measured position by at most
+0.2 rad. A gripper closes when its command reaches 0.5 and opens below it. A held gripper
+keeps its last command, so a gripper closed on an object stays closed.
+
+## Your own control loop
+
+If your model is prompted one step at a time, or one arm should hold still while the
+other works, drive the arms from Python. This example steps through a list of
+instructions, Enter for the next, and holds the arm each instruction doesn't move:
+
+```bash
+python -m dreamscale.examples.xarm7_labels your-org/your-deployment
+```
+
+Its source is a starting point for your own runner. Stuck? See
+[Troubleshooting](/troubleshooting).
