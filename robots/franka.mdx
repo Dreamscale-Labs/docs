@@ -1,0 +1,92 @@
+---
+title: "Franka / DROID with the CLI (experimental)"
+sidebarTitle: "Franka / DROID (experimental)"
+description: "Experimental: set up a DROID-style Franka arm with its cameras and run a DROID-trained model on it from the CLI."
+keywords: ["Franka", "FR3", "Panda", "DROID", "experimental", "dreamscale robots franka setup", "dreamscale run franka", "FCI"]
+---
+
+**This page is experimental, and so is Franka support.** It has run on one FR3
+in our lab. Setup, checks, homing and stopping work there, but no model has yet
+completed a task on it reliably. Expect rough edges and changes between
+releases. Tell us what you see at
+[team@dreamscalelabs.com](mailto:team@dreamscalelabs.com).
+
+## What you need
+
+- A Franka FR3 with a Franka Hand, its joints unlocked and FCI activated in
+  Desk. A Panda should work but is untested.
+- A Linux x86_64 computer with a real-time (PREEMPT_RT) kernel, wired to the
+  arm's control box. It needs no GPU.
+- Cameras in the DROID layout: an **exterior 1** camera beside the table and a
+  **wrist** camera on the hand. A second exterior camera is optional. USB
+  cameras, ZED cameras (read as USB cameras) and Intel RealSense cameras work.
+- Access to a DROID model. They are in beta: ask
+  [team@dreamscalelabs.com](mailto:team@dreamscalelabs.com).
+- The Dreamscale CLI, signed in. See [Quick start](/).
+
+## 1. Place the cameras
+
+Put exterior 1 to the side of the table, seeing the arm and the whole workspace,
+as in DROID. Mount the wrist camera on the hand so it sees the fingers.
+
+## 2. Set up the arm and cameras
+
+```bash
+dreamscale robots franka setup
+```
+
+It installs Franka support, checks it can reach the arm, and previews each
+camera so you can pick exterior 1, the wrist camera and, if you have one,
+exterior 2.
+
+## 3. Check everything
+
+```bash
+dreamscale doctor franka --model molmoact2-droid
+```
+
+It checks the real-time kernel, the arm's connection and state, the gripper,
+each camera and your access to that model. It never moves the arm. Every line
+shows a `✓`; a camera on a slow USB link may show a warning instead.
+
+## 4. Run a model
+
+<Warning>
+  The arm will move. Clear the workspace, keep people and cables
+  out of reach, and keep the E-stop in your hand. Cloud inference does not
+  replace your robot's safety limits.
+</Warning>
+
+```bash
+dreamscale run franka --model molmoact2-droid
+```
+
+1. At `Enter to start`, press **Enter** to connect the arm. It moves slowly to
+   DROID's home pose.
+2. At `Instruction`, type a task, for example `pick up the marker`.
+3. The arm shows a preview of the first actions. Nothing moves yet.
+4. Press **Enter** to run. Press **Ctrl+C** to stop.
+5. The arm returns home and asks for the next instruction. Press **Ctrl+C**
+   again to exit.
+
+The arm holds its pose after the command exits, while the robot stays on. Lock
+its joints in Desk when you're done.
+
+If the arm stops on a reflex, check why it stopped, then clear the error:
+
+```bash
+dreamscale robots franka recover
+```
+
+## Models
+
+Every `run` needs one with `--model`. All are in beta:
+
+- `molmoact2-droid`: MolmoAct2. Reads exterior 1 and the wrist, plus exterior 2
+  if you set one.
+- `cosmos3-edge-policy-droid` and `cosmos3-nano-policy-droid`: Cosmos 3. Read
+  all three cameras.
+- `flux-3-action-droid`: FLUX 3 Action. Reads all three cameras.
+
+`dreamscale models list` shows which ones your organization can run right now.
+Stuck? See [Troubleshooting](/troubleshooting).
