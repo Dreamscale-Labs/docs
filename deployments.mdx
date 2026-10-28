@@ -83,8 +83,9 @@ dreamscale deployments stop towel-fold   # stop its server now
 
 Keep-warm holds a server ready between runs (`10m` to `12h`, or `always`) and is
 billed like connected time. Off, the default, stops the server when the session
-ends. `stop` ends the server now, and a connected robot reconnects to a new one on
-its next call; with `always`, `restart` does the same and starts a fresh one.
+ends. `stop` ends the server now and turns keep-warm off, and a connected robot
+reconnects to a new one on its next call; with `always`, `restart` ends it and starts a
+fresh one.
 
 To warm it up before your robot needs it, add `--now`: it starts the server and
 waits until it is ready. `dreamscale deployments show towel-fold` and the
