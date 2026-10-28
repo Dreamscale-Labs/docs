@@ -369,8 +369,9 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy π0.5 fine-tuned weights from Hugging Face (any `huggingface.co` link
-works, including a checkpoint folder's page) or from a local folder. From a
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, ABC-VLA or InternW0-Δ (pick
+with `--base`) from Hugging Face (any `huggingface.co` link works, including a
+checkpoint folder's page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
 new. Values not given are detected from the checkpoint; run `inspect` to see
 them.
@@ -382,7 +383,7 @@ dreamscale deployments create REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder (`./folder`). |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5` or `flux-3-action-base`. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `internw0-delta-base` or `abc-vla`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
@@ -420,7 +421,7 @@ dreamscale deployments inspect REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder. |
-| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base` or `auto`. |
+| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base`, `internw0-delta-base`, `abc-vla` or `auto`. |
 | `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
@@ -465,7 +466,7 @@ dreamscale deployments keep-warm DEPLOYMENT VALUE [OPTIONS]
 | --- | --- | --- |
 | `VALUE` | — | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. |
 | `--take-over-from TEXT` | — | Move always-on from this deployment once this one is warm. |
-| `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. |
+| `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. With one robot running, `2` keeps a spare: if its server stops, the robot moves to the spare in about 5 seconds. |
 | `--now` | off | Start it now rather than at the first robot, kept for `VALUE` from now, and wait until it is ready. Ctrl-C stops waiting, not the server. |
 
 ```bash
