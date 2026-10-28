@@ -369,8 +369,9 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy π0.5 fine-tuned weights from Hugging Face (any `huggingface.co` link
-works, including a checkpoint folder's page) or from a local folder. From a
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, ABC-VLA or InternW0-Δ (pick
+with `--base`) from Hugging Face (any `huggingface.co` link works, including a
+checkpoint folder's page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
 new. Values not given are detected from the checkpoint; run `inspect` to see
 them.
@@ -382,7 +383,7 @@ dreamscale deployments create REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder (`./folder`). |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5` or `flux-3-action-base`. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `internw0-delta-base` or `abc-vla`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
@@ -421,7 +422,7 @@ dreamscale deployments inspect REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder. |
-| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base` or `auto`. |
+| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base`, `internw0-delta-base`, `abc-vla` or `auto`. |
 | `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
@@ -466,7 +467,7 @@ dreamscale deployments keep-warm DEPLOYMENT VALUE [OPTIONS]
 | --- | --- | --- |
 | `VALUE` | — | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. |
 | `--take-over-from TEXT` | — | Move always-on from this deployment once this one is warm. |
-| `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. |
+| `--robots INTEGER` | — | Autoscaling deployments: how many robots stay ready, 1–64. Billed as at least that many robots while kept warm. With one robot running, `2` keeps a spare: if its server stops, the robot moves to the spare in about 5 seconds. |
 | `--now` | off | Start it now rather than at the first robot, kept for `VALUE` from now, and wait until it is ready. Ctrl-C stops waiting, not the server. |
 
 ```bash
@@ -537,11 +538,17 @@ dreamscale deployments stop DEPLOYMENT
 ### dreamscale deployments rm
 
 Permanently delete a deployment. Only organization owners can delete, and it
-cannot be undone.
+cannot be undone. It asks first; robots running it are disconnected. With no
+terminal to ask in (a script or CI), pass `--yes`.
 
 ```text
-dreamscale deployments rm DEPLOYMENT
+dreamscale deployments rm DEPLOYMENT [OPTIONS]
 ```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DEPLOYMENT` | — | The deployment's name or ID. |
+| `--yes`, `-y` | off | Delete without asking. |
 
 ## dreamscale train
 
@@ -556,7 +563,7 @@ dreamscale train DATASET... [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. Name several Hugging Face datasets to train on them together: they must match after the column mapping. |
-| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), or one of your runs (`tr_…`): its latest checkpoint. |
+| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5, FLUX.3 Action or ABC-VLA checkpoint you imported. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
@@ -628,7 +635,8 @@ dreamscale train stop RUN_ID [OPTIONS]
 ### dreamscale train resume
 
 Continue a stopped training run for its remaining steps, at the same rate. It shows the price
-first.
+first. The run restores its saved state before it trains again, usually within minutes; while
+it waits for the cloud to start a worker for that, the run says how long it has waited.
 
 ```text
 dreamscale train resume RUN_ID [OPTIONS]
