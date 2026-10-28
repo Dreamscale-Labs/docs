@@ -86,6 +86,17 @@ deployment's page say what it is doing: **Ready**, **Starting**, or **Waiting fo
 GPU** while the cloud allocates one. An idle policy on a deployment kept warm stays
 connected for the keep-warm (with `always`, until you close it).
 
+If the server stops under a running robot (rare), the robot holds still while a
+new one starts, usually under a minute. To cut that pause to a few seconds, keep a
+spare ready on a deployment that autoscales:
+
+```bash
+dreamscale deployments keep-warm towel-fold 1h --robots 2
+```
+
+A second server stays warm, and if yours stops, the robot moves to it in about 5
+seconds. It's billed as two robots while kept warm.
+
 ## Delete it
 
 ```bash
