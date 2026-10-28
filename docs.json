@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a228",
+    "sdkVersion": "0.1.0a232",
     "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
@@ -40,6 +40,7 @@
         "pages": [
           "robots/yam",
           "robots/so101",
+          "robots/ur",
           "python"
         ]
       },
