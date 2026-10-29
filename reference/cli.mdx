@@ -590,8 +590,6 @@ dreamscale deployments create REPO [OPTIONS]
 | `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. |
 | `--rtc-max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. |
 | `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
-| `--steps INTEGER` | `10` | Denoising steps, for bases that set them per deployment. |
-| `--joint-unit TEXT` | model-defined | The unit of a custom robot's joint positions, e.g. `rad`, for bases whose actions are joint positions. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
 | `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. Pick the one nearest your robot. |
