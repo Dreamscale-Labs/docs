@@ -71,7 +71,7 @@ TABLE_DIVIDER_RE = re.compile(r"(?m)^\|(?: *:?-{3,}:? *\|)+ *$")
 REFERENCE_DIR = "reference/"
 # The six main pages share a word budget, frontmatter excluded.
 MAIN_PAGES = ("index", "robots/so101", "robots/yam", "python", "models", "troubleshooting")
-MAIN_WORD_BUDGET = 2300
+MAIN_WORD_BUDGET = 2450
 
 
 def _navigation_pages(node: object) -> list[str]:

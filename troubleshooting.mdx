@@ -1,7 +1,7 @@
 ---
 title: "Troubleshooting"
-description: "Fix common Dreamscale problems: sign-in, waiting for a server, the robot limit, credits, upgrades, cameras and serial ports."
-keywords: ["Dreamscale errors", "dreamscale login", "queue", "shared_session_limit", "out of credits", "upgrade", "camera", "serial port"]
+description: "Fix common Dreamscale problems: sign-in, a server stuck on Starting, the robot limit, credits, upgrades, cameras and serial ports."
+keywords: ["Dreamscale errors", "dreamscale login", "queue", "Starting", "Waiting for a GPU", "region fallback", "deployment_requalifying", "shared_session_limit", "out of credits", "upgrade", "camera", "serial port"]
 ---
 
 Start with `dreamscale doctor` (or `dreamscale doctor so101`, `dreamscale doctor yam`).
@@ -10,7 +10,7 @@ Every error names the problem and the next step.
 | Problem | Fix |
 | --- | --- |
 | Not signed in, API key rejected, or wrong account | `dreamscale auth whoami` shows who you are; `dreamscale login` switches. If `DREAMSCALE_API_KEY` is set, it wins over your login: set it to a current key from [Settings → API keys](https://app.dreamscalelabs.com/dashboard/settings#api-keys), or `unset DREAMSCALE_API_KEY` |
-| Waiting for a server or GPU | No server or GPU is free yet. Keep it running: the CLI and SDK show your place in the queue |
+| Waiting for a server or GPU | See [Stuck on Starting](#stuck-on-starting) |
 | `no SO-101 model is available to your organization` (or YAM) | Run `dreamscale models list` to see what you can run, then pass `--model <id>`. To request access, open [Models](https://app.dreamscalelabs.com/dashboard/models) |
 | Already running 2 robots | Shared models run at most 2 robots per organization. Stop another run, or wait a minute for a crashed one to time out |
 | Out of credits | See [Pricing](/index#pricing) to add credits. Your balance is in the account menu on the [dashboard](https://app.dreamscalelabs.com/dashboard) |
@@ -19,6 +19,24 @@ Every error names the problem and the next step.
 | Warnings on the first `dreamscale sim libero` run | Harmless. Hugging Face and robosuite print them while the simulator loads |
 | Camera not found | Reconnect it, then rerun `dreamscale robots so101 setup` or `dreamscale robots yam setup` |
 | SO-101 serial port not found or busy | Close other apps using the arm. On Linux, run `sudo usermod -aG dialout $USER`, then log out and in. Rerun `dreamscale robots so101 setup` |
+
+## Stuck on Starting
+
+**Starting** means your robot's server is getting a GPU and loading the model, usually in
+under a minute. The CLI, the SDK and `dreamscale deployments show <deployment>` say what it
+waits for:
+
+- **Waiting for a GPU**: the cloud hasn't given the server one yet. After about a minute, a
+  second server starts in the next-closest region (US West or US East), and the first one
+  ready serves your robot. To keep a deployment in its own region:
+  `dreamscale deployments fallback <deployment> off`.
+- **Queue**: every server is busy. The CLI and SDK show your place.
+- **New serving image**: after a model update, a deployment built on the previous version
+  passes a short check before it starts, usually a minute or two. The CLI and SDK wait.
+
+`dreamscale.connect()` gives up after 15 minutes (`startup_timeout` changes that). Still
+starting? Email [{{supportEmail}}](mailto:{{supportEmail}}) what
+`dreamscale deployments show <deployment>` says.
 
 ## Still stuck?
 
