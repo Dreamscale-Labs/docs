@@ -27,7 +27,7 @@ under a minute. The CLI, the SDK and `dreamscale deployments show <deployment>` 
 waits for:
 
 - **Waiting for a GPU**: the cloud hasn't given the server one yet. After about a minute, a
-  second server starts in the next-closest region (US West or US East), and the first one
+  second server starts in the next-closest region (for example Japan for Australia), and the first one
   ready serves your robot. To keep a deployment in its own region:
   `dreamscale deployments fallback <deployment> off`.
 - **Queue**: every server is busy. The CLI and SDK show your place.
