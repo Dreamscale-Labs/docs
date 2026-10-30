@@ -599,6 +599,76 @@ observation = dreamscale.robot.observation(
 )
 ```
 
+## dreamscale.datasets
+
+Keep your LeRobot datasets on Dreamscale and train on them. See [Datasets](/datasets).
+
+```python
+import dreamscale
+
+ds = dreamscale.datasets.upload("./towels")
+hub = dreamscale.datasets.import_from("hf://lerobot/svla_so100_pickplace")
+ds = dreamscale.datasets.get("towels@1")  # pinned to version 1
+run = ds.train(base="pi0.5", max_usd=50)  # trains exactly that version
+ds.download("./towels-v1")
+```
+
+### dreamscale.datasets.upload()
+
+Upload a folder to a dataset. Unchanged data returns the existing version, and an interrupted upload
+resumes.
+
+```python dreamscale.datasets.upload
+def upload(
+    path: str | os.PathLike,
+    *,
+    name: str | None = None,
+    check: bool = True,
+    progress: Callable[[int, int, int], None] | None = None,
+) -> Dataset: ...
+```
+
+### dreamscale.datasets.import_from()
+
+Copy a Hugging Face dataset in, on our side. With `wait=False`, returns the running `DatasetImport`.
+
+```python dreamscale.datasets.import_from
+def import_from(
+    source: str,
+    *,
+    name: str | None = None,
+    hf_token: str | None = None,
+    wait: bool = True,
+) -> Dataset | DatasetImport: ...
+```
+
+### dreamscale.datasets.get()
+
+A dataset by name, `account/name` or id. `name@N` pins the handle to that version.
+
+```python dreamscale.datasets.get
+def get(ref: str) -> Dataset: ...
+```
+
+### dreamscale.datasets.list()
+
+```python dreamscale.datasets.list
+def list() -> list[Dataset]: ...
+```
+
+### dreamscale.datasets.delete()
+
+`name` deletes the dataset, and `name@N` one version.
+
+```python dreamscale.datasets.delete
+def delete(ref: str) -> None: ...
+```
+
+A `Dataset` has `.id`, `.name`, `.full_name`, `.version` (the version the handle points at),
+`.latest_version`, `.versions`, `.bytes`, `.summary`, `.last_used_at` and `.data`, and the methods
+`refresh()`, `rename(name)`, `delete(version=None)`, `download(dest, version=None)` and
+`train(*, base, max_usd, ...)`.
+
 ## dreamscale.trainings
 
 Fine-tune a base model on your LeRobot dataset, on Dreamscale's GPUs, from
@@ -608,7 +678,8 @@ first, and `max_usd` is the most a run may cost. See [Training](/training).
 ```python
 import dreamscale
 
-run = dreamscale.trainings.create("./towel-fold", max_usd=50)
+ds = dreamscale.datasets.upload("./towel-fold")
+run = dreamscale.trainings.create(dataset=ds, base="pi0.5", max_usd=50)
 run.wait()  # a live status line until it finishes
 deployment = run.deploy()
 policy = dreamscale.connect(deployment["model"], deployment=deployment["id"])
@@ -622,11 +693,11 @@ is still going returns that run instead of a new one.
 
 ```python dreamscale.trainings.create
 def create(
-    dataset: str | os.PathLike,
     *,
+    dataset: Dataset | str,
+    base: str,
     max_usd: float | str | Decimal,
     steps: int | None = None,
-    base: str | None = None,
     rtc: bool | None = None,
     name: str | None = None,
     hf_token: str | None = None,
@@ -635,10 +706,10 @@ def create(
 
 | Parameter | Default | Description |
 | --- | --- | --- |
-| `dataset` | required | A LeRobot dataset (v2.1 or v3.0): a local folder, or a Hugging Face repo as `hf://owner/name` (optionally `@revision`). A folder uploads only what Dreamscale doesn't already have. |
+| `dataset` | required | A [`Dataset`](#dreamscale-datasets), a name (`"towels"`, `"towels@2"`, `"acme/towels"`), or a Hugging Face repo as `hf://owner/name` (optionally `@revision`). |
+| `base` | required | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
 | `max_usd` | required | The most this run may cost, in US dollars. |
 | `steps` | `None` (auto) | Training length in steps. |
-| `base` | `None` (auto) | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
 | `rtc` | `None` (the base's) | Train with (`True`) or without (`False`) real-time chunking. `None` trains what the base does: on for π0.5, off for FLUX.3 Action, where it is experimental. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |

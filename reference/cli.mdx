@@ -742,20 +742,119 @@ dreamscale deployments rm DEPLOYMENT [OPTIONS]
 | `DEPLOYMENT` | — | The deployment's name or ID. |
 | `--yes`, `-y` | off | Delete without asking. |
 
-## dreamscale train
+## dreamscale datasets
 
-Fine-tune a base model on your LeRobot dataset, on Dreamscale's GPUs. Give a
-dataset to start a run: the CLI checks it, quotes the price and time, and starts
-once you confirm. See [Training](/training) for the walkthrough.
+Keep your LeRobot datasets on Dreamscale and train on them. See [Datasets](/datasets).
+
+### dreamscale datasets upload
+
+Upload a folder: what's new is sent, and a new version recorded. Rerun it to resume.
 
 ```text
-dreamscale train DATASET... [OPTIONS]
+dreamscale datasets upload FOLDER [OPTIONS]
 ```
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `DATASET` | — | A LeRobot dataset (v2.x or v3.0): a folder, `hf://owner/name` or `owner/name`. Name several Hugging Face datasets to train on them together: they must match after the column mapping. |
-| `--base TEXT` | `pi0.5` | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
+| `FOLDER` | — | The LeRobot dataset's root folder. |
+| `--name TEXT` | the folder's | The dataset's name. |
+| `--no-check` | off | Skip reading the recordings here (training checks them again). |
+| `--json` | off | Print the dataset as JSON. |
+
+### dreamscale datasets import
+
+Copy a Hugging Face dataset in, on our side. Importing again copies only what changed.
+
+```text
+dreamscale datasets import SOURCE [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `SOURCE` | — | `hf://owner/name`, with `/folder` and `@revision` if you need them. |
+| `--name TEXT` | the repo's | The dataset's name. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--no-wait` | off | Return once the copy starts. |
+| `--json` | off | Print the dataset as JSON. |
+
+### dreamscale datasets list
+
+Your datasets.
+
+```text
+dreamscale datasets list [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `--json` | off | Print the datasets as JSON. |
+
+### dreamscale datasets show
+
+A dataset's summary, versions and runs; follows a running import.
+
+```text
+dreamscale datasets show NAME [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `NAME` | — | `NAME`, or `NAME@N` for one version. |
+| `--json` | off | Print the dataset as JSON. |
+
+### dreamscale datasets download
+
+Download a version into a LeRobot folder. Rerun it to resume.
+
+```text
+dreamscale datasets download NAME [FOLDER]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `NAME` | — | `NAME`, or `NAME@N` for one version. |
+| `FOLDER` | `./NAME` | Where to. |
+
+### dreamscale datasets rename
+
+Rename a dataset.
+
+```text
+dreamscale datasets rename NAME NEW_NAME
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `NAME` | — | The dataset. |
+| `NEW_NAME` | — | Its new name (the old one keeps working until another dataset takes it). |
+
+### dreamscale datasets rm
+
+Delete a dataset or one version, for good. What was made from it keeps working.
+
+```text
+dreamscale datasets rm NAME [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `NAME` | — | `NAME` for the whole dataset, or `NAME@N` for one version. |
+| `--yes`, `-y` | off | Delete without asking. |
+
+## dreamscale train
+
+Fine-tune a base model on your LeRobot dataset, on Dreamscale's GPUs. Name a
+dataset and a base to start a run: the CLI quotes the price and time, and starts
+once you confirm. See [Training](/training) for the walkthrough.
+
+```text
+dreamscale train --dataset DATASET --base BASE [OPTIONS]
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `--dataset TEXT` | required | One of your [datasets](/datasets) (`towels`, `towels@2`, `acme/towels`) or a Hugging Face one (`hf://owner/name`). Repeat it to train on several Hugging Face datasets together: they must match after the column mapping. |
+| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
@@ -765,7 +864,7 @@ dreamscale train DATASET... [OPTIONS]
 | `--schedule TEXT` | the recipe's | π0.5 only: `cosine` (decays over the run) or `constant` after the warm-up. |
 | `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. |
 | `--eval-fraction FLOAT` | off | Hold out this share of episodes (0.05–0.3) and report a held-out loss per checkpoint. Held-out loss is a poor proxy for task success in diffusion and flow-matching policies: try checkpoints on the robot. |
-| `--quote` | off | Show the quote and stop: nothing is uploaded or started, even with `--yes`. |
+| `--quote` | off | Show the quote and stop: nothing is started, even with `--yes`. |
 | `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action, where it is experimental. The model also runs without committed actions. |
 | `--no-rtc` | the base's | Train without real-time chunking. |
 | `--name TEXT` | the dataset | Display name. |
@@ -781,7 +880,7 @@ dreamscale train DATASET... [OPTIONS]
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
 
 ```bash
-dreamscale train ./towel-fold --max-usd 50
+dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50
 ```
 
 ### dreamscale train list

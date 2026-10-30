@@ -4,8 +4,8 @@ description: "Fine-tune π0.5 or FLUX.3 Action on your robot's LeRobot dataset, 
 keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "LeRobot", "dataset", "dreamscale train"]
 ---
 
-Training fine-tunes π0.5 or FLUX.3 Action on your robot's demos, on our GPUs. One command trains it,
-and one more turns it into a [deployment](/deployments) you can run.
+Training fine-tunes π0.5 or FLUX.3 Action on your robot's demos, on our GPUs. Upload your dataset
+once, train on it, and turn the result into a [deployment](/deployments) you can run.
 
 ## What you need
 
@@ -13,34 +13,42 @@ and one more turns it into a [deployment](/deployments) you can run.
 - Credits on your account: you see the price and approve it before anything starts.
 - A LeRobot dataset (v2.x or v3.0), in a local folder or on Hugging Face.
 
-## 1. Train
+## 1. Upload your dataset
 
 ```bash
-dreamscale train ./towel-fold
+dreamscale datasets upload ./towel-fold
 ```
 
-From Hugging Face: `dreamscale train hf://your-org/towel-fold`. Name several
-Hugging Face datasets to train on them together:
-`dreamscale train hf://your-org/towels-a hf://your-org/towels-b`. They must match: the
-same fps, state, action and cameras.
+A dataset on Hugging Face can skip this, or be copied in with
+`dreamscale datasets import hf://your-org/towel-fold`. See [Datasets](/datasets).
 
-The CLI checks the dataset, drops faulty episodes, and shows the price and time.
-Say yes and it uploads, starts training and shows progress on one line. It ends
-with **Ready**. Ctrl-C stops watching, not training: `dreamscale train show tr_...`
+## 2. Train
+
+```bash
+dreamscale train --dataset towel-fold --base pi0.5
+```
+
+Both are required. `towel-fold@1` trains version 1. From Hugging Face:
+`--dataset hf://your-org/towel-fold`. Repeat `--dataset` to train on several Hugging Face
+datasets together: they must match, with the same fps, state, action and cameras.
+
+The CLI reads the dataset and shows the price and time. Say yes and it starts training and
+shows progress on one line. Faulty episodes are dropped on our side before any GPU starts, free.
+It ends with **Ready**. Ctrl-C stops watching, not training: `dreamscale train show tr_...`
 picks it back up.
 
-The defaults choose the base model and training length for your data. To set a
-budget instead, add `--max-usd 50`. To see the price without starting anything,
-add `--quote`. `dreamscale train DATASET --help` lists what else you can set:
+The default length suits your data. To set a budget instead, add `--max-usd 50`. To see the
+price without starting anything, add `--quote`. `dreamscale train create --help` lists what else
+you can set:
 batch size, learning rate, warm-up, checkpoint spacing and held-out evaluation. To weight
 episodes, or keep some frames' actions out of the loss, name a column with
 `--sample-weight` or `--loss-mask`. To fine-tune FLUX.3 Action from Black Forest
-Labs, add `--base flux-3-action-base`. Add `--rtc` too for real-time chunking
+Labs, use `--base flux-3-action-base`. Add `--rtc` too for real-time chunking
 (experimental): its deployment then continues each chunk from the actions the robot
 is still executing, so the arm doesn't jump where one chunk hands over to the next. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
-## 2. Deploy it
+## 3. Deploy it
 
 ```bash
 dreamscale train deploy tr_...
@@ -56,7 +64,7 @@ To rename it or keep it warm, see [Deployments](/deployments).
 ## Keep training a model
 
 ```bash
-dreamscale train ./more-towels --base tr_...
+dreamscale train --dataset more-towels --base tr_...
 ```
 
 It starts from that run's latest checkpoint (`--base-step 4500` for another one),
@@ -66,7 +74,7 @@ and action widths.
 To continue a checkpoint you deployed, name the deployment:
 
 ```bash
-dreamscale train ./more-towels --base towel-fold
+dreamscale train --dataset more-towels --base towel-fold
 ```
 
 A deployment made from a run starts from the checkpoint it serves. A checkpoint you

@@ -62,10 +62,10 @@ STATIC_ONLY_PREFIXES = (
 )
 # Benchmarks other than LIBERO download tens of GB on first run: checked against --help only.
 LIVE_SIM_BENCHMARKS = ("libero",)
-# `dreamscale train DATASET` runs the hidden `train create`, which holds its options.
+# `dreamscale train --dataset …` runs the hidden `train create`, which holds its options.
 DATASET_FIRST = {("train",): "create"}
 # Python blocks that start paid work: checked for syntax and signatures, never run.
-PAID_CALLS = ("dreamscale.trainings.create(",)
+PAID_CALLS = ("dreamscale.trainings.create(", "dreamscale.datasets.upload(")
 CLI_REFERENCE = "reference/cli.mdx"
 SIGNATURE_TITLE_RE = re.compile(r"^dreamscale(?:\.\w+)+$")
 PLACEHOLDER_RE = re.compile(r"\.\.\.|^<.*>$|^ckpt_|://|^\.{1,2}/")  # also a local folder
@@ -186,7 +186,7 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
     rest = tokens[1:]
     while rest and (rest[0] in cli.subcommands(path) or cli.hidden_subcommand(path, rest[0])):
         path += (rest.pop(0),)
-    if path in DATASET_FIRST and rest and not rest[0].startswith("-"):
+    if path in DATASET_FIRST and rest:
         path += (DATASET_FIRST[path],)
     text = cli.help(path)
     if text is None:
@@ -205,6 +205,9 @@ def check_cli(snippet: Snippet, cli: Cli, report: Report) -> tuple[str, ...] | N
             previous_was_option = False
             continue
         if "its slug" in text and SLUG_RE.fullmatch(token):
+            continue
+        # A dataset's name, with its version: towels@2.
+        if path[:1] == ("datasets",) and SLUG_RE.fullmatch(token.split("@", 1)[0]):
             continue
         # A positional choice, like `so101` in `doctor so101`, must appear in the help.
         if not re.search(rf"(?<![\w-]){re.escape(token)}(?![\w-])", text):
