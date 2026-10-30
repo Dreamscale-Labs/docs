@@ -49,6 +49,7 @@
       {
         "group": "Improve your model",
         "pages": [
+          "datasets",
           "training",
           "deployments"
         ]

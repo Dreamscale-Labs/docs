@@ -92,7 +92,8 @@ Then train and deploy it as on [Training](/training). `train deploy` prints the 
 that runs your deployment.
 
 ```bash
-dreamscale train ./my-ur-demos
+dreamscale datasets upload ./my-ur-demos
+dreamscale train --dataset my-ur-demos --base pi0.5
 dreamscale train deploy tr_...
 ```
 

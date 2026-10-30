@@ -1,0 +1,81 @@
+---
+title: "Datasets"
+description: "Keep your LeRobot datasets on Dreamscale, in named versions, and train on them."
+keywords: ["datasets", "upload", "import", "versions", "LeRobot", "Hugging Face", "dreamscale datasets"]
+---
+
+A dataset is a named list of versions kept on Dreamscale. Upload a folder or copy one in from
+Hugging Face once, then train on it as many times as you like. Datasets stay until you delete them.
+
+## Upload a folder
+
+```bash
+dreamscale datasets upload ./towels
+```
+
+The first upload creates the dataset, named after the folder (`--name` picks another). The CLI checks
+the recordings while it uploads, and training checks them again before any GPU starts. It sends only
+what's new: uploading the same files again adds nothing, and uploading changed files adds a version.
+
+Ctrl-C pauses. Run the same command to resume, from this machine or another: parts already sent
+aren't sent again.
+
+## Copy one in from Hugging Face
+
+```bash
+dreamscale datasets import hf://lerobot/svla_so100_pickplace
+```
+
+The copy runs on our side, so it doesn't depend on your connection, and a run then reads it without
+Hugging Face. Importing again copies only what changed, as a new version. Add `/folder` to import one
+folder of a repo, and `@revision` to pin one. For a private repo, pass `--hf-token` or run
+`dreamscale integrations hugging-face setup` once. Ctrl-C stops watching, not copying.
+
+## Train on it
+
+```bash
+dreamscale train --dataset towels --base pi0.5
+```
+
+Plain `towels` is the latest version, and `towels@1` is version 1. A run records the version it
+trained on. See [Training](/training).
+
+## See your datasets
+
+```bash
+dreamscale datasets list
+dreamscale datasets show towels
+```
+
+`show` lists the versions, where each came from, and the runs trained on it. The dashboard's Datasets
+page shows the same, with every episode to watch.
+
+## Download
+
+```bash
+dreamscale datasets download towels@1 ./towels-v1
+```
+
+It rebuilds the LeRobot folder. Files already there with the same content are skipped.
+
+## Rename and delete
+
+```bash
+dreamscale datasets rename towels yam-towels   # the old name keeps working until another dataset takes it
+dreamscale datasets rm towels@1                # one version
+dreamscale datasets rm yam-towels              # the dataset and every version
+```
+
+Deleting is permanent and needs your organization's owner. It waits for runs still preparing from the
+dataset. Runs and deployments already made from it keep working.
+
+## From Python
+
+```python
+import dreamscale
+
+ds = dreamscale.datasets.upload("./towels")
+run = ds.train(base="pi0.5", max_usd=50)
+```
+
+See the [SDK reference](/reference/sdk#dreamscale-datasets).

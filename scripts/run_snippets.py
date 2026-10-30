@@ -62,7 +62,7 @@ STATIC_ONLY_PREFIXES = (
 )
 # Benchmarks other than LIBERO download tens of GB on first run: checked against --help only.
 LIVE_SIM_BENCHMARKS = ("libero",)
-# `dreamscale train DATASET` runs the hidden `train create`, which holds its options.
+# `dreamscale train --dataset …` runs the hidden `train create`, which holds its options.
 DATASET_FIRST = {("train",): "create"}
 # Python blocks that start paid work: checked for syntax and signatures, never run.
 PAID_CALLS = ("dreamscale.trainings.create(",)
