@@ -65,7 +65,7 @@ LIVE_SIM_BENCHMARKS = ("libero",)
 # `dreamscale train --dataset …` runs the hidden `train create`, which holds its options.
 DATASET_FIRST = {("train",): "create"}
 # Python blocks that start paid work: checked for syntax and signatures, never run.
-PAID_CALLS = ("dreamscale.trainings.create(",)
+PAID_CALLS = ("dreamscale.trainings.create(", "dreamscale.datasets.upload(")
 CLI_REFERENCE = "reference/cli.mdx"
 SIGNATURE_TITLE_RE = re.compile(r"^dreamscale(?:\.\w+)+$")
 PLACEHOLDER_RE = re.compile(r"\.\.\.|^<.*>$|^ckpt_|://|^\.{1,2}/")  # also a local folder
