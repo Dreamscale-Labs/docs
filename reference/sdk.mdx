@@ -737,7 +737,7 @@ A training run.
 | `stop()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps, and it saves a checkpoint. |
 | `resume(max_usd)` | Continue a stopped run within 30 days for its remaining steps. Refuses a price above `max_usd`. |
 | `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |
-| `deploy(step=None, region="us-west")` | Deploy a checkpoint (default the latest) in `"us-west"` or `"us-east"`. Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
+| `deploy(step=None, region="us-west")` | Deploy a checkpoint (default the latest) in a region: `"us-west"`, `"us-central"`, `"us-east"`, `"uk"`, `"eu-west"`, `"japan"`, `"india"` or `"australia"`. Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
 
 ## Errors
 

@@ -592,10 +592,10 @@ dreamscale deployments create REPO [OPTIONS]
 | `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
-| `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. Pick the one nearest your robot. |
+| `--region TEXT` | `auto` | Where it serves: a region id (`us-west`, `us-central`, `us-east`, `uk`, `eu-west`, `japan`, `india`, `australia`), or `auto`: the nearest one its base serves, measured from this machine. |
 | `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
-| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (about 60–70 ms farther). |
+| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
 | `--no-wait` | off | Return once the build starts. |
 
 ```bash
@@ -684,7 +684,7 @@ dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
 
 Turn region fallback on or off for a deployment's next server. No rebuild. On (the
 default), if its region is full, its server starts in the next-closest region
-(US West and US East are about 60–70 ms apart). Off, a robot waits for its own region.
+(a little farther). Off, a robot waits for its own region.
 
 ```text
 dreamscale deployments fallback DEPLOYMENT SETTING
@@ -982,9 +982,9 @@ dreamscale train deploy RUN_ID [OPTIONS]
 | --- | --- | --- |
 | `RUN_ID` | — | Training run ID (`tr_…`). |
 | `--step INTEGER` | the latest | Checkpoint step. |
-| `--region TEXT` | `us-west` | Where it serves: `us-west` or `us-east`. |
+| `--region TEXT` | `auto` | Where it serves: a region id such as `us-west` or `japan`, or `auto`: the nearest one the run's base serves, measured from this machine. |
 | `--no-wait` | off | Return once the build starts. |
-| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (about 60–70 ms farther). |
+| `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
 
 Stuck? See [Troubleshooting](/troubleshooting) or email
 [{{supportEmail}}](mailto:{{supportEmail}}).
