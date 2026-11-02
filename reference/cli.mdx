@@ -130,7 +130,7 @@ dreamscale sim BENCHMARK --model MODEL [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces` or `roboeval`. |
-| `--model TEXT` | required | Model to run, such as `pi0.5-libero` for `libero`. `dreamscale models list` lists yours. |
+| `--model TEXT` | required | Model to run, such as `pi0.5-libero` for `libero` or `xiaomi-robotics-1-robocasa365` for `robocasa365`. `dreamscale models list` lists yours. |
 | `--task-suite TEXT` | per benchmark | `libero`: `libero_spatial` (default), `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark or `all` (default). `roboeval`: a task (default `lift_pot`). |
 | `--task-id TEXT` | `0` | Task within the suite. `molmospaces` also takes `all`. |
 | `--task-seed INTEGER` | `0` | Seed for the task's initial state. |
