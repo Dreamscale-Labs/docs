@@ -42,6 +42,7 @@ DOCUMENTED_MODELS = {
     "pi0.5-so101",
     "molmoact2-bimanual-yam",
     "pi0.5-bimanualyam",
+    "xiaomi-robotics-1-robocasa365",
     "perceptron-isaac05",
     "perceptron-isaac05-so101",
     "perceptron-isaac05-yam",
