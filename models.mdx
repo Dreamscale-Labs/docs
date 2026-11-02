@@ -4,8 +4,7 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-What each model runs on, takes in and returns. Each model is trained for one
-robot type. In Python, build observations with that robot's helper, which is
+Each model is trained for one robot type. In Python, build observations with that robot's helper, which is
 the same for every model on that robot. Frames are H×W×3 `uint8` RGB at any
 size: the SDK resizes them.
 
@@ -75,13 +74,3 @@ observation = dreamscale.libero.observation(
 - Pass frames as LIBERO renders them. The SDK flips them upright.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).
-
-## RoboCasa365
-
-```bash
-dreamscale sim robocasa365 --model xiaomi-robotics-1-robocasa365 --task-suite atomic --task-id CloseFridge
-```
-
-- The simulator runs on your computer and the model runs in the cloud.
-- `--task-suite` is `atomic` (65 tasks) or `composite` (300 tasks). `--task-id` is a task name or its index in the suite.
-- Each request uploads about 260 KB. The robot holds still while a request is pending, so on a slow connection a task may run out of steps before it finishes.

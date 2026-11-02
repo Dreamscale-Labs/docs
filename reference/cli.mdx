@@ -121,7 +121,9 @@ dreamscale doctor so101
 ## dreamscale sim
 
 Run a task on a simulated benchmark. The simulator runs on your computer and the
-model runs in the cloud. The first run of a benchmark downloads it.
+model runs in the cloud. The first run of a benchmark downloads it. The robot holds
+still while a request is pending, so on a slow connection a task may run out of
+steps before it finishes.
 
 ```text
 dreamscale sim BENCHMARK --model MODEL [OPTIONS]
