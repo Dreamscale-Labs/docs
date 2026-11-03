@@ -856,7 +856,7 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `--dataset TEXT` | required | One of your [datasets](/datasets) (`towels`, `towels@2`, `acme/towels`) or a Hugging Face one (`hf://owner/name`). Repeat it to train on several Hugging Face datasets together: they must match after the column mapping. |
-| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
+| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), `xiaomi-robotics-1` (Xiaomi-Robotics-1), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |

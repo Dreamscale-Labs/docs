@@ -45,7 +45,9 @@ episodes, or keep some frames' actions out of the loss, name a column with
 `--sample-weight` or `--loss-mask`. To fine-tune FLUX.3 Action from Black Forest
 Labs, use `--base flux-3-action-base`. Add `--rtc` too for real-time chunking
 (experimental): its deployment then continues each chunk from the actions the robot
-is still executing, so the arm doesn't jump where one chunk hands over to the next. For a private repo, run
+is still executing, so the arm doesn't jump where one chunk hands over to the next. To fine-tune
+Xiaomi-Robotics-1 from Xiaomi, use `--base xiaomi-robotics-1`; it trains with real-time chunking
+built in. For a private repo, run
 `dreamscale integrations hugging-face setup` once.
 
 ## 3. Deploy it
@@ -59,6 +61,8 @@ A FLUX.3 Action run on SO-101 or Bimanual YAM demos runs with
 `dreamscale run so101 --deployment <name>` or `dreamscale run yam --deployment <name>`;
 other FLUX.3 Action deployments run from
 Python with `dreamscale.connect("flux-3-action-base", deployment="<name>")`.
+A Xiaomi-Robotics-1 run on Bimanual YAM demos runs with `dreamscale run yam --deployment <name>`;
+other robots connect from Python with `dreamscale.connect("xiaomi-robotics-1", deployment="<name>")`.
 To rename it or keep it warm, see [Deployments](/deployments).
 
 ## Keep training a model
