@@ -4,8 +4,8 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot type. In Python, build observations with that robot's helper, which is
-the same for every model on that robot. Frames are H×W×3 `uint8` RGB at any
+Each model is trained for one robot type. In Python, build observations with that robot's helper, the
+same for every model on it. Frames are H×W×3 `uint8` RGB at any
 size: the SDK resizes them.
 
 | Model | Robot | Chunk × values | Rate |
@@ -15,13 +15,14 @@ size: the SDK resizes them.
 | `pi0.5-so101` | SO-101 | 30 × 6 | 30 Hz |
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
+| `molmoact2-droid` | [Franka](/robots/franka) | 15 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
 
 MolmoAct2 is from Ai2, π0.5 from Physical Intelligence, FLUX.3 Action from
 Black Forest Labs and Xiaomi Robotics 1 from Xiaomi.
 
-`dreamscale models list` shows which ones your organization can run right now.
+`dreamscale models list` shows which ones your organization can run.
 The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` still work everywhere as permanent aliases.
 
 ## SO-101
