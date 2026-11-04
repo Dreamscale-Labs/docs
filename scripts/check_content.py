@@ -30,10 +30,7 @@ FORBIDDEN_TEXT = {
 # outright failure: hatchling rejects direct references, so the reader's very
 # first command dies with an error that names hatchling rather than us.
 GIT_INSTALL_RE = re.compile(r"git\+\w+://[^\s\"']*dreamscale-labs", re.IGNORECASE)
-STAGED_MODEL_MARKERS = (
-    "gr00t",
-    "groot",
-)
+STAGED_MODEL_MARKERS = ("groot",)
 # The launch docs cover the shared models only, plus the deployment base model.
 DOCUMENTED_MODELS = {
     "pi0.5-libero",
@@ -53,13 +50,13 @@ DOCUMENTED_MODELS = {
     "flux-3-action-droid",
 }
 # Base models that `dreamscale train --base` and `deployments create --base` name in --help.
-BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam", "xiaomi-robotics-1"}
+BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam", "xiaomi-robotics-1", "gr00t-n1.7"}
 # The previous pi0.5 ids stay valid as permanent aliases. Only a line that says
 # "previous ids" may name them; anywhere else they fail as undocumented.
 PREVIOUS_IDS = {"pi05-libero", "pi05-so101", "pi05-yam"}
 MODEL_ID_RE = re.compile(
     r"(?<![\w-])((?:molmoact2|pi0\.5|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
-    r"dreamzero|gr00t)-[a-z0-9-]+)"
+    r"dreamzero)-[a-z0-9-]+|gr00t-[a-z0-9.-]*[a-z0-9])"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,
 # at most one table per page (reference pages: one per command or function), and no images.
