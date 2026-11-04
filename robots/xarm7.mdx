@@ -127,10 +127,17 @@ so a gripper closed on an object stays closed.
 
 If your model is prompted one step at a time, or one arm should hold still while the
 other works, drive the arms from Python. This example steps through a list of
-instructions, Enter for the next, and holds the arm each instruction doesn't move:
+instructions, Enter for the next, and holds the arm each instruction doesn't move. List
+your instructions in order, each with the arm it moves, in `labels.json`:
+
+```json
+[["pick up the cup", "fore"], ["hold the lid open", "aft"]]
+```
+
+Then run it:
 
 ```bash
-python -m dreamscale.examples.xarm7_labels your-org/your-deployment
+python -m dreamscale.examples.xarm7_labels your-org/your-deployment labels.json
 ```
 
 Its source is a starting point for your own runner. It calls `policy.next_action()`, which
