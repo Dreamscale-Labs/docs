@@ -21,8 +21,9 @@ PY
 bad=""
 for p in ${PAGES//,/ }; do
   for i in 1 2 3; do
-    # Pages may name older versions on purpose ("0.1.0a106 or older"); only the bare version counts.
-    v=$(curl -s "$B$p" | sed -E 's/0\.1\.0a[0-9]+ or older//g' | grep -o '0\.1\.0a[0-9]*' | sort -u | tr '\n' ' ')
+    # Pages may name compatibility thresholds ("0.1.0a106 or older", "0.1.0a205+");
+    # only a bare version is a release pin.
+    v=$(curl --connect-timeout 5 --max-time 20 -s "$B$p" | sed -E 's/0\.1\.0a[0-9]+ or older//g; s/0\.1\.0a[0-9]+\+//g' | grep -o '0\.1\.0a[0-9]*' | sort -u | tr '\n' ' ')
     [ "$v" = "$V " ] || { bad="$bad $p(${v% })"; break; }
   done
 done
@@ -30,7 +31,7 @@ n=0
 for p in ${REDIRECTS//,/ }; do
   n=$((n + 1))
   for i in 1 2 3; do
-    c=$(curl -s -o /dev/null -w '%{http_code}' "$B$p")
+    c=$(curl --connect-timeout 5 --max-time 20 -s -o /dev/null -w '%{http_code}' "$B$p")
     [ "$c" = 308 ] || { bad="$bad $p[$c]"; break; }
   done
 done
