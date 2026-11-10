@@ -570,7 +570,7 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy fine-tuned weights of π0.5, FLUX 3 Action or GR00T N1.7 (pick with `--base`) from
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7 or Long-WAM (pick with `--base`) from
 Hugging Face (any `huggingface.co` link works, including a checkpoint folder's
 page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
@@ -584,7 +584,7 @@ dreamscale deployments create REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base` or `gr00t-n1.7`. A folder `dreamscale train download` made needs none: its base is read from it. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7` or `long-wam-yam`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
@@ -604,6 +604,8 @@ dreamscale deployments create REPO [OPTIONS]
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
 | `--no-wait` | off | Return once the build starts. |
+| `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name. `deployments list` shows them. |
+| `--arm TEXT` | both | A custom robot with one arm: `right`. |
 
 ```bash
 dreamscale deployments create hf://your-org/towel-fold --preset bimanual_yam --slug towel-fold
@@ -882,6 +884,10 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--no-clean` | off | Train every episode as recorded. By default, auto-clean cuts out faulty stretches, trims idle starts and ends, and drops episodes that can't be trained on. |
 | `--state TEXT` | `observation.state` | The state's columns, joined in order (`a+b`). |
 | `--action TEXT` | `action` | The action's columns, joined in order (`a+b`). |
+| `--ee-state COLUMNS` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
+| `--ee-action COLUMNS` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
+| `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
+| `--input NAME=FILE.json` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms). Repeat it for more. |
 | `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
 | `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
