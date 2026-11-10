@@ -4,7 +4,7 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot type. In Python, build its observations with that robot's
+Each model is trained for one robot type; build its observations with that robot's
 helper. Frames are H×W×3 `uint8` RGB at any size: the SDK resizes them.
 
 | Model | Robot | Chunk × values | Rate |
@@ -18,11 +18,12 @@ helper. Frames are H×W×3 `uint8` RGB at any size: the SDK resizes them.
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
 | `gr00t-n1.7-libero` | LIBERO simulator | 16 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
+| `long-wam-robocasa365` | RoboCasa365 simulator | 32 × 12 | 20 Hz |
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
-Xiaomi (Xiaomi Robotics 1) and NVIDIA (GR00T N1.7).
+Xiaomi (Xiaomi Robotics 1) and NVIDIA (GR00T N1.7, Long-WAM).
 
-`dreamscale models list` shows which ones your organization can run.
+`dreamscale models list` shows yours.
 The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` still work as aliases.
 
 ## SO-101
@@ -39,7 +40,7 @@ observation = dreamscale.so101.observation(
   `wrist_roll`, `gripper`.
 - Joints are in calibrated LeRobot degrees; the gripper is 0–100.
 - Actions are absolute targets in the same order and units.
-- `flux-3-action-so101` builds on the actions it already sent, so call it with
+- `flux-3-action-so101` builds on the actions it sent: call it with
   `next_action`, not `predict`.
 
 ## Bimanual YAM
@@ -70,8 +71,8 @@ observation = dreamscale.libero.observation(
 )
 ```
 
-- State: end-effector position (3), rotation as an axis-angle
-  vector (3), then the two gripper joint positions.
-- Pass frames as LIBERO renders them. The SDK flips them upright.
+- State: end-effector position (3), axis-angle rotation (3), then the
+  two gripper joints.
+- Pass frames as LIBERO renders them; the SDK flips them.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).
