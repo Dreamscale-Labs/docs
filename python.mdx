@@ -67,8 +67,7 @@ waits in a queue and shows your position.
 </Warning>
 
 Your code reads and commands the robot. The robot's observation helper packages
-what you read, and the SDK checks it before sending. Call `next_action` once per
-control tick. This drives an SO-101:
+what you read. Call `next_action` once per control tick. This drives an SO-101:
 
 ```python
 import dreamscale
@@ -98,8 +97,9 @@ page has its loop. Pass a new instruction to switch tasks.
 
 The SDK checks each observation and names any wrong field. It prepares images,
 picks the fastest network path, and blends chunks so motion stays smooth. If the
-connection drops, it reconnects and holds the robot still. It frees the server after
-a minute idle and reconnects on the next call. Sessions close when your program
+connection drops, it reconnects and holds the robot still; if no server answers
+within 5 minutes, `next_action()` raises `reconnect_failed`. After a minute idle, it
+frees the server until the next call. Sessions close when your program
 exits, or with `policy.close()`. In async code, use `await dreamscale.aconnect(...)`.
 `predict()` does none of this: it returns one action chunk for
 [your own executor](/reference/sdk#running-chunks-on-your-own-clock).
