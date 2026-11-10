@@ -368,7 +368,7 @@ def next_action(
 | `observation` | required | This tick's observation from the robot's helper. |
 | `instruction` | required | The task in plain words. Pass a new one to switch tasks: the robot keeps moving, and the new task takes over within about two round trips (the chunk already on its way may play first). |
 | `pace` | `True` | Return at the model's control rate. A late call gets the next action at once, and the actions it missed are skipped. `False` returns as soon as an action is ready. |
-| `timeout_s` | `None` (60 s) | For the LIBERO simulator, which waits for a real action instead of holding: most seconds to wait. |
+| `timeout_s` | `None` | For the LIBERO simulator, which waits for a real action instead of holding: most seconds one call waits (60 s). For robots that hold: most seconds the robot holds with no server answering while the SDK reconnects, before `next_action()` raises `reconnect_failed` and the policy closes (300 s). |
 
 Returns one action: absolute joint targets for a robot arm, in the same order
 and units as its observation (see [Models](/models)). With real-time chunking

@@ -119,7 +119,8 @@ GPU** while the cloud allocates one. An idle policy on a deployment kept warm st
 connected for the keep-warm (with `always`, until you close it).
 
 If the server stops under a running robot (rare), the robot holds still while a
-new one starts, usually under a minute. To cut that pause to a few seconds, keep a
+new one starts, usually under a minute; if none answers within 5 minutes,
+`next_action()` raises `reconnect_failed`. To cut that pause to a few seconds, keep a
 spare ready:
 
 ```bash
