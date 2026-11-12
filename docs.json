@@ -21,7 +21,7 @@
     "dark": "/logo/dark.svg"
   },
   "variables": {
-    "sdkVersion": "0.1.0a312",
+    "sdkVersion": "0.1.0a315",
     "dashboardUrl": "https://app.dreamscalelabs.com",
     "docsUrl": "https://docs.dreamscalelabs.com",
     "supportEmail": "team@dreamscalelabs.com"
@@ -43,6 +43,7 @@
           "robots/franka",
           "robots/ur",
           "robots/xarm7",
+          "robots/openarm",
           "python"
         ]
       },
