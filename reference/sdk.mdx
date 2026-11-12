@@ -269,18 +269,18 @@ action_history ─────► │            executed, oldest first
 - **No gaps.** With capture times, the entries must be one control tick apart,
   up to the observation. A gap raises `ObservationError` before sending.
 
-**Praxis-1** keeps its episode on the server and reads every step your robot
-executed:
+**Praxis-1** reads every step your robot executed since the episode began:
 
-- **Run every row.** A chunk holds 21 rows when a call starts the model's
-  context (an episode's first call) and 24 after. Run all of them.
+- **Run every row.** A chunk holds 21 rows on an episode's first call and 24
+  after. Run all of them.
 - **Pass the executed steps.** As `past_observations`, pass the observation each
   action was executed from since your previous `predict()`, oldest first. The
-  first is that call's own observation. Holds while you wait for a chunk don't
-  count, so no time gap applies.
+  first is the observation you passed to that call.
+- **Leave out the waits.** Ticks where the arm held still while you waited for a
+  chunk aren't steps, so the no-gaps rule doesn't apply here.
 - **Start an episode with `[]`.** After an episode's first call, a call without
-  `past_observations` raises `Error` with code `episode_steps_required` instead
-  of starting the model again with no context.
+  `past_observations` raises `Error` with code `episode_steps_required`, so an
+  episode never starts over by accident.
 
 ```python
 import dreamscale
