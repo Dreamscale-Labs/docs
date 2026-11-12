@@ -4,8 +4,8 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot type: build its observations with that robot's
-helper. Frames are H×W×3 `uint8` RGB of any size.
+Each model is trained for one robot: build observations with its helper.
+Frames: H×W×3 `uint8` RGB, any size.
 
 | Model | Robot | Chunk × values | Rate |
 | --- | --- | --- | --- |
@@ -15,6 +15,7 @@ helper. Frames are H×W×3 `uint8` RGB of any size.
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
+| `abc-vla-yam` | Bimanual YAM | 20 × 14 | 30 Hz |
 | `molmoact2-droid` | [Franka](/robots/franka) | 15 × 8 | 15 Hz |
 | `praxis-1-droid` | [Franka](/robots/franka) | 24 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
@@ -25,8 +26,8 @@ helper. Frames are H×W×3 `uint8` RGB of any size.
 | `long-wam-robocasa365` | RoboCasa365 simulator | 32 × 12 | 20 Hz |
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
-Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π)
-and Runway (Praxis-1).
+Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π),
+Runway (Praxis-1) and Amazon FAR (ABC-VLA).
 
 `flux-3-action-so101` and Praxis-1 read what each step executed: call them with
 `next_action`, not `predict`. `dreamscale models list` shows yours.
@@ -44,8 +45,8 @@ observation = dreamscale.so101.observation(
 
 - Joint order: `shoulder_pan`, `shoulder_lift`, `elbow_flex`, `wrist_flex`,
   `wrist_roll`, `gripper`.
-- Joints are in calibrated LeRobot degrees; the gripper is 0–100.
-- Actions are absolute targets in the same order and units.
+- Joints are calibrated LeRobot degrees; the gripper is 0–100.
+- Actions are absolute targets, same order and units.
 
 ## Bimanual YAM
 
@@ -75,8 +76,8 @@ observation = dreamscale.libero.observation(
 )
 ```
 
-- State: end-effector position (3), rotation as an axis-angle
-  vector (3), then the two gripper joint positions.
+- State: end-effector position (3), axis-angle rotation (3), then both
+  gripper joint positions.
 - Pass frames as LIBERO renders them: the SDK flips them.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).

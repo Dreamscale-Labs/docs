@@ -25,7 +25,7 @@ uv tool install dreamscale
 dreamscale login
 ```
 
-Bring both CAN interfaces up at 1 Mbit/s. To keep their names stable across reboots, follow
+Bring both CAN interfaces up at 1 Mbit/s. For names that survive reboots, follow
 I2RT's [persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/120c3c81400171174604e503943f8d1ebc891058/docs/guides/set-persistent-can-ids.md).
 
 ## 2. Set up the rig
@@ -34,7 +34,7 @@ I2RT's [persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/
 dreamscale robots yam setup
 ```
 
-Open the URL it prints on any computer on your network, then:
+Open the URL it prints on any computer on your network:
 
 1. Preview each camera and assign it to top, left or right.
 2. Pick each arm's CAN adapter, arm variant and gripper variant.
@@ -48,7 +48,7 @@ No browser? Use `dreamscale robots yam setup --cli`.
 dreamscale doctor yam --model molmoact2-bimanual-yam
 ```
 
-It checks the cameras, CAN buses and model access without moving the arms.
+It checks cameras, CAN buses and model access without moving the arms.
 
 ## 4. Run a model
 
@@ -66,13 +66,13 @@ dreamscale run yam --model molmoact2-bimanual-yam
 
 1. At `Enter to start`, press **Enter** to connect. Both arms power on and
    calibrate their grippers.
-2. At `Instruction`, type a task, for example `fold the towel`.
+2. At `Instruction`, type a task, such as `fold the towel`.
 3. The arms show a preview of the first actions. Nothing moves yet.
 4. Press **Enter** to run. Press **Ctrl+C** to stop.
 5. The arms return home and ask for the next instruction. Press **Ctrl+C**
    again to exit.
 
-After the command exits, the arms hold their pose (powered, not braked); the
+After it exits, the arms hold their pose (powered, not braked); the
 next run says how long. Support them, then release the motors:
 
 ```bash
@@ -87,6 +87,7 @@ Pass one with `--model`:
 - `pi0.5-bimanualyam`: π0.5.
 - `praxis-1-yam`: Praxis-1. Write tasks as "Pick up the X from the center of the
   table, then place the X in the Y".
+- `abc-vla-yam`: ABC-VLA.
 
 `dreamscale models list` shows yours.
 Stuck? See [Troubleshooting](/troubleshooting).

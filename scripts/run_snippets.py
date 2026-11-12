@@ -471,6 +471,11 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
 # ---------------------------------------------------------------- Models table
 
 
+# Models whose chunk, width and rate only the server holds: it sends them with each session,
+# so the SDK has no contract to compare a row with. Each is what a live session reported.
+SERVER_CONTRACTS = {"abc-vla-yam": (20, 14, 30.0)}
+
+
 def check_models_table(report: Report) -> None:
     from dreamscale.policy.runtime.contract import runtime_contract_for_model
 
@@ -479,14 +484,17 @@ def check_models_table(report: Report) -> None:
     if not rows:
         report.fail("models.mdx", "Models table", "no rows found")
     for model, chunk, width, hz in rows:
-        contract = runtime_contract_for_model(model)
         documented = (int(chunk), int(width), float(hz))
-        actual = (contract.chunk_size, contract.action_dim, contract.action_hz)
+        if model in SERVER_CONTRACTS:
+            actual, source = SERVER_CONTRACTS[model], "server contract"
+        else:
+            contract = runtime_contract_for_model(model)
+            actual, source = (contract.chunk_size, contract.action_dim, contract.action_hz), "SDK"
         if documented != actual:
             report.fail("models.mdx", f"`{model}` row",
-                        f"documents {documented}, SDK contract is {actual}")
+                        f"documents {documented}, {source} is {actual}")
         else:
-            report.ok("models.mdx", f"`{model}` row", f"matches SDK {actual}")
+            report.ok("models.mdx", f"`{model}` row", f"matches {source} {actual}")
 
 
 def documented_contracts() -> dict[str, tuple[int, int, float]]:
