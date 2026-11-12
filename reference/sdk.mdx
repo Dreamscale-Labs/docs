@@ -705,6 +705,7 @@ def create(
     rtc: bool | None = None,
     name: str | None = None,
     hf_token: str | None = None,
+    inputs: dict[str, dict[str, Any]] | None = None,
 ) -> Training: ...
 ```
 
@@ -717,6 +718,7 @@ def create(
 | `rtc` | `None` (the base's) | Train with (`True`) or without (`False`) real-time chunking. `None` trains what the base does: on for π0.5, off for FLUX.3 Action, where it is experimental. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
+| `inputs` | `None` | What the base takes beside the dataset, by name, as `--input` on [`dreamscale train`](/reference/cli#dreamscale-train) does: for example `{"mobile_base": {"components": ["wz", "vx"]}}`. |
 
 ### dreamscale.trainings.get()
 
