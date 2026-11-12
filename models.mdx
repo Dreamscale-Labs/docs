@@ -19,11 +19,13 @@ helper. Frames are H×W×3 `uint8` RGB of any size.
 | `praxis-1-droid` | [Franka](/robots/franka) | 24 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
 | `gr00t-n1.7-libero` | LIBERO simulator | 16 × 7 | 20 Hz |
+| `long-wam-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
 | `flexpi-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
+| `long-wam-robocasa365` | RoboCasa365 simulator | 32 × 12 | 20 Hz |
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
-Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7), University of Washington with Ai2 (Flex-π)
+Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π)
 and Runway (Praxis-1).
 
 `flux-3-action-so101` and Praxis-1 read what each step executed: call them with
@@ -78,3 +80,4 @@ observation = dreamscale.libero.observation(
 - Pass frames as LIBERO renders them: the SDK flips them.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).
+- `long-wam-libero` runs in `dreamscale sim libero` only.

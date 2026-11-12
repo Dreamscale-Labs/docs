@@ -1,7 +1,7 @@
 ---
 title: "Deployments"
-description: "Serve your own π0.5 or GR00T N1.7 fine-tune on your robot, from Hugging Face or a local folder."
-keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5, GR00T N1.7 or Long-WAM fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Hugging Face", "dreamscale deployments"]
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
@@ -15,7 +15,9 @@ it warm.
 - A π0.5 checkpoint: an openpi checkpoint (`params/` with `assets/<id>/norm_stats.json`)
   or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
   up to 24 GB. It can be on Hugging Face or in a local folder. Or a GR00T N1.7
-  fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`.
+  fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`. Or a
+  Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
+  `dataset_stats.json`, with `--base long-wam-yam`.
 
 ## 1. Create it
 
