@@ -43,6 +43,7 @@
           "robots/franka",
           "robots/ur",
           "robots/xarm7",
+          "robots/openarm",
           "python"
         ]
       },

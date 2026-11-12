@@ -22,8 +22,8 @@ your terminal. For step-by-step guides, start at [Quick start](/).
 | [`auth whoami`, `auth logout`](#dreamscale-auth) | See and end this machine's sign-in. |
 | [`doctor`](#dreamscale-doctor) | Check your setup. |
 | [`sim`](#dreamscale-sim) | Run a task on a simulated benchmark. |
-| [`run so101`, `run yam`, `run franka`, `run ur`, `run xarm7`](#dreamscale-run) | Run tasks on a physical robot. Franka, Universal Robots and xArm 7 are experimental. |
-| [`robots so101 …`, `robots yam …`, `robots franka …`, `robots ur …`, `robots xarm7 …`](#dreamscale-robots) | Set up and maintain a robot: setup, calibrate, home, release, recover. |
+| [`run so101`, `run yam`, `run franka`, `run ur`, `run xarm7`, `run openarm`](#dreamscale-run) | Run tasks on a physical robot. Franka, Universal Robots, xArm 7 and OpenARM are experimental. |
+| [`robots so101 …`, `robots yam …`, `robots franka …`, `robots ur …`, `robots xarm7 …`, `robots openarm …`](#dreamscale-robots) | Set up and maintain a robot: setup, calibrate, home, release, recover. |
 | [`models list`](#dreamscale-models-list) | List the models your organization can run. |
 | [`sessions list`, `sessions stop`](#dreamscale-sessions) | See and stop your open sessions. |
 | [`deployments …`](#dreamscale-deployments) | Deploy and manage your fine-tuned models. |
@@ -110,8 +110,8 @@ dreamscale doctor [MODE] [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101`, `yam`, or `franka`, `ur` or `xarm7` (experimental). |
-| `--config PATH` | saved rig config | YAM, Franka, UR and xArm 7 only: the rig config to check. |
+| `MODE` | `core` | What to check: `core`, `sim`, `all`, `so101`, `yam`, or `franka`, `ur`, `xarm7` or `openarm` (experimental). |
+| `--config PATH` | saved rig config | YAM, Franka, UR, xArm 7 and OpenARM only: the rig config to check. |
 | `--model TEXT` | — | With a robot: the model to check access to. Without it, `doctor` checks the robot only. |
 
 ```bash
@@ -343,6 +343,42 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 dreamscale run xarm7 --model acme-robotics/refill --instruction "pick up the funnel from the table"
 ```
 
+### dreamscale run openarm
+
+Run your own deployment on an Anvil OpenARM, from its Devbox. **Experimental**: see
+[Anvil OpenARM](/robots/openarm). Takes the same options as `run yam`.
+
+```text
+dreamscale run openarm --model DEPLOYMENT [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--model TEXT` | required | Your deployment for this rig, as `<account>/<slug>`. |
+| `--config PATH` | saved rig config | The rig config from `dreamscale robots openarm setup`. |
+| `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
+| `--mode TEXT` | `async` | `async` (replan continuously) or `sync` (finish each chunk before the next). |
+| `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
+| `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--provider TEXT` | — | Advanced: `aws` or `modal`. |
+| `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
+| `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
+| `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
+| `--context TEXT` | `auto` | Frame history, for deployments that use it: `auto` (the deployment's own), `on` (last 3 frames) or `off` (1 frame). |
+| `--effort TEXT` | `medium` | Reasoning effort, for models that take one: `low`, `medium`, `high`, `xhigh` or `max`. |
+| `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
+| `--max-joint-step FLOAT` | `0.1` | Most radians a command may lead the measured joint position. |
+| `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--trace-dir PATH` | — | Save a recording of each task under this directory. |
+| `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
+| `--verbose` | off | Show diagnostic details. |
+
+```bash
+dreamscale run openarm --model acme-robotics/pick-block --instruction "pick up the block"
+```
+
 ## dreamscale robots
 
 Set up and maintain robots. Setup installs the robot's support the first time it
@@ -515,6 +551,33 @@ dreamscale robots xarm7 home [OPTIONS]
 | Option | Default | Description |
 | --- | --- | --- |
 | `--set` | off | Save where the arms are now as home. Move them there in UFACTORY Studio first. |
+| `--config PATH` | saved rig config | Rig config path. |
+
+### dreamscale robots openarm setup
+
+**Experimental.** Say which arms and cameras your model was recorded with, from its dataset's
+`meta/info.json` or by answering in the terminal. It only reads Anvil's control stack; nothing
+moves.
+
+```text
+dreamscale robots openarm setup [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--config PATH` | saved rig config | Rig config path to write. |
+
+### dreamscale robots openarm home
+
+**Experimental.** Move the arms slowly to the home pose; they then hold.
+
+```text
+dreamscale robots openarm home [OPTIONS]
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--set` | off | Save where the arms are now as home. |
 | `--config PATH` | saved rig config | Rig config path. |
 
 ## dreamscale models
