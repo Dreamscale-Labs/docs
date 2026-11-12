@@ -583,7 +583,9 @@ dreamscale deployments create REPO [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). |
+| `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). Omit with `--official`. |
+| `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name (Verne V0.5: `base`, `robotwin`, `libero`; `deployments list` shows them). |
+| `--arm TEXT` | both | Verne V0.5 custom robot: `right` for one arm. |
 | `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7` or `long-wam-yam`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
@@ -891,6 +893,10 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
 | `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
+| `--ee-state TEXT` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
+| `--ee-action TEXT` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
+| `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
+| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base: [Training](/training)). Repeat it for more. |
 
 ```bash
 dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50

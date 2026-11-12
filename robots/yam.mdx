@@ -25,8 +25,7 @@ uv tool install dreamscale
 dreamscale login
 ```
 
-`dreamscale login` prints `✓ saved login to ...`. Then bring both CAN
-interfaces up at 1 Mbit/s. To keep their names stable across reboots, follow
+Bring both CAN interfaces up at 1 Mbit/s. To keep their names stable across reboots, follow
 I2RT's [persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/120c3c81400171174604e503943f8d1ebc891058/docs/guides/set-persistent-can-ids.md).
 
 ## 2. Set up the rig
@@ -35,12 +34,12 @@ I2RT's [persistent CAN naming guide](https://github.com/i2rt-robotics/i2rt/blob/
 dreamscale robots yam setup
 ```
 
-Open the URL it prints from any computer on the same network, then:
+Open the URL it prints on any computer on your network, then:
 
 1. Preview each camera and assign it to top, left or right.
 2. Pick each arm's CAN adapter, arm variant and gripper variant.
 
-Setup does not move the arms. It saves your rig to `~/.config/dreamscale/yam.json`.
+It saves your rig to `~/.config/dreamscale/yam.json` without moving the arms.
 No browser? Use `dreamscale robots yam setup --cli`.
 
 ## 3. Check everything
@@ -49,8 +48,7 @@ No browser? Use `dreamscale robots yam setup --cli`.
 dreamscale doctor yam --model molmoact2-bimanual-yam
 ```
 
-It checks the cameras, CAN buses and your access to that model without moving
-the arms. Every line shows a `✓`.
+It checks the cameras, CAN buses and model access without moving the arms.
 
 ## 4. Run a model
 
@@ -64,7 +62,7 @@ the arms. Every line shows a `✓`.
 dreamscale run yam --model molmoact2-bimanual-yam
 ```
 
-`--model` is required; [Models](#models) lists the others. Then:
+[Models](#models) lists the others. Then:
 
 1. At `Enter to start`, press **Enter** to connect. Both arms power on and
    calibrate their grippers.
@@ -83,10 +81,12 @@ dreamscale robots yam release
 
 ## Models
 
-Every `run` needs one with `--model`, for example `dreamscale run yam --model pi0.5-bimanualyam`:
+Pass one with `--model`:
 
 - `molmoact2-bimanual-yam`: MolmoAct2.
 - `pi0.5-bimanualyam`: π0.5.
+- `praxis-1-yam`: Praxis-1. Write tasks as "Pick up the X from the center of the
+  table, then place the X in the Y".
 
-`dreamscale models list` shows which ones your organization can run right now.
+`dreamscale models list` shows yours.
 Stuck? See [Troubleshooting](/troubleshooting).

@@ -4,8 +4,8 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model runs one robot type: build its observations with that robot's helper. Frames
-are H×W×3 `uint8` RGB at any size.
+Each model is trained for one robot type: build its observations with that robot's
+helper. Frames are H×W×3 `uint8` RGB of any size.
 
 | Model | Robot | Chunk × values | Rate |
 | --- | --- | --- | --- |
@@ -14,18 +14,23 @@ are H×W×3 `uint8` RGB at any size.
 | `pi0.5-so101` | SO-101 | 30 × 6 | 30 Hz |
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
+| `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
 | `molmoact2-droid` | [Franka](/robots/franka) | 15 × 8 | 15 Hz |
+| `praxis-1-droid` | [Franka](/robots/franka) | 24 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
 | `gr00t-n1.7-libero` | LIBERO simulator | 16 × 7 | 20 Hz |
 | `long-wam-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
+| `flexpi-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
 | `long-wam-robocasa365` | RoboCasa365 simulator | 32 × 12 | 20 Hz |
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
-Xiaomi (Xiaomi Robotics 1) and NVIDIA (GR00T N1.7, Long-WAM).
+Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π)
+and Runway (Praxis-1).
 
-`dreamscale models list` shows which ones your organization can run.
-The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` still work as aliases.
+`flux-3-action-so101` and Praxis-1 read what each step executed: call them with
+`next_action`, not `predict`. `dreamscale models list` shows yours.
+The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` are aliases.
 
 ## SO-101
 
@@ -41,8 +46,6 @@ observation = dreamscale.so101.observation(
   `wrist_roll`, `gripper`.
 - Joints are in calibrated LeRobot degrees; the gripper is 0–100.
 - Actions are absolute targets in the same order and units.
-- `flux-3-action-so101` builds on the actions it already sent, so call it with
-  `next_action`, not `predict`.
 
 ## Bimanual YAM
 
@@ -58,8 +61,8 @@ observation = dreamscale.yam.observation(
 )
 ```
 
-- Actions are 14 absolute targets: left joints 1–6, left gripper (index 6), right
-  joints 1–6, right gripper (index 13).
+- Actions are 14 absolute targets: left joints 1–6, left gripper, right joints
+  1–6, right gripper.
 - Grippers are continuous: don't threshold them.
 
 ## LIBERO
@@ -74,8 +77,7 @@ observation = dreamscale.libero.observation(
 
 - State: end-effector position (3), rotation as an axis-angle
   vector (3), then the two gripper joint positions.
-- Pass frames as LIBERO renders them: the SDK flips them upright.
+- Pass frames as LIBERO renders them: the SDK flips them.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).
-- `long-wam-libero` runs in `dreamscale sim libero` only: this helper doesn't build its
-  2.4 s camera window yet.
+- `long-wam-libero` runs in `dreamscale sim libero` only.
