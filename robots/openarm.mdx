@@ -1,0 +1,91 @@
+---
+title: "Anvil OpenARM (experimental)"
+sidebarTitle: "Anvil OpenARM (experimental)"
+description: "Experimental: run your own fine-tuned deployment on an Anvil OpenARM 2.0, from its Devbox, with no GPU computer beside it."
+keywords: ["Anvil", "OpenARM", "OpenArm", "openarm", "Devbox", "ROS 2", "rosbridge", "bimanual", "dreamscale robots openarm setup", "dreamscale run openarm", "experimental"]
+---
+
+**Experimental.** OpenARM support is new and has not run on many cells yet. Commands and setup may change without notice. Expect rough edges, stay at the e-stop, and tell us how it goes at [team@dreamscalelabs.com](mailto:team@dreamscalelabs.com).
+
+There is no shared model for the OpenARM: you run your own deployment, fine-tuned on demos recorded on your cell. The model runs in the cloud, so the Devbox is the only computer you need.
+
+## What you need
+
+- An Anvil OpenARM 2.0, one arm or two, with its Devbox and cameras.
+- Anvil's control stack running on the Devbox with its inference config: set `ARMS_CONTROL_CONFIG_FILE=config/openarm_v2_inference.yaml` in `.env.config`, then start the stack as usual. In leader-follower mode the stack ignores joint commands, so a run refuses to start.
+- The Devbox online, on a wired connection if you can.
+- The e-stop within reach.
+
+Dreamscale drives the arms and reads the cameras through Anvil's stack. It never talks to the motors itself, so Anvil's calibration and homing are untouched.
+
+## 1. Install and set up the rig
+
+On the Devbox:
+
+```bash
+uv tool install dreamscale
+dreamscale login
+dreamscale robots openarm setup
+```
+
+Setup asks for the `meta/info.json` of the dataset your model was trained on and reads the layout from it: which arms, whether each arm's gripper comes before or after its seven joints, and which cameras. Without one, it asks. It only reads the stack; nothing moves.
+
+Setup writes `~/.config/dreamscale/openarm.json`. You can also write it yourself, for example from a coding agent:
+
+```json
+{
+  "version": 1,
+  "url": "ws://localhost:9090",
+  "arms": ["left", "right"],
+  "gripper": "first",
+  "cameras": ["waist", "wrist_l", "wrist_r"]
+}
+```
+
+- `url`: the stack's rosbridge address.
+- `arms`: the arms your model drives, in its order: `left`, `right` or both.
+- `gripper`: `first` if each arm's eight values start with the gripper (what Anvil's `mcap-convert` writes), `last` if they end with it.
+- `cameras`: up to three of `waist`, `chest`, `wrist_l` and `wrist_r`, the ones your model was trained on.
+
+## 2. Check everything
+
+```bash
+dreamscale doctor openarm --model your-org/your-deployment
+```
+
+It reads the stack without commanding anything: the joint states, each arm's controller, the joint limits and the cameras, and it checks that your deployment is ready. Every line shows a `✓`.
+
+## 3. Your deployment
+
+Record with Anvil's web app and convert with `mcap-convert`, then fine-tune π0.5 and deploy it as on [Deployments](/deployments). The deployment needs:
+
+- cameras from `observation.images.waist`, `observation.images.chest`, `observation.images.wrist_l` and `observation.images.wrist_r`, at most three;
+- `observation.state` and `action`: 8 values for one arm or 16 for two. Each arm has seven joint positions in radians and its gripper's opening in metres.
+
+A run refuses a deployment whose cameras or width differ from the rig file's.
+
+## 4. Run it
+
+<Warning>
+  The arms will move. Clear the workspace and keep the e-stop within reach. Software limits do not prevent collisions, and cloud inference does not replace your robot's safety configuration.
+</Warning>
+
+```bash
+dreamscale run openarm --model your-org/your-deployment
+```
+
+1. At `Instruction`, type a task.
+2. The run prints the model's first prediction without moving anything. At `Enter to start`, press **Enter**.
+3. The arms run the task from their current pose. Press **Ctrl+C** to stop; you're asked for the next instruction.
+
+Every target stays inside the joint limits the stack describes. A command may lead the measured position by at most 0.1 rad and joints move at most 1 rad/s; lower them with `--max-joint-step` and `--max-joint-velocity` for a first run. When a run stops, the stack holds the arms where they are; stop the stack to park them.
+
+## Save a home pose (optional)
+
+With the arms where every run should start:
+
+```bash
+dreamscale robots openarm home --set
+```
+
+`dreamscale robots openarm home` moves them back there slowly, and a run returns there when you stop it. Stuck? See [Troubleshooting](/troubleshooting).
