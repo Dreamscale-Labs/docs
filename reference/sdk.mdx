@@ -50,6 +50,7 @@ def connect(
     provider: str | None = None,
     transport: str = "auto",
     startup_timeout: float | None = None,
+    mode: str = "auto",
 ) -> Policy: ...
 ```
 
@@ -66,6 +67,7 @@ def connect(
 | `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
 | `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
 | `startup_timeout` | `None` | Most seconds to wait for a server. `None` follows the server's budget, which grows while a training run makes room for your robot. |
+| `mode` | `"auto"` | How `next_action()` runs chunks. `"sync"` runs each chunk to its end and holds the arm on its last command while the next is inferred. `"async"` asks for the next chunk while rows remain and joins it to the motion. `"auto"` takes the model's own: sync for Praxis-1, async for the rest. |
 
 Raises [`AuthError`](#errors), [`CreditsError`](#errors) or
 [`NoCapacityError`](#errors) when it can't connect.
@@ -145,6 +147,7 @@ with dreamscale.connect("pi0.5-libero") as policy:
 | `model` | `str` | The model's name, as you passed it to `connect()`. |
 | `state` | `str` | `"opening"`, `"queued"`, `"ready"`, `"released"` (server freed; the next call reconnects), `"reconnecting"` or `"closed"`. |
 | `contract` | `PolicyContract` | What the model returns and accepts. See [`Policy.contract`](#policy-contract). |
+| `mode` | `str` | How `next_action()` runs chunks: `"sync"` or `"async"` (see `connect(mode=)`). |
 
 ### Policy.predict()
 
@@ -266,6 +269,49 @@ action_history ─────► │            executed, oldest first
 - **No gaps.** With capture times, the entries must be one control tick apart,
   up to the observation. A gap raises `ObservationError` before sending.
 
+**Praxis-1** reads every step your robot executed since the episode began:
+
+- **Run every row.** A chunk holds 21 rows on an episode's first call and 24
+  after. Run all of them.
+- **Pass the executed steps.** As `past_observations`, pass the observation each
+  action was executed from since your previous `predict()`, oldest first. The
+  first is the observation you passed to that call.
+- **Leave out the waits.** Ticks where the arm held still while you waited for a
+  chunk aren't steps, so the no-gaps rule doesn't apply here.
+- **Start an episode with `[]`.** After an episode's first call, a call without
+  `past_observations` raises `Error` with code `episode_steps_required`, so an
+  episode never starts over by accident.
+
+```python
+import dreamscale
+
+policy = dreamscale.connect("praxis-1-yam")
+task = "Pick up the block from the center of the table, then place the block in the bowl"
+
+
+def observe():
+    # Your robot's code: three frames, six joints and a gripper opening per arm.
+    top, left_wrist, right_wrist = ..., ..., ...  # H×W×3 uint8 RGB frames
+    left_joints, right_joints = ..., ...  # 6 values each, radians
+    left_gripper, right_gripper = ..., ...  # 0 closed to 1 open
+    return dreamscale.yam.observation(
+        top_frame=top, left_frame=left_wrist, right_frame=right_wrist,
+        left_joint_positions=left_joints, left_gripper=left_gripper,
+        right_joint_positions=right_joints, right_gripper=right_gripper,
+    )
+
+
+observation, executed = observe(), []
+for _ in range(3):
+    chunk = policy.predict(observation, task, past_observations=executed)
+    executed = []
+    for action in chunk.actions:
+        executed.append(observation)
+        ...  # send `action` to the arms, wait one step (1/15 s)
+        observation = observe()
+policy.close()
+```
+
 <Warning>
   The robot will move. Enforce joint, speed and workspace limits locally, and
   keep a physical e-stop within reach. Cloud inference does not replace your
@@ -349,9 +395,12 @@ while True:
 ### Policy.next_action()
 
 Get one action to execute now. Call it once per control tick: it returns on the
-model's clock, within one tick. It blends chunks so motion stays smooth, and
-while no model action is ready (the first chunk, or a reconnect), an arm gets
-its measured position back so it holds still.
+model's clock, within one tick. In async mode it asks for the next chunk while
+rows remain and joins chunks so motion stays smooth; in sync mode (Praxis-1's
+default, see `connect(mode=)`) it runs each chunk to its end, then asks. While no
+model action is ready (the first chunk, or a reconnect), an arm gets its measured
+position back so it holds still; Praxis-1 holds its last command between
+chunks.
 
 ```python dreamscale.Policy.next_action
 def next_action(
@@ -450,7 +499,7 @@ What the connected model returns and accepts. Read-only.
 | `camera_keys` | `tuple[str, ...]` | A deployment's camera keys, in order. Empty where the robot's helper names the cameras. |
 | `rtc` | `str` | Real-time chunking: `"train_time"`, `"inference_time"` or `"off"`. `committed_actions` needs `"train_time"`, or `"inference_time"` on a deployment. |
 | `max_prefix_rows` | `int` or `None` | The most committed actions a chunk can start with: 0 unless `rtc` is `"train_time"`, `None` when the server doesn't report it. |
-| `past_observations` | `int` | How many `past_observations` `predict()` takes: the ticks just before the observation. 0 for models that don't read them. |
+| `past_observations` | `int` | How many `past_observations` `predict()` takes: the ticks just before the observation (Praxis-1: up to 24, the steps executed since the last call). 0 for models that don't read them. |
 | `action_history` | `int` | How many executed actions `predict()` takes as `action_history`. 0 for models that don't read them. |
 
 ## AsyncPolicy

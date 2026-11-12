@@ -29,8 +29,9 @@ Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.
 Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π),
 Runway (Praxis-1) and Amazon FAR (ABC-VLA).
 
-`flux-3-action-so101` and Praxis-1 read what each step executed: call them with
-`next_action`, not `predict`. `dreamscale models list` shows yours.
+`flux-3-action-so101` needs `next_action`; Praxis-1's `predict` takes
+[the steps your robot ran](/reference/sdk#history-the-model-reads).
+`dreamscale models list` shows yours.
 The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` are aliases.
 
 ## SO-101
