@@ -4,7 +4,7 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot type. Build its observations with that robot's
+Each model is trained for one robot type: build its observations with that robot's
 helper. Frames are H×W×3 `uint8` RGB of any size.
 
 | Model | Robot | Chunk × values | Rate |
@@ -14,17 +14,21 @@ helper. Frames are H×W×3 `uint8` RGB of any size.
 | `pi0.5-so101` | SO-101 | 30 × 6 | 30 Hz |
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
+| `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
 | `molmoact2-droid` | [Franka](/robots/franka) | 15 × 8 | 15 Hz |
+| `praxis-1-droid` | [Franka](/robots/franka) | 24 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
 | `gr00t-n1.7-libero` | LIBERO simulator | 16 × 7 | 20 Hz |
 | `flexpi-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
-Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7) and University of Washington with Ai2 (Flex-π).
+Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7), University of Washington with Ai2 (Flex-π)
+and Runway (Praxis-1).
 
-`dreamscale models list` shows yours.
-The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` still work as aliases.
+`flux-3-action-so101` and Praxis-1 read what each step executed: call them with
+`next_action`, not `predict`. `dreamscale models list` shows yours.
+The previous ids `pi05-libero`, `pi05-so101` and `pi05-yam` are aliases.
 
 ## SO-101
 
@@ -40,8 +44,6 @@ observation = dreamscale.so101.observation(
   `wrist_roll`, `gripper`.
 - Joints are in calibrated LeRobot degrees; the gripper is 0–100.
 - Actions are absolute targets in the same order and units.
-- `flux-3-action-so101` builds on the actions it already sent, so call it with
-  `next_action`, not `predict`.
 
 ## Bimanual YAM
 

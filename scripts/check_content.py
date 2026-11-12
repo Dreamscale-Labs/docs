@@ -50,6 +50,9 @@ DOCUMENTED_MODELS = {
     "cosmos3-edge-policy-droid",
     "cosmos3-nano-policy-droid",
     "flux-3-action-droid",
+    # Runway's Praxis-1: one checkpoint per robot.
+    "praxis-1-droid",
+    "praxis-1-yam",
 }
 # Base models that `dreamscale train --base` and `deployments create --base` name in --help.
 BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam", "xiaomi-robotics-1", "gr00t-n1.7"}
@@ -58,7 +61,7 @@ BASE_MODELS = {"flux-3-action-base", "pi0.5-rtc-yam", "xiaomi-robotics-1", "gr00
 PREVIOUS_IDS = {"pi05-libero", "pi05-so101", "pi05-yam"}
 MODEL_ID_RE = re.compile(
     r"(?<![\w-])((?:molmoact2|pi0\.5|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
-    r"dreamzero|flexpi)-[a-z0-9-]+|gr00t-[a-z0-9.-]*[a-z0-9])"
+    r"dreamzero|flexpi)-[a-z0-9-]+|gr00t-[a-z0-9.-]*[a-z0-9]|praxis-[0-9]+-[a-z0-9-]*[a-z0-9])"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,
 # at most one table per page (reference pages: one per command or function), and no images.
