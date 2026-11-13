@@ -638,7 +638,7 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7 or Long-WAM (pick with `--base`) from
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7, ABC-VLA or Long-WAM (pick with `--base`) from
 Hugging Face (any `huggingface.co` link works, including a checkpoint folder's
 page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
@@ -654,7 +654,7 @@ dreamscale deployments create REPO [OPTIONS]
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). Omit with `--official`. |
 | `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name (Verne V0.5: `base`, `robotwin`, `libero`; `deployments list` shows them). |
 | `--arm TEXT` | both | Verne V0.5 custom robot: `right` for one arm. |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7` or `long-wam-yam`. A folder `dreamscale train download` made needs none: its base is read from it. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7`, `abc-vla-base` or `long-wam-yam`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
@@ -666,6 +666,7 @@ dreamscale deployments create REPO [OPTIONS]
 | `--delta-mask TEXT` | detected | π0.5: `1` or `0` per action, comma separated (`1` = relative to the state), or `none`. |
 | `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. |
 | `--rtc-max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. |
+| `--steps INTEGER` | `10` | ABC-VLA: denoising steps per chunk. |
 | `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
@@ -933,7 +934,7 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `--dataset TEXT` | required | One of your [datasets](/datasets) (`towels`, `towels@2`, `acme/towels`) or a Hugging Face one (`hf://owner/name`). Repeat it to train on several Hugging Face datasets together: they must match after the column mapping. |
-| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), `xiaomi-robotics-1` (Xiaomi-Robotics-1), `gr00t-n1.7` (GR00T N1.7), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
+| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), `xiaomi-robotics-1` (Xiaomi-Robotics-1), `gr00t-n1.7` (GR00T N1.7), `abc-vla-base` (ABC-VLA), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
