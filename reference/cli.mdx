@@ -180,7 +180,7 @@ dreamscale run so101 --model MODEL [OPTIONS]
 | `--model TEXT` | required | A model from `dreamscale models list`, such as `molmoact2-so101`, `flux-3-action-so101` or `pi0.5-so101`, or a deployment as `<account>/<slug>`. Optional when `--deployment` names a deployment, which runs its own model. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -217,7 +217,7 @@ dreamscale run yam --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots yam setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -256,7 +256,7 @@ dreamscale run franka --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots franka setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -294,7 +294,7 @@ dreamscale run ur --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots ur setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -331,7 +331,7 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots xarm7 setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -368,7 +368,7 @@ dreamscale run openarm --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots openarm setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -964,11 +964,11 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
-| `--batch-size INTEGER` | from the data | Global batch: π0.5 64, 128, 256 or 512; FLUX.3 Action 32, 64, 128 or 256. |
-| `--learning-rate FLOAT` | the recipe's | Peak learning rate, at most 0.01. Continuing from one of your runs, the default is half the recipe's, at most that run's. Praxis-1 trains with Runway's recipe: of it, you can set this and the length. |
-| `--warmup-steps INTEGER` | the recipe's | Steps rising to the peak learning rate. |
+| `--batch-size INTEGER` | from the data | Global batch: π0.5 64, 128, 256 or 512; FLUX.3 Action 32, 64, 128 or 256. Not Praxis-1. |
+| `--learning-rate FLOAT` | the recipe's | Peak learning rate, at most 0.01. Continuing from one of your runs, the default is half the recipe's, at most that run's. Praxis-1: Runway's recipe, where you can set only this and the length. |
+| `--warmup-steps INTEGER` | the recipe's | Steps rising to the peak learning rate. Not Praxis-1. |
 | `--schedule TEXT` | the recipe's | π0.5 only: `cosine` (decays over the run) or `constant` after the warm-up. |
-| `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. |
+| `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. Not Praxis-1. |
 | `--eval-fraction FLOAT` | off | Hold out this share of episodes (0.05–0.3) and report a held-out loss per checkpoint. Held-out loss is a poor proxy for task success in diffusion and flow-matching policies: try checkpoints on the robot. |
 | `--quote` | off | Show the quote and stop: nothing is started, even with `--yes`. |
 | `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action and Praxis-1, where it is experimental. The model also runs without committed actions. |
