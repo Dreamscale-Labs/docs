@@ -2,7 +2,7 @@
 title: "CLI reference"
 sidebarTitle: "CLI reference"
 description: "Every dreamscale command, argument and option, with defaults."
-keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale deployments", "dreamscale train"]
+keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale sim --list", "dreamscale deployments", "dreamscale train"]
 ---
 
 Every public `dreamscale` command, generated from `--help` of version
@@ -138,14 +138,19 @@ dreamscale sim BENCHMARK --model MODEL [OPTIONS]
 | `--task-seed INTEGER` | `0` | Seed for the task's initial state. |
 | `--max-steps INTEGER` | the task's horizon | Action-step limit, at least 1. |
 | `--max-duration FLOAT` | — | Time limit in seconds (at least 0.1), instead of `--max-steps`. |
-| `--non-interactive` | off | No viewer window; print a JSON summary at the end. |
+| `--non-interactive` | off | No viewer window; print a JSON summary at the end. With `--list`, print the list as JSON. |
 | `--transport` | `auto` | `auto` (QUIC, then relay), `quic` or `relay`. |
 | `--region TEXT` | — | Where to serve: `nearest`, `available` or `us-west-2`. |
 | `--output-root PATH` | — | Save the run's artifacts (video, timing) to this directory. |
 | `--verbose`, `-v` | off | Show diagnostic details. |
+| `--list` | off | List the benchmarks, a benchmark's task suites, or with `--task-suite` its tasks and their `--task-id`s, instead of running. Offline; no `--model` or login. `molmospaces` lists its episodes only after its first run; `abc` takes any episode number. |
 
 ```bash
 dreamscale sim libero --model pi0.5-libero --task-suite libero_object --task-id 3
+```
+
+```bash
+dreamscale sim libero --task-suite libero_object --list
 ```
 
 ## dreamscale run
