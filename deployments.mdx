@@ -18,8 +18,8 @@ it warm.
   fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`. Or a
   Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
   `dataset_stats.json`, with `--base long-wam-yam`. Or a Praxis-1 fine-tune from
-  [Training](/training): a run deploys with `dreamscale train deploy`, and its downloaded
-  folder or a Hugging Face copy of it with `--base praxis-1-base`.
+  [Training](/training): a run deploys with `dreamscale train deploy`, its downloaded folder
+  as it is, and a Hugging Face copy of it with `--base praxis-1-base`.
 
 ## 1. Create it
 
@@ -39,7 +39,8 @@ dreamscale deployments create ./checkpoints/6000 --preset bimanual_yam --slug to
 
 `inspect` shows what the checkpoint declares (format, cameras, widths, horizon,
 rate, RTC) and where each value came from; flags on `create` override any of
-them. A Praxis-1 export names its own robot, so it needs no `--preset`:
+them. A Praxis-1 export names its own robot, so `create` takes only `--path`, `--executed`,
+`--camera`, `--rtc off` and `--engine`:
 `dreamscale deployments create hf://your-org/towel-fold --base praxis-1-base`. A folder's
 configuration files are read first and only the files the build needs are uploaded,
 never `train_state/` or code. Running the same command again uploads nothing new, and
@@ -90,18 +91,18 @@ differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
 the robot waits for the next action instead of holding still.
 
 A Praxis-1 deployment runs from Python only:
-`dreamscale.connect("praxis-1-base", deployment="towel-fold")`. Each of its servers runs one
-robot, and a server's first start takes about 4 minutes, so keep it warm (below) before your
-robot needs it. A deployment of a run trained with `--rtc` serves real-time chunking
-(experimental); `dreamscale deployments rtc towel-fold off` turns it off.
+`dreamscale.connect("praxis-1-base", deployment="towel-fold")`. It serves in US West and US
+East. Each of its servers runs one robot, and a server's first start takes a few minutes, so keep
+it warm (below) before your robot needs it. A deployment of a run trained with `--rtc` serves
+real-time chunking (experimental); `dreamscale deployments rtc towel-fold off` turns it off.
 
 A deployment's name is `<account>/<slug>`: your account (shown in Settings) and
 the slug you gave it. Its bare slug (`towel-fold`) and its `ckpt_...` ID work
 everywhere too. To rename it: `dreamscale deployments rename towel-fold folding-v2`.
 The old name keeps working until another of your deployments takes it. The
 deployment's page on the dashboard has the full loop for your robot. The first
-connection starts a server, usually in under a minute. Connect as many robots as
-you need.
+connection starts a server, usually in under a minute (Praxis-1: a few minutes). Connect as
+many robots as you need.
 
 If your region is full, we start your server in the next-closest region (for
 example US East for US West, the UK for Western Europe, Japan for Australia), and the
@@ -151,10 +152,13 @@ Change it later with the Engine card on the deployment's page, or:
 dreamscale deployments engine towel-fold lightning
 ```
 
-A change reaches its next server. One already running keeps its engine until it stops;
-`dreamscale deployments restart towel-fold` replaces it now. Each action chunk says which
-engine served it (`engine`). When standard serves a lightning request (for example, one with a
-long instruction), `engine_reason` says why: the actions are the same, so there is nothing to do.
+`dreamscale deployments show towel-fold` then shows `engine: lightning`. A change reaches its next
+server. One already running keeps its engine until it stops; `dreamscale deployments restart
+towel-fold` stops it now, and a connected robot holds still while a new server starts (a few
+minutes). Each action chunk says which engine served it (`engine`). When standard serves a
+lightning request (for example, one with a long instruction), `engine_reason` says why: the
+actions are the same, so there is nothing to do. Lightning doesn't run real-time chunking yet:
+on a deployment serving it, standard serves those requests.
 
 On the shared models `praxis-1-yam` and `praxis-1-droid`, lightning is per session and off by
 default: add `--engine lightning` to `dreamscale run yam` or `dreamscale run franka`, or call
