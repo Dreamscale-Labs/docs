@@ -152,7 +152,7 @@ with dreamscale.connect("pi0.5-libero") as policy:
 | `contract` | `PolicyContract` | What the model returns and accepts. See [`Policy.contract`](#policy-contract). |
 | `mode` | `str` | How `next_action()` runs chunks: `"sync"` or `"async"` (see `connect(mode=)`). |
 | `engine` | `str` or `None` | Praxis-1: the session's engine, `"standard"` or `"lightning"`: the one you asked for on a shared model (`None` if you asked for none), the deployment's own on a deployment. |
-| `engine_reason` | `str` or `None` | Why standard serves this session instead of lightning: `"unavailable"` (no lightning server could take it) or `"deployment_standard"` (the deployment is set to standard). `None` otherwise. Each chunk's `engine` says which served it. |
+| `engine_reason` | `str` or `None` | Why standard serves this session instead of lightning: `"unavailable"` (no lightning server could take it), `"busy"` (every lightning server was in use) or `"deployment_standard"` (the deployment is set to standard). `None` otherwise. Each chunk's `engine` says which served it. |
 
 ### Policy.predict()
 
