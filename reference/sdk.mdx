@@ -2,7 +2,7 @@
 title: "Python SDK reference"
 sidebarTitle: "SDK reference"
 description: "Every public function, class and parameter of the dreamscale Python package."
-keywords: ["SDK reference", "Python API", "dreamscale.connect", "aconnect", "Policy", "predict", "next_action", "committed_actions", "real-time chunking", "capture_time_ns", "contract", "observation", "trainings", "errors"]
+keywords: ["SDK reference", "Python API", "dreamscale.connect", "aconnect", "Policy", "predict", "next_action", "committed_actions", "real-time chunking", "capture_time_ns", "contract", "engine", "engine_reason", "lightning", "observation", "trainings", "errors"]
 ---
 
 The public API of the `dreamscale` package, version `{{sdkVersion}}`. For a
@@ -45,6 +45,7 @@ def connect(
     on_progress: Callable[[str], None] | None = ...,
     region: str = "auto",
     region_fallback: bool | None = None,
+    engine: str | None = None,
     speed: str | None = None,
     rtc: str | None = "auto",
     provider: str | None = None,
@@ -62,6 +63,7 @@ def connect(
 | `on_progress` | stderr or logger | Called with each progress line (queue position, startup). The default prints to stderr on a terminal, otherwise logs to the `dreamscale` logger. `None` silences it. |
 | `region` | `"auto"` | Choose automatically, or request a supported region such as `"japan"`. A checkpoint may support fewer regions than a deployment. |
 | `region_fallback` | `None` | Shared models: an exact region stays there by default; set `True` to allow the next-closest supported region while compute is unavailable, or `False` to stay in the selected region. Automatic selection allows fallback where supported. Deployments use their own fallback setting. |
+| `engine` | `None` (standard) | Praxis-1: `"standard"` or `"lightning"` (experimental: the same actions, sooner). A deployment runs its own engine ([`dreamscale deployments engine`](/reference/cli#dreamscale-deployments-engine)). |
 | `speed` | `None` (standard) | `"standard"` or `"fast"`, where the model supports it. |
 | `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. A deployment keeps its own setting ([`dreamscale deployments rtc`](/reference/cli#dreamscale-deployments-rtc)). |
 | `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
@@ -101,6 +103,7 @@ async def aconnect(
     api_key: str | None = None,
     region: str = "auto",
     region_fallback: bool | None = None,
+    engine: str | None = None,
     on_progress: Callable[[str], None] | None = ...,
 ) -> AsyncPolicy: ...
 ```
@@ -148,6 +151,8 @@ with dreamscale.connect("pi0.5-libero") as policy:
 | `state` | `str` | `"opening"`, `"queued"`, `"ready"`, `"released"` (server freed; the next call reconnects), `"reconnecting"` or `"closed"`. |
 | `contract` | `PolicyContract` | What the model returns and accepts. See [`Policy.contract`](#policy-contract). |
 | `mode` | `str` | How `next_action()` runs chunks: `"sync"` or `"async"` (see `connect(mode=)`). |
+| `engine` | `str` or `None` | Praxis-1: the session's engine, `"standard"` or `"lightning"`: the one you asked for on a shared model (`None` if you asked for none), the deployment's own on a deployment. |
+| `engine_reason` | `str` or `None` | Why standard serves this session instead of lightning: `"unavailable"` (no lightning server could take it) or `"deployment_standard"` (the deployment is set to standard). `None` otherwise. |
 
 ### Policy.predict()
 
@@ -543,6 +548,8 @@ What `predict()` returns.
 | `history_padded` | `int` | How many ticks of history the SDK filled in (an episode's start, or history you didn't pass). 0 for a complete history, and for models that don't read one. |
 | `observation_id` | `int` | Which observation this chunk answers. |
 | `chunk_id` | `int` or `None` | The server's ID for this chunk. |
+| `engine` | `str` or `None` | Praxis-1: the engine that served this chunk, `"standard"` or `"lightning"`. `None` for other models. |
+| `engine_reason` | `str` or `None` | Why standard served a lightning request, for example an instruction longer than lightning was prepared for. The actions are the same. `None` otherwise. |
 | `timing.obs_to_action_ms` | `float` | Milliseconds from sending the observation to receiving the chunk. |
 | `timing.server_total_ms` | `float` or `None` | Milliseconds the server spent on the request. |
 | `transport_mode` | `str` or `None` | How it arrived: `"quic"`, `"relay"`, `"quic_punch"` (direct QUIC to a Modal worker) or `"wss_tunnel"` (its WebSocket). A Modal session moves between the last two on its own: if the direct path drops, it continues on the WebSocket within about a second and returns to QUIC when the path is back (SDK 0.1.0a205+). |
@@ -764,7 +771,7 @@ def create(
 | `base` | required | Base model: the same values as `--base` on [`dreamscale train`](/reference/cli#dreamscale-train). |
 | `max_usd` | required | The most this run may cost, in US dollars. |
 | `steps` | `None` (auto) | Training length in steps. |
-| `rtc` | `None` (the base's) | Train with (`True`) or without (`False`) real-time chunking. `None` trains what the base does: on for π0.5, off for FLUX.3 Action, where it is experimental. |
+| `rtc` | `None` (the base's) | Train with (`True`) or without (`False`) real-time chunking. `None` trains what the base does: on for π0.5, off for FLUX.3 Action and Praxis-1, where it is experimental. |
 | `name` | `None` (the dataset) | Display name. |
 | `hf_token` | `None` | Hugging Face token for a private repo. Default: `HF_TOKEN`, else your connected token. |
 | `inputs` | `None` | What the base takes beside the dataset, by name, as `--input` on [`dreamscale train`](/reference/cli#dreamscale-train) does: for example `{"mobile_base": {"components": ["wz", "vx"]}}`. |
@@ -792,7 +799,7 @@ A training run.
 | `stop()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps, and it saves a checkpoint. |
 | `resume(max_usd)` | Continue a stopped run within 30 days for its remaining steps. Refuses a price above `max_usd`. |
 | `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |
-| `deploy(step=None, region="us-west")` | Deploy a checkpoint (default the latest) in a region: `"us-west"`, `"us-central"`, `"us-east"`, `"uk"`, `"eu-west"`, `"japan"`, `"india"` or `"australia"`. Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
+| `deploy(step=None, region="auto", engine=None)` | Deploy a checkpoint (default the latest) in a region: `"auto"` (the nearest, measured from this machine), `"us-west"`, `"us-central"`, `"us-east"`, `"uk"`, `"eu-west"`, `"japan"`, `"india"` or `"australia"`. Praxis-1: `engine="lightning"` starts it on the lightning engine (experimental). Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
 
 ## Errors
 

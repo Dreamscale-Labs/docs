@@ -1,10 +1,10 @@
 ---
 title: "Training"
-description: "Fine-tune π0.5, FLUX.3 Action or GR00T N1.7 on your robot's LeRobot dataset, then run it as a deployment."
-keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "GR00T N1.7", "LeRobot", "dataset", "dreamscale train"]
+description: "Fine-tune π0.5, FLUX.3 Action, GR00T N1.7 or Praxis-1 on your robot's LeRobot dataset, then run it as a deployment."
+keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "GR00T N1.7", "Praxis-1", "praxis-1-base", "LeRobot", "dataset", "dreamscale train"]
 ---
 
-Training fine-tunes π0.5, FLUX.3 Action or GR00T N1.7 on your robot's demos, on our GPUs. Upload your dataset
+Training fine-tunes π0.5, FLUX.3 Action, GR00T N1.7 or Praxis-1 on your robot's demos, on our GPUs. Upload your dataset
 once, train on it, and turn the result into a [deployment](/deployments) you can run.
 
 ## What you need
@@ -50,7 +50,11 @@ Xiaomi-Robotics-1 from Xiaomi, use `--base xiaomi-robotics-1`; it trains with re
 built in. A robot that is only a mobile base, such as a car, trains Xiaomi-Robotics-1 on its
 velocities: add `--input mobile_base=base.json`, a file naming what your state and action hold, in
 their order, such as `{"components": ["wz", "vx"]}` (`vx` forward speed, `vy` sideways speed, `wz`
-yaw rate or steering). To fine-tune GR00T N1.7 from NVIDIA, use `--base gr00t-n1.7`. For a
+yaw rate or steering). To fine-tune GR00T N1.7 from NVIDIA, use `--base gr00t-n1.7`.
+To fine-tune Praxis-1 from Runway, use `--base praxis-1-base`. It takes any robot: 1 to 64 state
+values and 1 to 64 action values (the two may differ), 1 to 3 cameras, recorded at 15, 30, 45 or
+60 fps. It runs Runway's own recipe: of its settings, you can change only `--learning-rate`.
+Add `--rtc` for real-time chunking (experimental). For a
 private repo, run `dreamscale integrations hugging-face setup` once.
 
 ## 3. Deploy it
@@ -72,6 +76,9 @@ On a vehicle, execute the first 2–3 actions of each action chunk, then ask for
 A GR00T N1.7 run on SO-101 or Bimanual YAM demos runs with `dreamscale run so101 --deployment <name>`
 or `dreamscale run yam --deployment <name>`; other robots connect from Python with
 `dreamscale.connect("gr00t-n1.7", deployment="<name>")`.
+A Praxis-1 deployment runs from Python on any robot, with
+`dreamscale.connect("praxis-1-base", deployment="<name>")`. To start it on the
+[lightning engine](/deployments#choose-its-engine), add `--engine lightning` to `train deploy`.
 To rename it or keep it warm, see [Deployments](/deployments).
 
 ## Keep training a model

@@ -61,6 +61,7 @@ DOCUMENTED_MODELS = {
 # Base models that `dreamscale train --base` and `deployments create --base` name in --help.
 BASE_MODELS = {
     "flux-3-action-base", "pi0.5-rtc-yam", "xiaomi-robotics-1", "gr00t-n1.7", "long-wam-yam",
+    "praxis-1-base",
 }
 # The previous pi0.5 ids stay valid as permanent aliases. Only a line that says
 # "previous ids" may name them; anywhere else they fail as undocumented.

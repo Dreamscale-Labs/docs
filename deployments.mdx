@@ -1,7 +1,7 @@
 ---
 title: "Deployments"
-description: "Serve your own π0.5, GR00T N1.7 or Long-WAM fine-tune on your robot, from Hugging Face or a local folder."
-keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5, GR00T N1.7, Long-WAM or Praxis-1 fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Praxis-1", "praxis-1-base", "engine", "lightning", "Hugging Face", "dreamscale deployments"]
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
@@ -17,7 +17,9 @@ it warm.
   up to 24 GB. It can be on Hugging Face or in a local folder. Or a GR00T N1.7
   fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`. Or a
   Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
-  `dataset_stats.json`, with `--base long-wam-yam`.
+  `dataset_stats.json`, with `--base long-wam-yam`. Or a Praxis-1 fine-tune from
+  [Training](/training): a run deploys with `dreamscale train deploy`, and its downloaded
+  folder or a Hugging Face copy of it with `--base praxis-1-base`.
 
 ## 1. Create it
 
@@ -37,10 +39,11 @@ dreamscale deployments create ./checkpoints/6000 --preset bimanual_yam --slug to
 
 `inspect` shows what the checkpoint declares (format, cameras, widths, horizon,
 rate, RTC) and where each value came from; flags on `create` override any of
-them. A folder's configuration files are read first and only the files the build
-needs are uploaded, never `train_state/` or code. Running the same command again
-uploads nothing new, and an interrupted upload resumes. Uploads are kept for 30
-days.
+them. A Praxis-1 export names its own robot, so it needs no `--preset`:
+`dreamscale deployments create hf://your-org/towel-fold --base praxis-1-base`. A folder's
+configuration files are read first and only the files the build needs are uploaded,
+never `train_state/` or code. Running the same command again uploads nothing new, and
+an interrupted upload resumes. Uploads are kept for 30 days.
 
 ### Where it serves
 
@@ -85,6 +88,12 @@ policy = dreamscale.connect("acme-robotics/towel-fold")
 A checkpoint whose actions aren't joint targets (its state and action widths
 differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
 the robot waits for the next action instead of holding still.
+
+A Praxis-1 deployment runs from Python only:
+`dreamscale.connect("praxis-1-base", deployment="towel-fold")`. Each of its servers runs one
+robot, and a server's first start takes about 4 minutes, so keep it warm (below) before your
+robot needs it. A deployment of a run trained with `--rtc` serves real-time chunking
+(experimental); `dreamscale deployments rtc towel-fold off` turns it off.
 
 A deployment's name is `<account>/<slug>`: your account (shown in Settings) and
 the slug you gave it. Its bare slug (`towel-fold`) and its `ckpt_...` ID work
@@ -131,6 +140,25 @@ dreamscale deployments keep-warm towel-fold 1h --robots 2
 
 A second server stays warm, and if yours stops, the robot moves to it in about 5
 seconds. It's billed as two robots while kept warm.
+
+## Choose its engine
+
+A Praxis-1 deployment runs on **standard**, the default, or **lightning** (experimental: the
+same actions, sooner). Pick it with `--engine lightning` on `create` or `train deploy`.
+Change it later with the Engine card on the deployment's page, or:
+
+```bash
+dreamscale deployments engine towel-fold lightning
+```
+
+A change reaches its next server. One already running keeps its engine until it stops;
+`dreamscale deployments restart towel-fold` replaces it now. Each action chunk says which
+engine served it (`engine`). When standard serves a lightning request (for example, one with a
+long instruction), `engine_reason` says why: the actions are the same, so there is nothing to do.
+
+On the shared models `praxis-1-yam` and `praxis-1-droid`, lightning is per session and off by
+default: add `--engine lightning` to `dreamscale run yam` or `dreamscale run franka`, or call
+`dreamscale.connect("praxis-1-yam", engine="lightning")`.
 
 ## Delete it
 
