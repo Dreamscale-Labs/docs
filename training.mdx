@@ -100,8 +100,8 @@ To rename it or keep it warm, see [Deployments](/deployments).
 
 ## Choose its rate and chunk
 
-π0.5, FLUX.3 Action, GR00T N1.7 and Xiaomi-Robotics-1 act at your recording's own rate by
-default. You can choose another rate, and how many actions each action chunk holds:
+π0.5, FLUX.3 Action, GR00T N1.7, ABC-VLA and Xiaomi-Robotics-1 act at your recording's own rate
+by default. You can choose another rate, and how many actions each action chunk holds:
 
 ```bash
 echo '{"hz": 15}' > rate.json
@@ -120,12 +120,13 @@ their last command. The chunk is a number of actions, `{"rows": 15}`, or a lengt
 | π0.5 | 2–50 | one second, at most 50 (`pi0.5-rtc-yam`: 30) |
 | FLUX.3 Action | 1–100 | 1.4 seconds (42 at 30 Hz), at most 100 |
 | GR00T N1.7 | 1–40 | 16 |
+| ABC-VLA | 1–60 | one second |
 | Xiaomi-Robotics-1 | 4–60 | one second |
 
 The quote prices the rate and chunk you chose. A value outside these ranges is refused before
 you pay, with what to choose instead. The deployment acts at the run's rate and returns its
-chunk. A GR00T N1.7 or Xiaomi-Robotics-1 run at a rate other than 30 Hz connects from Python,
-even on SO-101 or Bimanual YAM demos.
+chunk. A GR00T N1.7, ABC-VLA or Xiaomi-Robotics-1 run at a rate other than 30 Hz connects from
+Python, even on SO-101 or Bimanual YAM demos.
 
 ## Keep training a model
 
