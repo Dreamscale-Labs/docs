@@ -1,7 +1,7 @@
 ---
 title: "Deployments"
-description: "Serve your own π0.5, GR00T N1.7, Long-WAM or Praxis-1 fine-tune on your robot, from Hugging Face or a local folder."
-keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Praxis-1", "praxis-1-base", "engine", "lightning", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Praxis-1", "praxis-1-base", "ABC-VLA", "abc-vla-base", "engine", "lightning", "Hugging Face", "dreamscale deployments"]
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
@@ -16,7 +16,9 @@ it warm.
   or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
   up to 24 GB. It can be on Hugging Face or in a local folder. Or a GR00T N1.7
   fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`, for a
-  robot of up to 4 cameras, 128 state values and 64 action values. Or a
+  robot of up to 4 cameras, 128 state values and 64 action values. Or an
+  ABC-VLA fine-tune from Amazon FAR's code: its `.pt` file, or a folder or repo holding it, with
+  `--base abc-vla-base`. Or a
   Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
   `dataset_stats.json`, with `--base long-wam-yam`. Or a Praxis-1 fine-tune from
   [Training](/training). Deploy a run with `dreamscale train deploy`, or its downloaded folder

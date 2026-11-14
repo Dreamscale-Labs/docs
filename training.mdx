@@ -1,10 +1,10 @@
 ---
 title: "Training"
-description: "Fine-tune π0.5, FLUX.3 Action, GR00T N1.7 or Praxis-1 on your robot's LeRobot dataset, then run it as a deployment."
-keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "GR00T N1.7", "Praxis-1", "praxis-1-base", "LeRobot", "dataset", "dreamscale train"]
+description: "Fine-tune π0.5, FLUX.3 Action, GR00T N1.7, Praxis-1 or ABC-VLA on your robot's LeRobot dataset, then run it as a deployment."
+keywords: ["training", "fine-tune", "π0.5", "pi0.5", "FLUX.3 Action", "GR00T N1.7", "Praxis-1", "praxis-1-base", "ABC-VLA", "abc-vla-base", "LeRobot", "dataset", "dreamscale train"]
 ---
 
-Training fine-tunes π0.5, FLUX.3 Action, GR00T N1.7 or Praxis-1 on your robot's demos, on our GPUs. Upload your dataset
+Training fine-tunes π0.5, FLUX.3 Action, GR00T N1.7, Praxis-1 or ABC-VLA on your robot's demos, on our GPUs. Upload your dataset
 once, train on it, and turn the result into a [deployment](/deployments) you can run.
 
 ## What you need
@@ -62,8 +62,9 @@ values and 1 to 64 action values (the two may differ), 1 to 3 cameras (one base 
 wrist cameras), recorded at 15 to 60 fps; a slower recording is refused before you pay. It acts
 at 15 Hz. It trains with Runway's
 recipe: you can set its length and learning rate, not its batch size, warm-up, schedule or
-checkpoint spacing. Add `--rtc` for real-time chunking (experimental). For a
-private repo, run `dreamscale integrations hugging-face setup` once.
+checkpoint spacing. Add `--rtc` for real-time chunking (experimental). To fine-tune
+ABC-VLA from Amazon FAR, use `--base abc-vla-base`; it trains with real-time chunking built in,
+and its default length is still being tuned. For a private repo, run `dreamscale integrations hugging-face setup` once.
 
 ## 3. Deploy it
 
@@ -93,6 +94,8 @@ from Python with `dreamscale.connect("gr00t-n1.7", deployment="<name>")`.
 A Praxis-1 deployment runs from Python on any robot, with
 `dreamscale.connect("praxis-1-base", deployment="<name>")`. To start it on the
 [lightning engine](/deployments#choose-its-engine), add `--engine lightning` to `train deploy`.
+An ABC-VLA run on Bimanual YAM demos runs with `dreamscale run yam --deployment <name>`;
+other robots connect from Python with `dreamscale.connect("abc-vla-base", deployment="<name>")`.
 To rename it or keep it warm, see [Deployments](/deployments).
 
 ## Keep training a model
