@@ -55,6 +55,7 @@ DOCUMENTED_MODELS = {
     # Runway's Praxis-1: one checkpoint per robot.
     "praxis-1-droid",
     "praxis-1-yam",
+    "praxis-1-so101",
     # Amazon FAR's ABC-VLA on a bimanual YAM.
     "abc-vla-yam",
 }
