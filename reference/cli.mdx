@@ -2,7 +2,7 @@
 title: "CLI reference"
 sidebarTitle: "CLI reference"
 description: "Every dreamscale command, argument and option, with defaults."
-keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale sim --list", "dreamscale deployments", "dreamscale train"]
+keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale sim --list", "dreamscale deployments", "dreamscale deployments engine", "--engine", "lightning", "praxis-1-base", "dreamscale train"]
 ---
 
 Every public `dreamscale` command, generated from `--help` of version
@@ -180,6 +180,7 @@ dreamscale run so101 --model MODEL [OPTIONS]
 | `--model TEXT` | required | A model from `dreamscale models list`, such as `molmoact2-so101`, `flux-3-action-so101` or `pi0.5-so101`, or a deployment as `<account>/<slug>`. Optional when `--deployment` names a deployment, which runs its own model. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -216,6 +217,7 @@ dreamscale run yam --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots yam setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -254,6 +256,7 @@ dreamscale run franka --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots franka setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -291,6 +294,7 @@ dreamscale run ur --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots ur setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -327,6 +331,7 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots xarm7 setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -363,6 +368,7 @@ dreamscale run openarm --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots openarm setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
+| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -638,7 +644,7 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7, ABC-VLA or Long-WAM (pick with `--base`) from
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA (pick with `--base`) from
 Hugging Face (any `huggingface.co` link works, including a checkpoint folder's
 page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
@@ -654,17 +660,17 @@ dreamscale deployments create REPO [OPTIONS]
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). Omit with `--official`. |
 | `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name (Verne V0.5: `base`, `robotwin`, `libero`; `deployments list` shows them). |
 | `--arm TEXT` | both | Verne V0.5 custom robot: `right` for one arm. |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7`, `abc-vla-base` or `long-wam-yam`. A folder `dreamscale train download` made needs none: its base is read from it. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7`, `long-wam-yam`, `praxis-1-base` or `abc-vla-base`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
-| `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
+| `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. Praxis-1: the export's folder in the repo. |
 | `--horizon INTEGER` | `50` | π0.5: actions the model predicts per chunk. |
-| `--executed INTEGER` | the horizon | π0.5: actions executed per chunk. |
+| `--executed INTEGER` | the horizon | π0.5: actions executed per chunk. Praxis-1: actions the robot runs before asking again, 1–21 (default 21). |
 | `--token-length INTEGER` | `200` | π0.5: prompt length in tokens. |
 | `--no-state-in-prompt` | off | π0.5: the checkpoint was trained without the state in its prompt. |
 | `--delta-mask TEXT` | detected | π0.5: `1` or `0` per action, comma separated (`1` = relative to the state), or `none`. |
-| `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. |
+| `--rtc TEXT` | detected | π0.5: `off`, `test-time` or `trained`. Praxis-1: `off`; an export trained with `--rtc` serves `trained` by default. |
 | `--rtc-max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. |
 | `--steps INTEGER` | `10` | ABC-VLA: denoising steps per chunk. |
 | `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
@@ -674,6 +680,7 @@ dreamscale deployments create REPO [OPTIONS]
 | `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
+| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). Change it later with [`deployments engine`](#dreamscale-deployments-engine). |
 | `--no-wait` | off | Return once the build starts. |
 | `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name. `deployments list` shows them. |
 | `--arm TEXT` | both | A custom robot with one arm: `right`. |
@@ -694,7 +701,7 @@ dreamscale deployments inspect REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local π0.5 checkpoint folder. |
-| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base` or `auto`. |
+| `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base`, `praxis-1-base` or `auto`. |
 | `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
@@ -748,8 +755,8 @@ dreamscale deployments keep-warm towel-fold 30m --now
 
 ### dreamscale deployments rtc
 
-Set a π0.5 or FLUX.3 Action deployment's real-time chunking for its new sessions. No
-rebuild. A FLUX.3 Action deployment of a run trained with `--rtc` runs it by default.
+Set a π0.5, FLUX.3 Action or Praxis-1 deployment's real-time chunking for its new sessions. No
+rebuild. A FLUX.3 Action or Praxis-1 deployment of a run trained with `--rtc` runs it by default.
 
 ```text
 dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
@@ -757,8 +764,8 @@ dreamscale deployments rtc DEPLOYMENT METHOD [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `METHOD` | — | `off`, `test-time` or `trained`. FLUX.3 Action: `off` or `trained`. |
-| `--max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. FLUX.3 Action: the most committed actions kept per request; by default all its run trained. |
+| `METHOD` | — | `off`, `test-time` or `trained`. FLUX.3 Action and Praxis-1: `off` or `trained`. |
+| `--max-delay INTEGER` | — | π0.5: the delay trained RTC was trained with, 1–15. FLUX.3 Action: the most committed actions kept per request; by default all its run trained. Praxis-1: the same, in steps of 4. |
 
 ### dreamscale deployments fallback
 
@@ -774,6 +781,26 @@ dreamscale deployments fallback DEPLOYMENT SETTING
 | --- | --- | --- |
 | `DEPLOYMENT` | — | The deployment's name or ID. |
 | `SETTING` | — | `on` or `off`. |
+
+### dreamscale deployments engine
+
+Set what a Praxis-1 deployment's servers run: `standard` (the default) or `lightning`
+(experimental: the same actions, sooner). No rebuild. Its next server runs it; one already
+running keeps its engine until it stops, and `deployments restart` stops it now for a new one. See
+[Deployments](/deployments#choose-its-engine).
+
+```text
+dreamscale deployments engine DEPLOYMENT ENGINE
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `DEPLOYMENT` | — | The deployment's name or ID. |
+| `ENGINE` | — | `standard` or `lightning`. |
+
+```bash
+dreamscale deployments engine towel-fold lightning
+```
 
 ### dreamscale deployments rename
 
@@ -934,18 +961,18 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `--dataset TEXT` | required | One of your [datasets](/datasets) (`towels`, `towels@2`, `acme/towels`) or a Hugging Face one (`hf://owner/name`). Repeat it to train on several Hugging Face datasets together: they must match after the column mapping. |
-| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), `xiaomi-robotics-1` (Xiaomi-Robotics-1), `gr00t-n1.7` (GR00T N1.7), `abc-vla-base` (ABC-VLA), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5 or FLUX.3 Action checkpoint you imported. |
+| `--base TEXT` | required | Start from `pi0.5` (π0.5 base), `flux-3-action-base` (FLUX.3 Action), `pi0.5-rtc-yam` (π0.5 RTC YAM, trained on bimanual YAM, for any robot, where your organization has it), `xiaomi-robotics-1` (Xiaomi-Robotics-1), `gr00t-n1.7` (GR00T N1.7), `praxis-1-base` (Praxis-1, any robot), `abc-vla-base` (ABC-VLA), one of your runs (`tr_…`): its latest checkpoint, or one of your deployments (its name or ID): the checkpoint it serves, including a π0.5, FLUX.3 Action or Praxis-1 checkpoint you imported. |
 | `--base-step INTEGER` | the latest | With `--base tr_…`: start from this step's checkpoint. |
 | `--steps INTEGER` | auto | Training length in steps, 10–60000. |
 | `--max-usd FLOAT` | — | Train as long as this many dollars buys, instead of `--steps`. At least 0.01. |
-| `--batch-size INTEGER` | from the data | Global batch: π0.5 64, 128, 256 or 512; FLUX.3 Action 32, 64, 128 or 256. |
-| `--learning-rate FLOAT` | the recipe's | Peak learning rate, at most 0.01. Continuing from one of your runs, the default is half the recipe's, at most that run's. |
-| `--warmup-steps INTEGER` | the recipe's | Steps rising to the peak learning rate. |
+| `--batch-size INTEGER` | from the data | Global batch: π0.5 64, 128, 256 or 512; FLUX.3 Action 32, 64, 128 or 256. Not Praxis-1. |
+| `--learning-rate FLOAT` | the recipe's | Peak learning rate, at most 0.01. Continuing from one of your runs, the default is half the recipe's, at most that run's. Praxis-1: Runway's recipe, where you can set only this and the length. |
+| `--warmup-steps INTEGER` | the recipe's | Steps rising to the peak learning rate. Not Praxis-1. |
 | `--schedule TEXT` | the recipe's | π0.5 only: `cosine` (decays over the run) or `constant` after the warm-up. |
-| `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. |
+| `--checkpoint-every INTEGER` | 5 a run | Save a deployable checkpoint every N steps, at most 20 a run. The last step always saves. Not Praxis-1. |
 | `--eval-fraction FLOAT` | off | Hold out this share of episodes (0.05–0.3) and report a held-out loss per checkpoint. Held-out loss is a poor proxy for task success in diffusion and flow-matching policies: try checkpoints on the robot. |
 | `--quote` | off | Show the quote and stop: nothing is started, even with `--yes`. |
-| `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action, where it is experimental. The model also runs without committed actions. |
+| `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action and Praxis-1, where it is experimental. The model also runs without committed actions. |
 | `--no-rtc` | the base's | Train without real-time chunking. |
 | `--name TEXT` | the dataset | Display name. |
 | `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
@@ -961,11 +988,11 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--input NAME=FILE.json` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms). Repeat it for more. |
 | `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
 | `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
-| `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
+| `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`; FLUX.3 Action and GR00T N1.7 also take `extra_scene_1`, a second scene camera). Repeat it for each camera. |
 | `--ee-state TEXT` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
 | `--ee-action TEXT` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
 | `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
-| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base: [Training](/training)). Repeat it for more. |
+| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base; Xiaomi-Robotics-1 also takes `chunk=chunk.json` and `vector=vector.json`: [Training](/training)). Repeat it for more. |
 
 ```bash
 dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50
@@ -1071,8 +1098,10 @@ dreamscale train deploy RUN_ID [OPTIONS]
 | `RUN_ID` | — | Training run ID (`tr_…`). |
 | `--step INTEGER` | the latest | Checkpoint step. |
 | `--region TEXT` | `auto` | Where it serves: a region id such as `us-west` or `japan`, or `auto`: the nearest one the run's base serves, measured from this machine. |
+| `--executed INTEGER` | the run's | Xiaomi-Robotics-1: actions the robot executes per chunk (default about two thirds of a second at the data's rate). |
 | `--no-wait` | off | Return once the build starts. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
+| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). Change it later with [`deployments engine`](#dreamscale-deployments-engine). |
 
 Stuck? See [Troubleshooting](/troubleshooting) or email
 [{{supportEmail}}](mailto:{{supportEmail}}).
