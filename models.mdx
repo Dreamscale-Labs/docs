@@ -4,7 +4,7 @@ description: "What each shared Dreamscale model takes in and returns: robot, obs
 keywords: ["models", "observation", "action chunk", "SO-101", "bimanual YAM", "LIBERO", "joint order", "units"]
 ---
 
-Each model is trained for one robot: build observations with its helper.
+Use each robot's observation helper.
 Frames: H×W×3 `uint8` RGB, any size.
 
 | Model | Robot | Chunk × values | Rate |
@@ -12,6 +12,7 @@ Frames: H×W×3 `uint8` RGB, any size.
 | `molmoact2-so101` | SO-101 | 30 × 6 | 30 Hz |
 | `flux-3-action-so101` | SO-101 | 42 × 6 | 30 Hz |
 | `pi0.5-so101` | SO-101 | 30 × 6 | 30 Hz |
+| `praxis-1-so101` | SO-101 | 24 × 6 | 15 Hz |
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
@@ -48,6 +49,9 @@ observation = dreamscale.so101.observation(
   `wrist_roll`, `gripper`.
 - Joints are calibrated LeRobot degrees; the gripper is 0–100.
 - Actions are absolute targets, same order and units.
+
+Praxis-1 starts with 21 actions, then 24. Keep default sync; async is too slow.
+For side-only Python observations, use `views=1` without `wrist_frame`.
 
 ## Bimanual YAM
 
