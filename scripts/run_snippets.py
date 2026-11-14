@@ -254,9 +254,8 @@ def fill_placeholders(code: str) -> str:
 
 def fixtures() -> dict[str, object]:
     """Synthetic values for the names a page tells the reader to fill in."""
-    import numpy as np
-
     import dreamscale
+    import numpy as np
 
     rng = np.random.default_rng(0)
 
@@ -461,7 +460,7 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
         actions = namespace["chunk"].actions
         detail += f", chunk {len(actions)} x {len(actions[0])}"
     if len(log) > 1:
-        gaps = [b - a for a, b in zip(log, log[1:])]
+        gaps = [b - a for a, b in zip(log, log[1:], strict=False)]  # one fewer gap
         steady = sorted(gaps[len(gaps) // 3:])  # skip the first chunk's arrival
         detail += (f", {len(log)} actions, median period "
                    f"{1000 * steady[len(steady) // 2]:.1f} ms")
@@ -537,9 +536,9 @@ def check_signature(snippet: Snippet, report: Report) -> None:
     documented: dict[str, tuple[bool, object]] = {}
     positional = [*node.args.posonlyargs, *node.args.args]
     defaults = [None] * (len(positional) - len(node.args.defaults)) + list(node.args.defaults)
-    for arg, default in zip(positional, defaults):
+    for arg, default in zip(positional, defaults, strict=True):
         documented[arg.arg] = (False, default)
-    for arg, default in zip(node.args.kwonlyargs, node.args.kw_defaults):
+    for arg, default in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True):
         documented[arg.arg] = (True, default)
     for name, (keyword_only, default) in documented.items():
         param = real.get(name)
@@ -574,7 +573,6 @@ def public_commands() -> list[tuple[tuple[str, ...], object]]:
     """Every command `--help` lists, with the click command that holds its options."""
     import click
     import typer
-
     from dreamscale.cli import app
 
     found: list[tuple[tuple[str, ...], object]] = []
@@ -683,7 +681,8 @@ def check_uv(report: Report) -> None:
             (["uv", "tool", "upgrade", "dreamscale"], tmp),
             (["uv", "init", "-q", "--no-workspace", "project"], tmp),
             (["uv", "add", "-q", "dreamscale"], f"{tmp}/project"),
-            (["uv", "add", "-q", "dreamscale", "--upgrade-package", "dreamscale"], f"{tmp}/project"),
+            (["uv", "add", "-q", "dreamscale", "--upgrade-package", "dreamscale"],
+             f"{tmp}/project"),
             (["uv", "run", "python", "-c", "import dreamscale; print(dreamscale.__version__)"],
              f"{tmp}/project"),
         ]
@@ -761,7 +760,8 @@ def main() -> int:
     check_cli_reference(report)
     for snippet in [s for s in python if is_signature(s)]:
         check_signature(snippet, report)
-    for snippet in [s for s in python if not is_signature(s) and any(c in s.code for c in PAID_CALLS)]:
+    paid = [s for s in python if not is_signature(s) and any(c in s.code for c in PAID_CALLS)]
+    for snippet in paid:
         report.skip(snippet.label, "python", "starts paid work; never run")
     python = [s for s in python
               if not is_signature(s) and not any(c in s.code for c in PAID_CALLS)]
