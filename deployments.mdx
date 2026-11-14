@@ -99,6 +99,11 @@ East. Each of its servers runs one robot, and a server's first start takes a few
 it warm (below) before your robot needs it. A deployment of a run trained with `--rtc` serves
 real-time chunking (experimental); `dreamscale deployments rtc towel-fold off` turns it off.
 
+Praxis-1 reads a camera frame at every 15 Hz step, so send your newest frame at each step. A
+frame you repeat is uploaded again in full (about 7–8 Mbit/s for two cameras either way), and
+frames from a slower camera make its actions measurably worse: on recorded episodes, frames held
+at 5 Hz made them 8–13% less accurate. A camera at 15 fps or more works best.
+
 A deployment's name is `<account>/<slug>`: your account (shown in Settings) and
 the slug you gave it. Its bare slug (`towel-fold`) and its `ckpt_...` ID work
 everywhere too. To rename it: `dreamscale deployments rename towel-fold folding-v2`.
