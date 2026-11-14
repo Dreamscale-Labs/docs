@@ -992,7 +992,7 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--ee-state TEXT` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
 | `--ee-action TEXT` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
 | `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
-| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base; Xiaomi-Robotics-1 also takes `chunk=chunk.json` and `vector=vector.json`: [Training](/training)). Repeat it for more. |
+| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms) or `mobile_base=base.json` (a robot that is only a mobile base). π0.5, FLUX.3 Action, GR00T N1.7 and Xiaomi-Robotics-1 take `rate=rate.json` and `chunk=chunk.json` ([Training](/training#choose-its-rate-and-chunk)); Xiaomi-Robotics-1 also takes `vector=vector.json` ([Training](/training)). Repeat it for more. |
 
 ```bash
 dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50
