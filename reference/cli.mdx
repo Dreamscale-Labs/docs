@@ -987,11 +987,11 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--input NAME=FILE.json` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms). Repeat it for more. |
 | `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
 | `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
-| `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it for each camera. |
+| `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`; FLUX.3 Action and GR00T N1.7 also take `extra_scene_1`, a second scene camera). Repeat it for each camera. |
 | `--ee-state TEXT` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
 | `--ee-action TEXT` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
 | `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
-| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base: [Training](/training)). Repeat it for more. |
+| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file (for example `urdf=robot.json`, the robot's URDF and its arms, or `mobile_base=base.json` for a robot that is only a mobile base; Xiaomi-Robotics-1 also takes `chunk=chunk.json` and `vector=vector.json`: [Training](/training)). Repeat it for more. |
 
 ```bash
 dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50
@@ -1097,6 +1097,7 @@ dreamscale train deploy RUN_ID [OPTIONS]
 | `RUN_ID` | — | Training run ID (`tr_…`). |
 | `--step INTEGER` | the latest | Checkpoint step. |
 | `--region TEXT` | `auto` | Where it serves: a region id such as `us-west` or `japan`, or `auto`: the nearest one the run's base serves, measured from this machine. |
+| `--executed INTEGER` | the run's | Xiaomi-Robotics-1: actions the robot executes per chunk (default about two thirds of a second at the data's rate). |
 | `--no-wait` | off | Return once the build starts. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
 | `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). Change it later with [`deployments engine`](#dreamscale-deployments-engine). |
