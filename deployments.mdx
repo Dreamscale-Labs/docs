@@ -15,7 +15,8 @@ it warm.
 - A π0.5 checkpoint: an openpi checkpoint (`params/` with `assets/<id>/norm_stats.json`)
   or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
   up to 24 GB. It can be on Hugging Face or in a local folder. Or a GR00T N1.7
-  fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`. Or a
+  fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`, for a
+  robot of up to 4 cameras, 128 state values and 64 action values. Or a
   Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
   `dataset_stats.json`, with `--base long-wam-yam`. Or a Praxis-1 fine-tune from
   [Training](/training). Deploy a run with `dreamscale train deploy`, or its downloaded folder
@@ -157,8 +158,9 @@ server. One already running keeps its engine until it stops; `dreamscale deploym
 towel-fold` stops it now, and a connected robot holds still while a new server starts (a few
 minutes). Each action chunk says which engine served it (`engine`). When standard serves a
 lightning request (for example, one with a long instruction), `engine_reason` says why: the
-actions are the same, so there is nothing to do. Lightning doesn't run real-time chunking yet:
-standard serves any request that uses it, even on a lightning deployment.
+actions are the same, so there is nothing to do. Lightning serves real-time chunking too, on a
+deployment of a run trained with `--rtc`; a request it can't serve that way goes to standard,
+and `engine_reason` says why.
 
 On the shared models `praxis-1-yam` and `praxis-1-droid`, lightning is per session and off by
 default: add `--engine lightning` to `dreamscale run yam` or `dreamscale run franka`, or call

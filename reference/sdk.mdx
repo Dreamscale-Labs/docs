@@ -799,7 +799,7 @@ A training run.
 | `stop()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps, and it saves a checkpoint. |
 | `resume(max_usd)` | Continue a stopped run within 30 days for its remaining steps. Refuses a price above `max_usd`. |
 | `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |
-| `deploy(step=None, *, region="auto", engine=None)` | Deploy a checkpoint (default the latest) in a region: `"auto"` (the nearest, measured from this machine), `"us-west"`, `"us-central"`, `"us-east"`, `"uk"`, `"eu-west"`, `"japan"`, `"india"` or `"australia"`. Praxis-1: `engine="lightning"` starts it on the lightning engine (experimental). Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
+| `deploy(step=None, *, region="auto", executed=None, engine=None)` | Deploy a checkpoint (default the latest) in a region: `"auto"` (the nearest, measured from this machine), `"us-west"`, `"us-central"`, `"us-east"`, `"uk"`, `"eu-west"`, `"japan"`, `"india"` or `"australia"`. Xiaomi-Robotics-1: `executed=3` sets the actions the robot executes per chunk, as `--executed` on [`dreamscale train deploy`](/reference/cli#dreamscale-train-deploy) does. Praxis-1: `engine="lightning"` starts it on the lightning engine (experimental). Returns the deployment as a dict: pass its `model` and `id` to `connect()`. |
 
 ## Errors
 

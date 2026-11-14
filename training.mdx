@@ -47,13 +47,20 @@ Labs, use `--base flux-3-action-base`. Add `--rtc` too for real-time chunking
 (experimental): its deployment then continues each chunk from the actions the robot
 is still executing, so the arm doesn't jump where one chunk hands over to the next. To fine-tune
 Xiaomi-Robotics-1 from Xiaomi, use `--base xiaomi-robotics-1`; it trains with real-time chunking
-built in. A robot that is only a mobile base, such as a car, trains Xiaomi-Robotics-1 on its
+built in. It predicts one second of actions at your data's rate; to set another length (4 to 60
+actions), add `--input chunk=chunk.json`, holding `{"seconds": 2}` or `{"rows": 30}`. A robot
+whose state and action are plain numbers trains it with `--input vector=vector.json`, holding
+`{"hold": "measured"}` or `{"hold": "zero"}`: your values as recorded, in their order.
+A robot that is only a mobile base, such as a car, trains Xiaomi-Robotics-1 on its
 velocities: add `--input mobile_base=base.json`, a file naming what your state and action hold, in
 their order, such as `{"components": ["wz", "vx"]}` (`vx` forward speed, `vy` sideways speed, `wz`
-yaw rate or steering). To fine-tune GR00T N1.7 from NVIDIA, use `--base gr00t-n1.7`.
+yaw rate or steering). To fine-tune GR00T N1.7 from NVIDIA, use `--base gr00t-n1.7`. It takes up
+to 128 state values and 64 action values. FLUX.3 Action and GR00T N1.7 take up to 4 cameras: a
+fourth trains as a second scene camera (`--camera cam_low=extra_scene_1` places one yourself).
 To fine-tune Praxis-1 from Runway, use `--base praxis-1-base`. It takes any robot: 1 to 64 state
 values and 1 to 64 action values (the two may differ), 1 to 3 cameras (one base camera, up to two
-wrist cameras), recorded at 15, 30, 45 or 60 fps. It acts at 15 Hz. It trains with Runway's
+wrist cameras), recorded at 15 to 60 fps; a slower recording is refused before you pay. It acts
+at 15 Hz. It trains with Runway's
 recipe: you can set its length and learning rate, not its batch size, warm-up, schedule or
 checkpoint spacing. Add `--rtc` for real-time chunking (experimental). For a
 private repo, run `dreamscale integrations hugging-face setup` once.
@@ -71,12 +78,18 @@ other FLUX.3 Action deployments run from
 Python with `dreamscale.connect("flux-3-action-base", deployment="<name>")`.
 A Xiaomi-Robotics-1 run on Bimanual YAM demos runs with `dreamscale run yam --deployment <name>`;
 other robots connect from Python with `dreamscale.connect("xiaomi-robotics-1", deployment="<name>")`.
+Its downloaded folder (`dreamscale train download`) deploys as it is too:
+`dreamscale deployments create ./folder`. `predict()` returns the whole action chunk, and the
+robot (`next_action()` or `dreamscale run`) executes its first two thirds of a second (20 actions
+at 30 fps). To set another number, add `--executed 3` to `train deploy`.
+A vector robot sends its state values as recorded, in their order. Between chunks it holds its
+measured values (`measured`, which needs a state as wide as its action) or zeros (`zero`).
 A mobile base sends the same state values as its dataset, in the same order, and each action
 comes back in that order too. Between chunks it holds still (zero velocity), so a vehicle stops.
 On a vehicle, execute the first 2–3 actions of each action chunk, then ask for the next.
 A GR00T N1.7 run on SO-101 or Bimanual YAM demos runs with `dreamscale run so101 --deployment <name>`
-or `dreamscale run yam --deployment <name>`; other robots connect from Python with
-`dreamscale.connect("gr00t-n1.7", deployment="<name>")`.
+or `dreamscale run yam --deployment <name>`; other robots, and runs with a fourth camera, connect
+from Python with `dreamscale.connect("gr00t-n1.7", deployment="<name>")`.
 A Praxis-1 deployment runs from Python on any robot, with
 `dreamscale.connect("praxis-1-base", deployment="<name>")`. To start it on the
 [lightning engine](/deployments#choose-its-engine), add `--engine lightning` to `train deploy`.
