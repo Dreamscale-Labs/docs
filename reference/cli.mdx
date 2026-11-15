@@ -193,7 +193,7 @@ dreamscale run so101 --model MODEL [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | `45` | Most degrees a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | `150` | Joint speed cap in degrees per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
@@ -230,7 +230,7 @@ dreamscale run yam --model MODEL [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | `0.15` | Most radians a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
@@ -269,7 +269,7 @@ dreamscale run franka --model MODEL [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | none | Most radians a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | none | Joint speed cap in radians per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
@@ -307,7 +307,7 @@ dreamscale run ur --model DEPLOYMENT [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | `0.3` | Most radians a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
@@ -344,7 +344,7 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | `0.2` | Most radians a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | `0.5` | Joint speed cap in radians per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
@@ -381,7 +381,7 @@ dreamscale run openarm --model DEPLOYMENT [OPTIONS]
 | `--max-cost FLOAT` | none | Credit limit per task, for models billed by usage. |
 | `--max-joint-step FLOAT` | `0.1` | Most radians a command may lead the measured joint position. |
 | `--max-joint-velocity FLOAT` | `1.0` | Joint speed cap in radians per second, homing included. |
-| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion` or `output`. |
+| `--action-smoothing TEXT` | `auto` | Chunk blending for `async` with RTC off: `auto`, `motion`, `output` or `crossfade` (experimental). |
 | `--trace-dir PATH` | — | Save a recording of each task under this directory. |
 | `--trace-images` | off | Include camera frames in recordings (needs `--trace-dir`). |
 | `--verbose` | off | Show diagnostic details. |
