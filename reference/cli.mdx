@@ -2,7 +2,7 @@
 title: "CLI reference"
 sidebarTitle: "CLI reference"
 description: "Every dreamscale command, argument and option, with defaults."
-keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale sim --list", "dreamscale deployments", "dreamscale deployments engine", "--engine", "lightning", "praxis-1-base", "dreamscale train"]
+keywords: ["CLI reference", "dreamscale command", "options", "dreamscale login", "dreamscale run franka", "dreamscale auth whoami", "dreamscale auth logout", "dreamscale run", "dreamscale sim", "dreamscale sim --list", "dreamscale deployments", "praxis-1-base", "dreamscale train"]
 ---
 
 Every public `dreamscale` command, generated from `--help` of version
@@ -180,7 +180,6 @@ dreamscale run so101 --model MODEL [OPTIONS]
 | `--model TEXT` | required | A model from `dreamscale models list`, such as `molmoact2-so101`, `flux-3-action-so101` or `pi0.5-so101`, or a deployment as `<account>/<slug>`. Optional when `--deployment` names a deployment, which runs its own model. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -217,7 +216,6 @@ dreamscale run yam --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots yam setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -256,7 +254,6 @@ dreamscale run franka --model MODEL [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots franka setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -294,7 +291,6 @@ dreamscale run ur --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots ur setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -331,7 +327,6 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots xarm7 setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -368,7 +363,6 @@ dreamscale run openarm --model DEPLOYMENT [OPTIONS]
 | `--config PATH` | saved rig config | The rig config from `dreamscale robots openarm setup`. |
 | `--instruction TEXT` | prompt for tasks | Run this one task, then exit. |
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
-| `--engine [standard\|lightning]` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). A deployment runs its own [engine](/deployments#choose-its-engine). |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
 | `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
@@ -680,7 +674,6 @@ dreamscale deployments create REPO [OPTIONS]
 | `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). Change it later with [`deployments engine`](#dreamscale-deployments-engine). |
 | `--no-wait` | off | Return once the build starts. |
 | `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name. `deployments list` shows them. |
 | `--arm TEXT` | both | A custom robot with one arm: `right`. |
@@ -781,26 +774,6 @@ dreamscale deployments fallback DEPLOYMENT SETTING
 | --- | --- | --- |
 | `DEPLOYMENT` | — | The deployment's name or ID. |
 | `SETTING` | — | `on` or `off`. |
-
-### dreamscale deployments engine
-
-Set what a Praxis-1 deployment's servers run: `standard` (the default) or `lightning`
-(experimental: the same actions, sooner). No rebuild. Its next server runs it; one already
-running keeps its engine until it stops, and `deployments restart` stops it now for a new one. See
-[Deployments](/deployments#choose-its-engine).
-
-```text
-dreamscale deployments engine DEPLOYMENT ENGINE
-```
-
-| Argument or option | Default | Description |
-| --- | --- | --- |
-| `DEPLOYMENT` | — | The deployment's name or ID. |
-| `ENGINE` | — | `standard` or `lightning`. |
-
-```bash
-dreamscale deployments engine towel-fold lightning
-```
 
 ### dreamscale deployments rename
 
@@ -1116,7 +1089,6 @@ dreamscale train deploy RUN_ID [OPTIONS]
 | `--executed INTEGER` | the run's | Actions the robot executes per chunk. Xiaomi-Robotics-1: default about two thirds of a second at the data's rate. FLUX.3 Action: 1 to the run's chunk, default the whole chunk (2 or more for a run trained with `--rtc`). |
 | `--no-wait` | off | Return once the build starts. |
 | `--region-fallback / --no-region-fallback` | on | If its region is full, start its server in the next-closest region (a little farther). |
-| `--engine TEXT` | `standard` | Praxis-1: `standard` or `lightning` (experimental: the same actions, sooner). Change it later with [`deployments engine`](#dreamscale-deployments-engine). |
 
 Stuck? See [Troubleshooting](/troubleshooting) or email
 [{{supportEmail}}](mailto:{{supportEmail}}).
