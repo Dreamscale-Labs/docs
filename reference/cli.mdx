@@ -1024,6 +1024,21 @@ dreamscale train show RUN_ID [OPTIONS]
 | `RUN_ID` | — | Training run ID (`tr_…`). |
 | `--json` | off | Print raw JSON. |
 
+### dreamscale train checkpoint
+
+Save a deployable checkpoint of a training run now. It is saved at the run's next step while
+training continues, and listed with the run's checkpoints once written (about 1-3 minutes).
+For π0.5, FLUX.3 Action, GR00T N1.7 and Praxis-1 runs; one request at a time, and at most 20
+checkpoints a run.
+
+```text
+dreamscale train checkpoint RUN_ID
+```
+
+| Argument or option | Default | Description |
+| --- | --- | --- |
+| `RUN_ID` | — | Training run ID (`tr_…`). |
+
 ### dreamscale train stop
 
 Stop a training run. You pay for the steps it completed, and it saves a checkpoint you can

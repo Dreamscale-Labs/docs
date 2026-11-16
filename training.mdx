@@ -156,9 +156,10 @@ quote says which.
 
 ```bash
 dreamscale train list
-dreamscale train stop tr_...     # you pay only for the steps it finished
-dreamscale train resume tr_...   # within 30 days: the remaining steps, at the same rate
-dreamscale train rm tr_...       # permanent; a running one is canceled first
+dreamscale train checkpoint tr_...   # a deployable checkpoint now; training continues
+dreamscale train stop tr_...         # you pay only for the steps it finished
+dreamscale train resume tr_...       # within 30 days, at the same rate
+dreamscale train rm tr_...           # permanent
 ```
 
 The dashboard's Training page shows the same runs.

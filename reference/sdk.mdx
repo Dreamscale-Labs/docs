@@ -796,6 +796,7 @@ A training run.
 | `data` | The run as a dict, as of the last refresh. |
 | `refresh()` | Fetch the latest state; returns the run. |
 | `wait(quiet=False)` | Follow it until it finishes, with a live status line unless `quiet`. Raises its error if it failed. Ctrl+C stops waiting, not training. |
+| `save_checkpoint()` | Save a deployable checkpoint now, at its next step; it keeps training. Listed in `checkpoints` once written (`refresh()`). π0.5, FLUX.3 Action, GR00T N1.7 and Praxis-1. |
 | `stop()` | Stop it. Nothing is charged before training starts; after, you pay for the completed steps, and it saves a checkpoint. |
 | `resume(max_usd)` | Continue a stopped run within 30 days for its remaining steps. Refuses a price above `max_usd`. |
 | `delete()` | Delete it for good. One still going is canceled first. Deployments made from it keep running. |

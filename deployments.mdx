@@ -132,7 +132,7 @@ ends. `stop` ends the server now and turns keep-warm off, and a connected robot
 reconnects to a new one on its next call; with `always`, `restart` ends it and starts a
 fresh one.
 
-To warm it up before your robot needs it, add `--now`: it starts the server and
+To warm it up ahead, add `--now` (the page's **Warm now**): it starts the server and
 waits until it is ready. `dreamscale deployments show towel-fold` and the
 deployment's page say what it is doing: **Ready**, **Starting**, or **Waiting for a
 GPU** while the cloud allocates one. An idle policy on a deployment kept warm stays
