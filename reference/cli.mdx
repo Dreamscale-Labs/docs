@@ -669,7 +669,7 @@ dreamscale deployments create REPO [OPTIONS]
 | `--steps INTEGER` | `10` | ABC-VLA: denoising steps per chunk. |
 | `--rtc-prefix INTEGER` | `4` | Trained RTC: at most this many planned actions pinned per request, within what the checkpoint was trained on. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
-| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected account | Hugging Face token for this request. |
 | `--region TEXT` | `auto` | Where it serves: a region id (`us-west`, `us-central`, `us-east`, `uk`, `eu-west`, `japan`, `india`, `australia`), or `auto`: the nearest one its base serves, measured from this machine. |
 | `--keep-warm TEXT` | `off` | How long its server stays up after the last robot leaves: `off`, `10m`, `30m`, `1h`, `2h`, `6h`, `12h` or `always`. Billed as server time. |
 | `--slug TEXT` | from the repo and step | Its name: the `<model>` part of `<account>/<model>`. |
@@ -697,7 +697,7 @@ dreamscale deployments inspect REPO [OPTIONS]
 | `--base TEXT` | `auto` | `pi0.5`, `flux-3-action-base`, `praxis-1-base` or `auto`. |
 | `--path TEXT` | the latest | π0.5: the checkpoint in the repo, for example `checkpoints/55000`. |
 | `--revision TEXT` | default branch | Branch, tag or commit. |
-| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected account | Hugging Face token for this request. |
 | `--json` | off | Print raw JSON. |
 
 ### dreamscale deployments list
@@ -853,7 +853,7 @@ dreamscale datasets import SOURCE [OPTIONS]
 | --- | --- | --- |
 | `SOURCE` | — | `hf://owner/name`, with `/folder` and `@revision` if you need them. |
 | `--name TEXT` | the repo's | The dataset's name. |
-| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected account | Hugging Face token for this request. |
 | `--no-wait` | off | Return once the copy starts. |
 | `--json` | off | Print the dataset as JSON. |
 
@@ -948,7 +948,7 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--rtc` | the base's | Train with real-time chunking. By default a run trains what its base does: on for π0.5, off for FLUX.3 Action and Praxis-1, where it is experimental. The model also runs without committed actions. |
 | `--no-rtc` | the base's | Train without real-time chunking. |
 | `--name TEXT` | the dataset | Display name. |
-| `--hf-token TEXT` | `HF_TOKEN`, else your connected token | Hugging Face token for this request. |
+| `--hf-token TEXT` | `HF_TOKEN`, else your connected account | Hugging Face token for this request. |
 | `--yes`, `-y` | off | Accept the quote without asking. |
 | `--no-wait` | off | Return once the run starts. |
 | `--json` | off | Print the run (with `--quote`, the quote) as JSON. |
