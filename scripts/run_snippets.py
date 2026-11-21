@@ -472,7 +472,7 @@ def run_python(snippet: Snippet, *, live: bool, max_actions: int, report: Report
 
 # Models whose chunk, width and rate only the server holds: it sends them with each session,
 # so the SDK has no contract to compare a row with. Each is what a live session reported.
-SERVER_CONTRACTS = {"abc-vla-yam": (20, 14, 30.0)}
+SERVER_CONTRACTS = {"abc-vla-yam": (20, 14, 30.0), "isaac-0.5-yam": (60, 14, 30.0)}
 
 
 def check_models_table(report: Report) -> None:

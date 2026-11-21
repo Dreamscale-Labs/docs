@@ -33,6 +33,7 @@ GIT_INSTALL_RE = re.compile(r"git\+\w+://[^\s\"']*dreamscale-labs", re.IGNORECAS
 STAGED_MODEL_MARKERS = ("groot",)
 # The launch docs cover the shared models only, plus the deployment base model.
 DOCUMENTED_MODELS = {
+    "isaac-0.5-yam",
     "pi0.5-libero",
     "gr00t-n1.7-libero",
     "flexpi-libero",
@@ -70,7 +71,8 @@ BASE_MODELS = {
 PREVIOUS_IDS = {"pi05-libero", "pi05-so101", "pi05-yam"}
 MODEL_ID_RE = re.compile(
     r"(?<![\w-])((?:molmoact2|pi0\.5|pi05|flux|perceptron|rho|lingbot|fastwam|rldx|xiaomi|cosmos3|"
-    r"dreamzero|flexpi|long-wam|abc-vla)-[a-z0-9-]+|gr00t-[a-z0-9.-]*[a-z0-9]|praxis-[0-9]+-[a-z0-9-]*[a-z0-9])"
+    r"dreamzero|flexpi|long-wam|abc-vla)-[a-z0-9-]+|gr00t-[a-z0-9.-]*[a-z0-9]|praxis-[0-9]+-[a-z0-9-]*[a-z0-9]"
+    r"|isaac-0\.5-[a-z0-9-]*[a-z0-9])"
 )
 # One way to do each thing: plain Markdown, the safety warning as the only callout,
 # at most one table per page (reference pages: one per command or function), and no images.

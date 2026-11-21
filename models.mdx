@@ -17,6 +17,7 @@ Frames: H×W×3 `uint8` RGB, any size.
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
 | `abc-vla-yam` | Bimanual YAM, [ABC simulator](/reference/cli#dreamscale-sim) | 20 × 14 | 30 Hz |
+| `isaac-0.5-yam` | Bimanual YAM | 60 × 14 | 30 Hz |
 | `molmoact2-droid` | [Franka](/robots/franka) | 15 × 8 | 15 Hz |
 | `praxis-1-droid` | [Franka](/robots/franka) | 24 × 8 | 15 Hz |
 | `pi0.5-libero` | LIBERO simulator | 20 × 7 | 20 Hz |
@@ -28,7 +29,7 @@ Frames: H×W×3 `uint8` RGB, any size.
 
 Makers: Ai2 (MolmoAct2), Physical Intelligence (π0.5), Black Forest Labs (FLUX.3 Action),
 Xiaomi (Xiaomi Robotics 1), NVIDIA (GR00T N1.7, Long-WAM), University of Washington with Ai2 (Flex-π),
-Runway (Praxis-1) and Amazon FAR (ABC-VLA).
+Runway (Praxis-1), Amazon FAR (ABC-VLA) and Perceptron (Isaac 0.5).
 
 `flux-3-action-so101` needs `next_action`; Praxis-1's `predict` takes
 [the steps your robot ran](/reference/sdk#history-the-model-reads).
@@ -50,7 +51,7 @@ observation = dreamscale.so101.observation(
 - Joints are calibrated LeRobot degrees; the gripper is 0–100.
 - Actions are absolute targets, same order and units.
 
-Praxis-1 starts with 21 actions, then 24. Keep default sync; async is too slow.
+Praxis-1 starts with 21 actions, then 24; keep default sync.
 For side-only Python observations, use `views=1` without `wrist_frame`.
 
 ## Bimanual YAM
