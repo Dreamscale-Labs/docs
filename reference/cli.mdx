@@ -123,7 +123,9 @@ dreamscale doctor so101
 Run a task on a simulated benchmark. The simulator runs on your computer and the
 model runs in the cloud. The first run of a benchmark downloads it. The robot holds
 still while a request is pending, so on a slow connection a task may run out of
-steps before it finishes.
+steps before it finishes. `robolab` runs on our simulators instead: nothing
+installs, and it ends with each task's success rate. See
+[Benchmark in the cloud](/benchmarks).
 
 ```text
 dreamscale sim BENCHMARK --model MODEL [OPTIONS]
@@ -131,10 +133,10 @@ dreamscale sim BENCHMARK --model MODEL [OPTIONS]
 
 | Argument or option | Default | Description |
 | --- | --- | --- |
-| `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces`, `roboeval` or `abc`. |
+| `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces`, `roboeval`, `abc` or `robolab`. |
 | `--model TEXT` | required | Model to run, such as `pi0.5-libero` for `libero` or `xiaomi-robotics-1-robocasa365` for `robocasa365`. `dreamscale models list` lists yours. |
-| `--task-suite TEXT` | per benchmark | `libero`: `libero_spatial` (default), `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark or `all` (default). `roboeval`: a task (default `lift_pot`). `abc`: a task (default `put_plastic_bottles_in_bin`). |
-| `--task-id TEXT` | `0` | Task within the suite. `molmospaces` also takes `all`. `abc`: the episode number. |
+| `--task-suite TEXT` | per benchmark | `libero`: `libero_spatial` (default), `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark or `all` (default). `roboeval`: a task (default `lift_pot`). `abc`: a task (default `put_plastic_bottles_in_bin`). `robolab`: `smoke10` (default) or `all`. |
+| `--task-id TEXT` | `0` | Task within the suite. `molmospaces` also takes `all`. `abc`: the episode number. `robolab`: a task's name, such as `BananaInBowlTask`. |
 | `--task-seed INTEGER` | `0` | Seed for the task's initial state. |
 | `--max-steps INTEGER` | the task's horizon | Action-step limit, at least 1. |
 | `--max-duration FLOAT` | — | Time limit in seconds (at least 0.1), instead of `--max-steps`. |
@@ -143,6 +145,9 @@ dreamscale sim BENCHMARK --model MODEL [OPTIONS]
 | `--region TEXT` | — | Where to serve: `nearest`, `available` or `us-west-2`. |
 | `--output-root PATH` | — | Save the run's artifacts (video, timing) to this directory. |
 | `--verbose`, `-v` | off | Show diagnostic details. |
+| `--episodes N` | `4` | `robolab`: episodes per task, 1 to 50. |
+| `--max-units N` | `1` | `robolab`: tasks to run at once, 1 to 4. |
+| `--no-view` | off | `robolab`: don't open the live window. |
 | `--list` | off | List the benchmarks, a benchmark's task suites, or with `--task-suite` its tasks and their `--task-id`s, instead of running. Offline; no `--model` or login. `molmospaces` lists its episodes only after its first run; `abc` takes any episode number. |
 
 ```bash
@@ -151,6 +156,10 @@ dreamscale sim libero --model pi0.5-libero --task-suite libero_object --task-id 
 
 ```bash
 dreamscale sim libero --task-suite libero_object --list
+```
+
+```bash
+dreamscale sim robolab --model molmoact2-droid --task-suite smoke10 --max-units 2
 ```
 
 ## dreamscale run

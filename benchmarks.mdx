@@ -1,0 +1,50 @@
+---
+title: "Benchmark in the cloud"
+description: "Score a model on RoboLab's tabletop tasks on our simulators, with nothing to install."
+keywords: ["benchmark", "RoboLab", "dreamscale sim robolab", "molmoact2-droid", "Isaac Sim", "simulation", "evaluate", "success rate"]
+---
+
+`dreamscale sim robolab` runs RoboLab's Franka tabletop tasks on our simulators
+and drives them with a model in the cloud. Nothing installs on your computer.
+
+## What you need
+
+- The latest CLI: `uv tool upgrade dreamscale`.
+- `dreamscale login`, and credits on your account.
+
+## Run a task
+
+```bash
+dreamscale sim robolab --model molmoact2-droid --task-id BananaInBowlTask --episodes 1
+```
+
+The CLI prints each stage, from `Getting a simulator` to `Running`, and a window
+shows the simulation live. It ends with the task's score, such as
+`BananaInBowlTask  1/1 (100%)`, and `Success rate: 1/1 (100%)`.
+
+## Run a suite
+
+```bash
+dreamscale sim robolab --model molmoact2-droid --task-suite smoke10 --max-units 2
+```
+
+`smoke10` is ten single-object tasks; `all` is every RoboLab task. Without
+`--task-id` or `--task-suite`, the run is `smoke10`.
+
+- `--episodes N` sets the episodes per task (default 4).
+- `--max-units N` runs up to N tasks at once, 1 to 4.
+- `--no-view` skips the live window.
+- `--output-root DIR` saves each episode's video and result.
+- Ctrl+C cancels the run.
+
+`dreamscale sim robolab --list` lists the suites, and
+`dreamscale sim robolab --task-suite smoke10 --list` lists a suite's tasks.
+
+A run you start within 15 minutes of your last one reuses its simulator and
+starts in seconds.
+
+## Pricing
+
+The simulator is free. The model is billed as on a robot, \$5 per robot-hour
+while connected. A run is refused before it starts if your account has no
+credits.
