@@ -34,6 +34,8 @@ STAGED_MODEL_MARKERS = ("groot",)
 # The launch docs cover the shared models only, plus the deployment base model.
 DOCUMENTED_MODELS = {
     "isaac-0.5-yam",
+    "isaac-0.5-so101",
+    "isaac-0.5-libero",
     "pi0.5-libero",
     "gr00t-n1.7-libero",
     "flexpi-libero",

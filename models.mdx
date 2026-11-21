@@ -13,6 +13,7 @@ Frames: H×W×3 `uint8` RGB, any size.
 | `flux-3-action-so101` | SO-101 | 42 × 6 | 30 Hz |
 | `pi0.5-so101` | SO-101 | 30 × 6 | 30 Hz |
 | `praxis-1-so101` | SO-101 | 24 × 6 | 15 Hz |
+| `isaac-0.5-so101` | SO-101 | 60 × 6 | 30 Hz |
 | `molmoact2-bimanual-yam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `pi0.5-bimanualyam` | Bimanual YAM | 30 × 14 | 30 Hz |
 | `praxis-1-yam` | Bimanual YAM | 24 × 14 | 15 Hz |
@@ -24,6 +25,7 @@ Frames: H×W×3 `uint8` RGB, any size.
 | `gr00t-n1.7-libero` | LIBERO simulator | 16 × 7 | 20 Hz |
 | `long-wam-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
 | `flexpi-libero` | LIBERO simulator | 32 × 7 | 20 Hz |
+| `isaac-0.5-libero` | LIBERO simulator | 8 × 7 | 20 Hz |
 | `xiaomi-robotics-1-robocasa365` | RoboCasa365 simulator | 16 × 12 | 20 Hz |
 | `long-wam-robocasa365` | RoboCasa365 simulator | 32 × 12 | 20 Hz |
 
@@ -87,4 +89,4 @@ observation = dreamscale.libero.observation(
 - Pass frames as LIBERO renders them: the SDK flips them.
 - Actions are LIBERO deltas: `dx`, `dy`, `dz`, three axis-angle rotation
   deltas, then the gripper (−1 open, +1 close).
-- `long-wam-libero` runs in `dreamscale sim libero` only.
+- `long-wam-libero` and `isaac-0.5-libero` run in `dreamscale sim libero` only.
