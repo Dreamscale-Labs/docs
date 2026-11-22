@@ -47,9 +47,6 @@ DOCUMENTED_MODELS = {
     "xiaomi-robotics-1-robocasa365",
     "long-wam-libero",
     "long-wam-robocasa365",
-    "perceptron-isaac05",
-    "perceptron-isaac05-so101",
-    "perceptron-isaac05-yam",
     # Franka / DROID (experimental page): beta models, named as beta there.
     "molmoact2-droid",
     "cosmos3-edge-policy-droid",
