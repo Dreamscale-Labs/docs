@@ -127,6 +127,19 @@ you pay, with what to choose instead. The deployment acts at the run's rate and 
 chunk. A GR00T N1.7, ABC-VLA or Xiaomi-Robotics-1 run at a rate other than 30 Hz connects from
 Python, even on SO-101 or Bimanual YAM demos.
 
+## Fit your camera frames
+
+FLUX.3 Action and Praxis-1 see each camera frame at a fixed size. By default FLUX.3 Action
+stretches the frame to that size and Praxis-1 crops its centre. To keep the whole frame without
+stretching it, letterbox it: the frame is scaled to fit and padded with black.
+
+```bash
+echo '{"fit": "letterbox"}' > image.json
+dreamscale train --dataset towel-fold --base praxis-1-base --input image=image.json --quote
+```
+
+The deployment fits frames the same way, so send them at your camera's own size.
+
 ## Keep training a model
 
 ```bash
