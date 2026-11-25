@@ -92,9 +92,9 @@ observation = dreamscale.libero.observation(
 ## RoboCasa365
 
 ```bash
-dreamscale sim robocasa365 --model xiaomi-robotics-1-robocasa365 --task-suite atomic --task-id CloseFridge
+dreamscale sim robocasa365 --model xiaomi-robotics-1-robocasa365 --task-id CloseFridge
 ```
 
 - The simulator runs on your computer and the model runs in the cloud.
-- `--task-suite` is `atomic` (65 tasks) or `composite` (300 tasks). `--task-id` is a task name or its index in the suite.
+- `--task-id` is a task's name. `--task-suite atomic` (65 tasks) or `composite` (300) runs a suite.
 - Each request uploads about 260 KB. The robot holds still while a request is pending, so on a slow connection a task may run out of steps before it finishes.

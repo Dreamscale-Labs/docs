@@ -15,21 +15,23 @@ and drives them with a model in the cloud. Nothing installs on your computer.
 ## Run a task
 
 ```bash
-dreamscale sim robolab --model molmoact2-droid --task-id BananaInBowlTask --episodes 1
+dreamscale sim robolab --model molmoact2-droid --task-id BananaInBowl --episodes 1
 ```
 
 The CLI prints each stage, from `Getting a simulator` to `Running`, and a window
 shows the simulation live. It ends with the task's score, such as
-`BananaInBowlTask  1/1 (100%)`, and `Success rate: 1/1 (100%)`.
+`BananaInBowl  1/1 (100%)`, and `Success rate: 1/1 (100%)`.
 
 ## Run a suite
 
 ```bash
-dreamscale sim robolab --model molmoact2-droid --task-suite smoke10 --max-units 2
+dreamscale sim robolab --model molmoact2-droid --task-suite relational --max-units 4
 ```
 
-`smoke10` is ten single-object tasks; `all` is every RoboLab task. Without
-`--task-id` or `--task-suite`, the run is `smoke10`.
+The suites are RoboLab's competency axes: `visual` (84 tasks: color, semantics,
+size), `relational` (42: spatial, counting, conjunction) and `procedural` (34:
+affordance, reorientation, sorting, stacking). A task can be in more than one.
+`--all` runs all 120 tasks, and `--random` one of them.
 
 `--model` takes any DROID model your organization can run: `molmoact2-droid`, `pi0.5-droid` and `praxis-1-droid`, and in beta `flux-3-action-droid`, `cosmos3-nano-policy-droid` and `cosmos3-edge-policy-droid`.
 
@@ -39,8 +41,9 @@ dreamscale sim robolab --model molmoact2-droid --task-suite smoke10 --max-units 
 - `--output-root DIR` saves each episode's video and result.
 - Ctrl+C cancels the run.
 
-`dreamscale sim robolab --list` lists the suites, and
-`dreamscale sim robolab --task-suite smoke10 --list` lists a suite's tasks.
+`dreamscale sim robolab --list` lists the suites,
+`dreamscale sim robolab --task-suite visual --list` a suite's tasks, and
+`dreamscale sim robolab --all --list` every task.
 
 A run you start within 15 minutes of your last one reuses its simulator and
 starts in seconds.
