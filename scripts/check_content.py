@@ -49,6 +49,7 @@ DOCUMENTED_MODELS = {
     "long-wam-robocasa365",
     # Franka / DROID (experimental page): beta models, named as beta there.
     "molmoact2-droid",
+    "pi0.5-droid",
     "cosmos3-edge-policy-droid",
     "cosmos3-nano-policy-droid",
     "flux-3-action-droid",

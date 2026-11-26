@@ -122,8 +122,8 @@ dreamscale doctor so101
 
 Run a simulated benchmark's tasks. The simulator runs on your computer and the
 model runs in the cloud. The first run of a benchmark downloads it. The robot holds
-still while a request is pending, so on a slow connection a task may run out of
-steps before it finishes. `robolab` runs on our simulators instead: nothing
+still while a request is pending (about 260 KB each for `robocasa365`), so on a
+slow connection a task may run out of steps before it finishes. `robolab` runs on our simulators instead: nothing
 installs, and it ends with each task's success rate. See
 [Benchmark in the cloud](/benchmarks).
 
@@ -139,7 +139,7 @@ tasks run one after another, then print their success rate.
 | `BENCHMARK` | — | `libero`, `robocasa365`, `molmospaces`, `roboeval`, `abc` or `robolab`. |
 | `--model TEXT` | required | Model to run, such as `pi0.5-libero` for `libero` or `xiaomi-robotics-1-robocasa365` for `robocasa365`. `dreamscale models list` lists yours. |
 | `--all` | off | Run every task in the benchmark. |
-| `--task-suite TEXT` | — | Run every task in a suite. `libero`: `libero_spatial`, `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` or `composite`. `molmospaces`: a benchmark, such as `pick-v1.5`. `roboeval`: a task family, such as `lift_pot`. `robolab`: `visual`, `relational` or `procedural`. `abc` has no suites. |
+| `--task-suite TEXT` | — | Run every task in a suite. `libero`: `libero_spatial`, `libero_object`, `libero_goal`, `libero_10` or `libero_90`. `robocasa365`: `atomic` (65 tasks) or `composite` (300). `molmospaces`: a benchmark, such as `pick-v1.5`. `roboeval`: a task family, such as `lift_pot`. `robolab`: `visual`, `relational` or `procedural`. `abc` has no suites. |
 | `--task-id TEXT` | — | Run one task. An id names it across its benchmark: `libero_spatial/3`, `CloseFridge` (`robocasa365`), `pick-v1.5/12` (`molmospaces`), `LiftPotPosition` (`roboeval`), `hang_mug_on_mug_rack` (`abc`), `BananaInBowl` (`robolab`). |
 | `--random` | off | Run one task, picked at random. |
 | `--task-seed INTEGER` | `0` | Seed for the task's initial state. `abc`: the scene, world N of its evaluation. |

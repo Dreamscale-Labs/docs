@@ -14,9 +14,9 @@ The documentation is organized around user jobs, one page each:
   reference);
 - fix what just failed (Troubleshooting).
 
-A short Deployments page, outside the main path, covers serving your own
-fine-tune. It has `hidden: true` until Deployments launch: reachable by URL, but
-out of the sidebar, search and indexing. Delete that line to launch it.
+Outside the main path, short pages cover datasets, training, deployments and
+cloud benchmarks, and each experimental robot (Franka, UR, xArm 7, OpenARM) has
+its own page.
 
 The supported public integration surfaces are the Python SDK and CLI. This
 repository does not document internal control-plane, worker, infrastructure, or
