@@ -5,8 +5,8 @@ keywords: ["Python SDK", "dreamscale.connect", "predict", "next_action", "action
 ---
 
 The Python SDK gives you full control of your robot, cameras and control loop.
-To just run a model on an SO-101 or bimanual YAM, the CLI does it in one command:
-see [SO-101](/robots/so101) or [Bimanual YAM](/robots/yam).
+On an SO-101 or bimanual YAM, the CLI needs no code: see [SO-101](/robots/so101)
+or [Bimanual YAM](/robots/yam).
 
 ## What you need
 
@@ -54,8 +54,7 @@ chunk = policy.predict(observation, instruction="pick up the black bowl")
 print(len(chunk.actions), "x", len(chunk.actions[0]))
 ```
 
-It prints `20 x 7`: 20 actions of 7 values. If every server is busy, `connect`
-waits in a queue and shows your position.
+It prints `20 x 7`: 20 actions of 7 values.
 
 ## Working with any robot
 
@@ -65,8 +64,8 @@ waits in a queue and shows your position.
   robot's safety controller.
 </Warning>
 
-Your code reads and commands the robot. The robot's observation helper packages
-what you read. Call `next_action` once per control tick. This drives an SO-101:
+Your code reads and commands the robot; its observation helper packages what you
+read. Call `next_action` once per control tick. This drives an SO-101:
 
 ```python
 import dreamscale
