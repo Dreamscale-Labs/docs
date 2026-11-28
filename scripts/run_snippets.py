@@ -39,6 +39,7 @@ import sys
 import tempfile
 import textwrap
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -594,7 +595,7 @@ def public_commands() -> list[tuple[tuple[str, ...], object]]:
 
 def check_cli_reference(report: Report) -> None:
     """Each public command has a `dreamscale ...` heading; its section names every public
-    option, and every option its tables list is a real one."""
+    option once, and every option its tables list is a real one."""
     import click
 
     text = (ROOT / CLI_REFERENCE).read_text()
@@ -619,6 +620,7 @@ def check_cli_reference(report: Report) -> None:
             for opt in [*param.opts, *param.secondary_opts]
         }
         rows = re.findall(r"^\| `(--[a-z0-9-]+)", section, re.M)
+        repeated = sorted(option for option, count in Counter(rows).items() if count > 1)
         missing = sorted(options - set(rows))
         unknown = sorted(set(rows) - all_options)
         public_names = {
@@ -633,7 +635,9 @@ def check_cli_reference(report: Report) -> None:
             report.fail(label, option, "is not an option of this command")
         for option in hidden:
             report.fail(label, option, "is hidden from --help; the reference lists public ones")
-        if not (missing or unknown or hidden):
+        for option in repeated:
+            report.fail(label, option, "is listed more than once")
+        if not (missing or unknown or hidden or repeated):
             report.ok(label, "section", f"({len(options)} options)")
     public = {path for path, _ in public_commands()}
     for path in sections:
