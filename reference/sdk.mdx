@@ -47,7 +47,6 @@ def connect(
     region_fallback: bool | None = None,
     speed: str | None = None,
     rtc: str | None = "auto",
-    provider: str | None = None,
     transport: str = "auto",
     startup_timeout: float | None = None,
     mode: str = "auto",
@@ -64,7 +63,6 @@ def connect(
 | `region_fallback` | `None` | Shared models: an exact region stays there by default; set `True` to allow the next-closest supported region while compute is unavailable, or `False` to stay in the selected region. Automatic selection allows fallback where supported. Deployments use their own fallback setting. |
 | `speed` | `None` (standard) | `"standard"` or `"fast"`, where the model supports it. |
 | `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. A deployment keeps its own setting ([`dreamscale deployments rtc`](/reference/cli#dreamscale-deployments-rtc)). |
-| `provider` | `None` | Advanced: require `"aws"` or `"modal"`. |
 | `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
 | `startup_timeout` | `None` | Most seconds to wait for a server. `None` follows the server's budget, which grows while a training run makes room for your robot. |
 | `mode` | `"auto"` | How `next_action()` runs chunks. `"sync"` runs each chunk to its end and holds the arm on its last command while the next is inferred. `"async"` asks for the next chunk while rows remain and joins it to the motion. `"auto"` takes the model's own: sync for Praxis-1, async for the rest. |
