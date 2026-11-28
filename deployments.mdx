@@ -1,7 +1,7 @@
 ---
 title: "Deployments"
-description: "Serve your own π0.5, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA fine-tune on your robot, from Hugging Face or a local folder."
-keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "GR00T N1.7", "Long-WAM", "Praxis-1", "praxis-1-base", "ABC-VLA", "abc-vla-base", "Hugging Face", "dreamscale deployments"]
+description: "Serve your own π0.5, FLUX 3 Action, Xiaomi-Robotics-1, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA fine-tune on your robot, from Hugging Face or a local folder."
+keywords: ["deployment", "fine-tune", "π0.5", "pi0.5", "FLUX 3 Action", "flux-3-action-base", "Xiaomi-Robotics-1", "xiaomi-robotics-1", "GR00T N1.7", "Long-WAM", "Praxis-1", "praxis-1-base", "ABC-VLA", "abc-vla-base", "Hugging Face", "dreamscale deployments"]
 ---
 
 A deployment serves your own fine-tune, shaped to your robot, in one region. A
@@ -16,7 +16,11 @@ it warm.
   or a LeRobot export (`config.json`, `model.safetensors` and the saved processors),
   up to 24 GB. It can be on Hugging Face or in a local folder. Or a GR00T N1.7
   fine-tune: Isaac-GR00T's `checkpoint-N/` folder, with `--base gr00t-n1.7` on `create`, for a
-  robot of up to 4 cameras, 128 state values and 64 action values. Or an
+  robot of up to 4 cameras, 128 state values and 64 action values. Or a
+  FLUX 3 Action fine-tune: its BF16 policy export, which records its robot shape, with
+  `--base flux-3-action-base`. Or a Xiaomi-Robotics-1 fine-tune for the Bimanual YAM: the run
+  folder its upstream `xr1/` trainer wrote (`config.yaml` beside the checkpoint), with
+  `--base xiaomi-robotics-1`. Or an
   ABC-VLA fine-tune from Amazon FAR's code: its `.pt` file, or a folder or repo holding it, with
   `--base abc-vla-base`. Or a
   Long-WAM-YAM fine-tune for the Bimanual YAM: `model.pt`, `config.yaml` and
@@ -44,7 +48,9 @@ dreamscale deployments create ./checkpoints/6000 --preset bimanual_yam --slug to
 rate, RTC) and where each value came from; flags on `create` override any of
 them. A Praxis-1 export names its own robot, so of the robot flags `create` takes only
 `--path`, `--executed`, `--camera` and `--rtc off`:
-`dreamscale deployments create hf://your-org/towel-fold --base praxis-1-base`. A folder's
+`dreamscale deployments create hf://your-org/towel-fold --base praxis-1-base`. A FLUX 3 Action
+export records its robot shape and sampler too, so `create` takes no robot, geometry or RTC flags
+for it. A folder's
 configuration files are read first and only the files the build needs are uploaded,
 never `train_state/` or code. Running the same command again uploads nothing new, and
 an interrupted upload resumes. Uploads are kept for 30 days.
@@ -91,7 +97,9 @@ policy = dreamscale.connect("acme-robotics/towel-fold")
 
 A checkpoint whose actions aren't joint targets (its state and action widths
 differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
-the robot waits for the next action instead of holding still.
+the robot waits for the next action instead of holding still. Xiaomi-Robotics-1 is the exception:
+its arm deployments hold their measured pose while reconnecting, and on the Bimanual YAM
+`dreamscale run yam` drives it.
 
 A Praxis-1 deployment runs from Python:
 `dreamscale.connect("praxis-1-base", deployment="towel-fold")`.
