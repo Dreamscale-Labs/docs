@@ -155,7 +155,7 @@ tasks run one after another, then print their success rate.
 | `--episodes N` | `4` | `robolab`: episodes per task, 1 to 50. |
 | `--max-units N` | `1` | `robolab`: tasks to run at once, 1 to 4. |
 | `--no-view` | off | `robolab`: don't open the live window. |
-| `--mode TEXT` | `sync` | For a model that runs both: `sync` (the simulation waits for each chunk) or `async` (it keeps running while the next chunk is planned). |
+| `--mode TEXT` | `sync` | For a model that runs both, on a simulator on this computer (not `robolab`): `sync` (the simulation waits for each chunk) or `async` (it keeps running while the next chunk is planned). |
 | `--list` | off | List the benchmarks, a benchmark's task suites, or with `--task-suite` or `--all` its tasks and their `--task-id`s, instead of running. Offline; no `--model` or login. `molmospaces` lists its episodes only after its first run; `abc` lists its tasks. |
 
 ```bash
@@ -203,7 +203,7 @@ dreamscale run so101 --model MODEL [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
@@ -238,7 +238,7 @@ dreamscale run yam --model MODEL [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
@@ -275,7 +275,7 @@ dreamscale run franka --model MODEL [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
@@ -311,7 +311,7 @@ dreamscale run ur --model DEPLOYMENT [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
@@ -346,7 +346,7 @@ dreamscale run xarm7 --model DEPLOYMENT [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |
@@ -381,7 +381,7 @@ dreamscale run openarm --model DEPLOYMENT [OPTIONS]
 | `--mode TEXT` | `auto` | `async` (replan continuously) or `sync` (finish each chunk before the next). `auto` takes the model's own: `sync` for Praxis-1, `async` for the rest. |
 | `--max-actions INTEGER` | run until Ctrl+C | Action limit per task, 1–18000. |
 | `--region TEXT` | `available` | Choose automatically or request a supported region, such as `japan`. |
-| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region while compute is unavailable, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
+| `--region-fallback / --no-region-fallback` | automatic | Shared models: allow another supported region if the preferred region is full, or require the selected region. An exact region is strict by default. Deployments use their own setting. |
 | `--speed TEXT` | `standard` | `standard`, `fast` or `ultrafast`, where the model supports it. |
 | `--rtc TEXT` | `auto` | Advanced real-time chunking: `auto` (the model's default), `on`, `off`, `train_time` or `inference_time`. |
 | `--deployment TEXT` | — | Deployment to run: `<account>/<slug>`, its slug, its `ckpt_…` ID, or `base`. |

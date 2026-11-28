@@ -74,7 +74,7 @@ A deployment serves in one region, chosen when you create it:
 and pick the nearest. Pass `--region` to choose one yourself, for example when your
 robot is somewhere other than the machine you deploy from. The dashboard suggests
 the region nearest you. A server's first start takes longer far from the US (about a
-minute in Japan, India and Australia). GPUs can run short in Australia, and then
+minute in Japan, India and Australia). Servers can run short in Australia, and then
 region fallback (below) starts your server in Japan.
 
 The build takes a few minutes and ends with **Ready**. A script can wait for it:
@@ -143,7 +143,7 @@ fresh one.
 To warm it up ahead, add `--now` (the page's **Warm now**): it starts the server and
 waits until it is ready. `dreamscale deployments show towel-fold` and the
 deployment's page say what it is doing: **Ready**, **Starting**, or **Waiting for a
-GPU** while the cloud allocates one. An idle policy on a deployment kept warm stays
+server** until one is free. An idle policy on a deployment kept warm stays
 connected for the keep-warm (with `always`, until you close it).
 
 If the server stops under a running robot (rare), the robot holds still while a

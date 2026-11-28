@@ -60,7 +60,7 @@ def connect(
 | `api_key` | `None` | API key to use. Without it: `DREAMSCALE_API_KEY`, then your `dreamscale login`. |
 | `on_progress` | stderr or logger | Called with each progress line (queue position, startup). The default prints to stderr on a terminal, otherwise logs to the `dreamscale` logger. `None` silences it. |
 | `region` | `"auto"` | Choose automatically, or request a supported region such as `"japan"`. A checkpoint may support fewer regions than a deployment. |
-| `region_fallback` | `None` | Shared models: an exact region stays there by default; set `True` to allow the next-closest supported region while compute is unavailable, or `False` to stay in the selected region. Automatic selection allows fallback where supported. Deployments use their own fallback setting. |
+| `region_fallback` | `None` | Shared models: an exact region stays there by default; set `True` to allow the next-closest supported region if the preferred region is full, or `False` to stay in the selected region. Automatic selection allows fallback where supported. Deployments use their own fallback setting. |
 | `speed` | `None` (standard) | `"standard"` or `"fast"`, where the model supports it. |
 | `rtc` | `"auto"` | Real-time chunking: `"auto"` (the model's default), `"on"`, `"off"`, `"train_time"` or `"inference_time"`. A deployment keeps its own setting ([`dreamscale deployments rtc`](/reference/cli#dreamscale-deployments-rtc)). |
 | `transport` | `"auto"` | `"auto"` (QUIC, then relay), `"quic"` or `"relay"`. |
