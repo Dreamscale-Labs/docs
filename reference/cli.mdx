@@ -43,7 +43,7 @@ your terminal. For step-by-step guides, start at [Quick start](/).
 | --- | --- |
 | `DREAMSCALE_API_KEY` | API key to use instead of your saved login. When set, it wins over `dreamscale login`. |
 | `HF_TOKEN` | Hugging Face token for private repos, used by `deployments` and `train` when `--hf-token` is not given. |
-| `DREAMSCALE_TELEMETRY` | Set to `0`, `false`, `off` or `no` to stop sending latency reports. On by default: in the background, every 30 seconds and when it closes, each session sends Dreamscale each request's start time, how long it spent where (on this machine, on the way and on the server), its upload size and the transport and engine it used, plus how long the session took to be ready. Never observations, actions or instructions. `enabled = false` under `[telemetry]` in `~/.dreamscale/config.toml` also turns reports off. |
+| `DREAMSCALE_TELEMETRY` | Set to `0`, `false`, `off` or `no` to stop sending latency reports. On by default: in the background, every 30 seconds and when it closes, each session sends Dreamscale each request's start time, how long it spent where (on this machine, on the way and on the server), its upload size and the transport and engine it used, plus how long the session took to be ready. Never observations, actions or instructions. Sending never delays a request, and a report that fails is dropped. `enabled = false` under `[telemetry]` in `~/.dreamscale/config.toml` also turns reports off. |
 | `DO_NOT_TRACK` | Set to `1`, `true`, `yes` or `on` to stop sending latency reports, the same as `DREAMSCALE_TELEMETRY=0`. |
 
 ## dreamscale login
