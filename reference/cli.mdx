@@ -657,7 +657,7 @@ See [Deployments](/deployments) for the walkthrough.
 
 ### dreamscale deployments create
 
-Deploy fine-tuned weights of π0.5, FLUX 3 Action, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA (pick with `--base`) from
+Deploy fine-tuned weights of π0.5, FLUX 3 Action, Xiaomi-Robotics-1, GR00T N1.7, Long-WAM, Praxis-1 or ABC-VLA (pick with `--base`) from
 Hugging Face (any `huggingface.co` link works, including a checkpoint folder's
 page) or from a local folder. From a
 folder, only the files the build reads are uploaded, and a re-run sends nothing
@@ -671,7 +671,7 @@ dreamscale deployments create REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). Omit with `--official`. |
-| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7`, `long-wam-yam`, `praxis-1-base` or `abc-vla-base`. A folder `dreamscale train download` made needs none: its base is read from it. |
+| `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `xiaomi-robotics-1`, `gr00t-n1.7`, `long-wam-yam`, `praxis-1-base` or `abc-vla-base`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
 | `--hz FLOAT` | detected | Control rate in Hz the weights expect. |
