@@ -93,9 +93,9 @@ A checkpoint whose actions aren't joint targets (its state and action widths
 differ, e.g. end-effector deltas) runs from Python only, and while reconnecting
 the robot waits for the next action instead of holding still.
 
-A Praxis-1 deployment runs from Python only:
-`dreamscale.connect("praxis-1-base", deployment="towel-fold")`. It serves in US West and US
-East. Each of its servers runs one robot, and a server's first start takes a few minutes, so keep
+A Praxis-1 deployment runs from Python:
+`dreamscale.connect("praxis-1-base", deployment="towel-fold")`.
+Each of its servers runs one robot, and a server's first start takes a few minutes, so keep
 it warm (below) before your robot needs it. A deployment of a run trained with `--rtc` serves
 real-time chunking (experimental); `dreamscale deployments rtc towel-fold off` turns it off.
 

@@ -671,8 +671,6 @@ dreamscale deployments create REPO [OPTIONS]
 | Argument or option | Default | Description |
 | --- | --- | --- |
 | `REPO` | — | Hugging Face repo (`hf://owner/name`, `owner/name` or a `huggingface.co` link), or a local checkpoint folder (`./folder`). Omit with `--official`. |
-| `--official TEXT` | — | Instead of a repo: one of the base's own published checkpoints by name (Verne V0.5: `base`, `robotwin`, `libero`; `deployments list` shows them). |
-| `--arm TEXT` | both | Verne V0.5 custom robot: `right` for one arm. |
 | `--base TEXT` | `pi0.5` | Base model: `pi0.5`, `flux-3-action-base`, `gr00t-n1.7`, `long-wam-yam`, `praxis-1-base` or `abc-vla-base`. A folder `dreamscale train download` made needs none: its base is read from it. |
 | `--preset TEXT` | detected | Robot shape: `bimanual_yam`, `so101`, `arx5` or `blank`. |
 | `--camera TEXT` | detected | `key=slot` (slots: `base`, `left_wrist`, `right_wrist`). Repeat it, in the order your robot sends cameras. |
@@ -977,14 +975,10 @@ dreamscale train --dataset DATASET --base BASE [OPTIONS]
 | `--ee-state COLUMNS` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
 | `--ee-action COLUMNS` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
 | `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
-| `--input NAME=FILE.json` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms). Repeat it for more. |
+| `--input NAME=FILE.json` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms) or `mobile_base=base.json` (a robot that is only a mobile base). π0.5, FLUX.3 Action, GR00T N1.7, ABC-VLA and Xiaomi-Robotics-1 take `rate=rate.json` and `chunk=chunk.json` ([Training](/training#choose-its-rate-and-chunk)); Xiaomi-Robotics-1 also takes `vector=vector.json` ([Training](/training)); FLUX.3 Action and Praxis-1 take `image=image.json` ([Training](/training#fit-your-camera-frames)). Repeat it for more. |
 | `--sample-weight COLUMN` | — | A one-value column with each episode's weight: its samples are drawn that much more often; 0 leaves it out. π0.5 and FLUX.3 Action. |
 | `--loss-mask COLUMN` | — | A one-value column, 1 on frames whose actions shouldn't train (they stay as context). π0.5 and FLUX.3 Action. |
 | `--camera TEXT` | by camera name | A camera and its image slot, for example `top=base` (slots: `base`, `left_wrist`, `right_wrist`; FLUX.3 Action and GR00T N1.7 also take `extra_scene_1`, a second scene camera). Repeat it for each camera. |
-| `--ee-state TEXT` | — | For a base that learns end-effector poses: the measured pose columns, each arm's xyz then its rotation (`a+b`, or `column[0-8,10-18]`). With `--ee-action` and `--ee-rotation`. |
-| `--ee-action TEXT` | — | The commanded end-effector pose columns, laid out as `--ee-state`. |
-| `--ee-rotation TEXT` | — | The poses' rotation: `quat_xyzw`, `quat_wxyz`, `matrix`, `axis_angle` or `rot6d`. |
-| `--input TEXT` | — | Something the base takes beside the dataset, as a JSON file, for example `urdf=robot.json` (the robot's URDF and its arms) or `mobile_base=base.json` (a robot that is only a mobile base). π0.5, FLUX.3 Action, GR00T N1.7, ABC-VLA and Xiaomi-Robotics-1 take `rate=rate.json` and `chunk=chunk.json` ([Training](/training#choose-its-rate-and-chunk)); Xiaomi-Robotics-1 also takes `vector=vector.json` ([Training](/training)); FLUX.3 Action and Praxis-1 take `image=image.json` ([Training](/training#fit-your-camera-frames)). Repeat it for more. |
 
 ```bash
 dreamscale train --dataset towel-fold --base pi0.5 --max-usd 50
